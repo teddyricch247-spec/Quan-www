@@ -186,6 +186,7 @@ export const LowPolyScene: React.FC<LowPolySceneProps> = ({ variant, accent, cla
       }
 
       function resize() {
+        if (!container) return;
         const w = container.clientWidth;
         const h = container.clientHeight;
         if (!w || !h) return;
