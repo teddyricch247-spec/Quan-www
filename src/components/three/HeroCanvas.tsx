@@ -21,13 +21,23 @@ export interface HeroCanvasProps {
  * The hero background: a rippling field of instanced boxes rendered
  * with Three.js — a rolling wave terrain with occasional accent-tinted
  * boxes (echoing the brand mark's red cell) and occasional "missing"
- * boxes, lifting further wherever the pointer hovers. Ported 1:1
- * (constants, shaders, camera behavior included) from the platform
- * app's HeroCanvas so the motion and tuning match exactly; only the
- * lifecycle wiring (mount/unmount cleanup, resize via ResizeObserver
- * instead of a bare window resize listener) was adapted for React, and
- * the tint color is now a prop instead of a hardcoded constant so the
- * exact same mechanic can power the red/harness/chat heroes.
+ * boxes, lifting further wherever the pointer hovers. Base wave/camera/
+ * pointer physics ported 1:1 from the platform app's HeroCanvas so the
+ * core motion matches exactly, with three changes on top:
+ *   1. The box/backdrop gradient shifted from neutral grey to a cooler
+ *      dark navy (uBg/uGlow/uColorLow/uColorHigh below) — www's own
+ *      look, distinct from platform's.
+ *   2. The touch-release fix from the platform app's later revision:
+ *      a tap lets go at once instead of hanging at full height.
+ *   3. A new vapor layer (fogScene/fogMaterial) — www-only, not part
+ *      of the ported base — a thin wavy band low in the box field,
+ *      disturbed by pointer proximity. Deliberately NOT positioned at
+ *      the box field's own boundary/EDGE height: that sits under the
+ *      hero's white bottom-fade overlay at 50-65% opacity, which would
+ *      wash it out almost entirely.
+ * The tint color is a prop instead of a hardcoded constant so the same
+ * mechanic powers the red/harness/chat heroes; pass a module-level
+ * constant (see src/lib/accents.ts), not an inline array literal.
  */
 export const HeroCanvas: React.FC<HeroCanvasProps> = ({ accentColor = ACCENT_RED }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -98,8 +108,8 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({ accentColor = ACCENT_RED
       uAspect: { value: 1.8 },
       uEdge: { value: EDGE },
       uSoft: { value: EDGE_SOFT },
-      uBg: { value: new THREE.Vector3(0x1a / 255, 0x1c / 255, 0x1e / 255) },
-      uGlow: { value: new THREE.Vector3(0.072, 0.086, 0.106) },
+      uBg: { value: new THREE.Vector3(0x0b / 255, 0x0e / 255, 0x14 / 255) },
+      uGlow: { value: new THREE.Vector3(0.10, 0.13, 0.19) },
     };
 
     const bgMaterial = new THREE.ShaderMaterial({
@@ -187,8 +197,8 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({ accentColor = ACCENT_RED
       uAspect: { value: 1.8 },
       uEdge: { value: EDGE },
       uSoft: { value: EDGE_SOFT },
-      uColorLow: { value: v3(0x1e, 0x22, 0x27) },
-      uColorHigh: { value: v3(0x5e, 0x6b, 0x79) },
+      uColorLow: { value: v3(0x11, 0x16, 0x20) },
+      uColorHigh: { value: v3(0x3d, 0x4a, 0x64) },
       uColorRed: { value: v3(accentColor[0], accentColor[1], accentColor[2]) },
       uFadeStart: { value: FADE_A },
       uFadeEnd: { value: FADE_B },
@@ -299,6 +309,98 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({ accentColor = ACCENT_RED
     mesh.frustumCulled = false;
     scene.add(mesh);
 
+    // ============================================================
+    // Vapor: a thin, drifting mist hovering in a wavy band low in the
+    // box field (using the same edgeWave function as the boxes/bg for
+    // its organic horizontal motion, but its own higher vertical
+    // center — see uCenter's comment below for why), so it reads as
+    // rising out of the boxes rather than floating over the whole
+    // scene. Pointer proximity adds extra turbulence and pushes the
+    // pattern outward from the touch point — "disturbing" it.
+    // Full-screen shader pass, same technique as bgMesh above (NDC
+    // quad, no camera needed), rendered after the boxes so it sits in
+    // front of them; additive blending keeps it reading as thin light
+    // wisps rather than an opaque cloud.
+    const fogScene = new THREE.Scene();
+    const fogUniforms = {
+      uTime,
+      uAspect: { value: 1.8 },
+      // NOT the box field's own EDGE (0.10) — that sits low enough in
+      // every hero height this canvas is used at (compact or full) to
+      // fall directly under the hero's white bottom-fade overlay at
+      // 50-65% opacity there, which would wash the (already subtle)
+      // fog out to near-invisibility. 0.34 clears that fade zone with
+      // margin on both the compact and full-height heroes.
+      uCenter: { value: 0.34 },
+      uMouseUV: { value: new THREE.Vector2(-10, -10) },
+      uMouseStrength: { value: 0 },
+      uFogColor: { value: v3(0xb4, 0xc6, 0xdc) },
+    };
+    const fogMaterial = new THREE.ShaderMaterial({
+      uniforms: fogUniforms,
+      transparent: true,
+      depthTest: false,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      vertexShader: `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = vec4(position.xy, 0.0, 1.0);
+        }
+      `,
+      fragmentShader: `
+        precision highp float;
+        uniform float uTime;
+        uniform float uAspect;
+        uniform float uCenter;
+        uniform vec2  uMouseUV;
+        uniform float uMouseStrength;
+        uniform vec3  uFogColor;
+        varying vec2 vUv;
+        ${EDGE_GLSL}
+
+        // Same hand-rolled sine-composite technique as edgeWave/waveField
+        // above (no texture lookups) — two calls at different scales give
+        // a soft, drifting wisp pattern instead of a uniform haze.
+        float fogNoise(vec2 p, float t) {
+          float n = 0.0;
+          n += sin(p.x * 2.1 + p.y * 1.4 + t * 0.55) * 0.50;
+          n += sin(p.x * 4.3 - p.y * 3.1 - t * 0.90) * 0.28;
+          n += sin(p.x * 1.1 - p.y * 2.6 + t * 0.32) * 0.34;
+          n += sin((p.x + p.y) * 3.7 + t * 1.30) * 0.16;
+          return n;
+        }
+
+        void main() {
+          float boundary = uCenter + edgeWave(vUv.x * uAspect, uTime) * 1.6;
+
+          vec2 toMouse = vec2((vUv.x - uMouseUV.x) * uAspect, vUv.y - uMouseUV.y);
+          float distM = length(toMouse);
+          float disturb = uMouseStrength * exp(-distM * distM * 10.0);
+
+          vec2 drift = vec2(uTime * 0.028, -uTime * 0.05);
+          vec2 p = vUv * vec2(uAspect, 1.0) * 5.5 + drift;
+          p += normalize(toMouse + 0.0001) * disturb * 0.6;
+
+          float n = fogNoise(p, uTime + disturb * 1.6);
+          n += fogNoise(p * 1.9 + 3.1, uTime * 1.4) * 0.5;
+          n = clamp(n * 0.5 + 0.5, 0.0, 1.0);
+
+          float band = 1.0 - smoothstep(0.0, 0.13, abs(vUv.y - boundary - 0.025));
+          float alpha = band * (0.10 + 0.16 * n) * (0.55 + 0.75 * disturb);
+          alpha *= smoothstep(0.0, 0.08, vUv.y);
+          if (alpha <= 0.003) discard;
+
+          gl_FragColor = vec4(uFogColor, alpha);
+        }
+      `,
+    });
+    const fogGeo = new THREE.PlaneGeometry(2, 2);
+    const fogMesh = new THREE.Mesh(fogGeo, fogMaterial);
+    fogMesh.frustumCulled = false;
+    fogScene.add(fogMesh);
+
     function layout() {
       if (!heroElem) return;
       const w = heroElem.clientWidth;
@@ -323,6 +425,7 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({ accentColor = ACCENT_RED
       uniforms.uRes.value.copy(buf);
       uniforms.uAspect.value = buf.x / buf.y;
       bgUniforms.uAspect.value = buf.x / buf.y;
+      fogUniforms.uAspect.value = buf.x / buf.y;
     }
 
     layout();
@@ -337,6 +440,11 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({ accentColor = ACCENT_RED
 
     const mouseTarget = new THREE.Vector2(0, -200);
     const mouseSmooth = new THREE.Vector2(0, -200);
+    // Same pointer, tracked a second time in screen-space 0..1 UV (rather
+    // than the world-space XZ the box lift above uses) — what the fog
+    // shader needs, since it's a full-screen pass with no camera/raycast.
+    const mouseUVTarget = new THREE.Vector2(-10, -10);
+    const mouseUVSmooth = new THREE.Vector2(-10, -10);
     let strengthTarget = 0;
     let strength = 0;
     let touchTimer: ReturnType<typeof setTimeout>;
@@ -384,17 +492,36 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({ accentColor = ACCENT_RED
       if (raycaster.ray.intersectPlane(plane, hit)) {
         mouseTarget.set(hit.x, hit.z);
       }
+      // ndc is -1..1 with +y up; the fog shader's vUv is 0..1 with +y up
+      // too (standard plane UVs), so this is a plain remap, no flip.
+      mouseUVTarget.set(ndc.x * 0.5 + 0.5, ndc.y * 0.5 + 0.5);
       strengthTarget = 1;
       scheduleRelease(e.pointerType);
     };
 
     const onPointerMove = (e: PointerEvent) => track(e);
     const onPointerDown = (e: PointerEvent) => track(e);
-    const onPointerUp = (e: PointerEvent) => scheduleRelease(e.pointerType);
-    const onPointerCancel = (e: PointerEvent) => scheduleRelease(e.pointerType);
+    // Finger lifted, or the browser took the gesture over to scroll the page:
+    // let go AT ONCE. This is how the animation always behaved — on touch the
+    // hero's `pointerleave` fired right after `pointerup` and zeroed the lift
+    // immediately — so a quick tap only nudges the boxes and they settle in
+    // about half a second. Waiting for the release timer here instead makes
+    // every tap shoot to full height and hang there for over a second (the
+    // regression this replaces). Pen keeps the timer, as before; the timer
+    // also stays as a safety net if a touch's pointerup is ever lost.
+    const onPointerRelease = (e: PointerEvent) => {
+      if (e.pointerType === 'touch') {
+        clearTimeout(touchTimer);
+        strengthTarget = 0;
+      } else {
+        scheduleRelease(e.pointerType);
+      }
+    };
+    const onPointerUp = onPointerRelease;
+    const onPointerCancel = onPointerRelease;
     // Mouse left the browser window entirely (no further moves will say so).
-    // Mouse only: a touch pointer "leaves" the moment the finger lifts, and
-    // that must not cut the touch release fade short.
+    // Mouse only: a touch pointer "leaves" when the finger lifts, and
+    // onPointerRelease already handles that.
     const onDocLeave = (e: PointerEvent) => {
       if (e.pointerType === 'mouse') strengthTarget = 0;
     };
@@ -435,15 +562,19 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({ accentColor = ACCENT_RED
       const kStr = 1 - Math.pow(0.02, dt);
 
       mouseSmooth.lerp(mouseTarget, kPos);
+      mouseUVSmooth.lerp(mouseUVTarget, kPos);
       strength += (strengthTarget - strength) * kStr;
 
       uTime.value = clock;
       uniforms.uMouse.value.copy(mouseSmooth);
       uniforms.uMouseStrength.value = strength;
+      fogUniforms.uMouseUV.value.copy(mouseUVSmooth);
+      fogUniforms.uMouseStrength.value = strength;
 
       renderer.clear();
       renderer.render(bgScene, bgCamera);
       renderer.render(scene, camera);
+      renderer.render(fogScene, bgCamera);
     }
 
     rafId = requestAnimationFrame(frame);
@@ -464,8 +595,10 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({ accentColor = ACCENT_RED
       geo.dispose();
       base.dispose();
       bgGeo.dispose();
+      fogGeo.dispose();
       material.dispose();
       bgMaterial.dispose();
+      fogMaterial.dispose();
       renderer.dispose();
     };
 

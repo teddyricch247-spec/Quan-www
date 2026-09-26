@@ -2,7 +2,9 @@ import type { Metadata } from 'next';
 import { Hero } from '../../components/Hero';
 import { AskAnything } from '../../components/AskAnything';
 import { PlaceholderNote } from '../../components/PlaceholderNote';
+import { LowPolyScene } from '../../components/LowPolyScene';
 import { EXTERNAL } from '../../lib/routes';
+import { ACCENT_GLASS_DARK_CLASS } from '../../lib/accents';
 
 export const metadata: Metadata = {
   title: 'Quan Chat',
@@ -26,22 +28,27 @@ export default function ChatPage() {
 
       {/* ================= WHAT MAKES IT DIFFERENT ================= */}
       <section className="px-[clamp(20px,5vw,48px)] pb-[clamp(88px,15vh,176px)] scroll-mt-[100px]">
-        <div className="max-w-[1160px] mx-auto">
-          <span className="text-xs font-medium tracking-[0.14em] uppercase text-ink-3">What Makes It Different</span>
-          <h2
-            className="mt-3.5 mb-6 font-medium text-ink leading-[1.14] tracking-[-0.032em]"
-            style={{ fontSize: 'clamp(1.75rem, 3.3vw, 2.6rem)' }}
-          >
-            Not A Wrapper. The Whole System.
-          </h2>
-          <p className="max-w-[720px] mb-6 text-ink-2 leading-[1.7]" style={{ fontSize: 'clamp(1.0625rem, 1.4vw, 1.1875rem)' }}>
-            Most chat products sit in front of one model and hope. Chat sits in front of the same draft-then-check
-            system that powers Kael and Harness — every answer gets checked before it reaches you.
-          </p>
-          <PlaceholderNote label="Fill in" className="max-w-[720px]">
-            specific differentiation vs. ChatGPT/Claude.ai once you have concrete points — feature-level specifics
-            land better than a general claim.
-          </PlaceholderNote>
+        <div className="max-w-[1160px] mx-auto grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-10 lg:gap-16 items-center">
+          <div>
+            <span className="text-xs font-medium tracking-[0.14em] uppercase text-ink-3">What Makes It Different</span>
+            <h2
+              className="mt-3.5 mb-6 font-medium text-ink leading-[1.14] tracking-[-0.032em]"
+              style={{ fontSize: 'clamp(1.75rem, 3.3vw, 2.6rem)' }}
+            >
+              Not A Wrapper. The Whole System.
+            </h2>
+            <p className="max-w-[620px] mb-6 text-ink-2 leading-[1.7]" style={{ fontSize: 'clamp(1.0625rem, 1.4vw, 1.1875rem)' }}>
+              Most chat products sit in front of one model and hope. Chat sits in front of the same draft-then-check
+              system that powers Kael and Harness — every answer gets checked before it reaches you.
+            </p>
+            <PlaceholderNote label="Fill in" className="max-w-[620px]">
+              specific differentiation vs. ChatGPT/Claude.ai once you have concrete points — feature-level specifics
+              land better than a general claim.
+            </PlaceholderNote>
+          </div>
+          <div className="h-[280px] sm:h-[340px] lg:h-[380px]">
+            <LowPolyScene variant="pulse" accent="chat" />
+          </div>
         </div>
       </section>
 
@@ -56,7 +63,7 @@ export default function ChatPage() {
               One subscription, unlimited conversations. See exact pricing on the app.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-5">
-              <a href={EXTERNAL.appChat} className="btn-pill btn-pill-glass-light">
+              <a href={EXTERNAL.appChat} className={`btn-pill btn-pill-glass-dark ${ACCENT_GLASS_DARK_CLASS.chat}`}>
                 Start Chatting
               </a>
               <a

@@ -39,7 +39,7 @@ export const Hero: React.FC<HeroProps> = ({ accent, eyebrow, headline, subhead, 
         className="absolute inset-0 -z-10 pointer-events-none"
         style={{
           background:
-            'linear-gradient(to bottom, rgba(8,9,11,0.30) 0%, rgba(8,9,11,0.12) 42%, rgba(8,9,11,0.16) 70%, rgba(8,9,11,0.10) 100%)',
+            'linear-gradient(to bottom, rgba(6,8,13,0.32) 0%, rgba(6,8,13,0.13) 42%, rgba(6,8,13,0.17) 70%, rgba(6,8,13,0.10) 100%)',
         }}
       />
       <div

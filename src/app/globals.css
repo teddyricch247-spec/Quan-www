@@ -23,8 +23,8 @@
   --color-surface: #F7F7F5;
   --color-surface-2: #EDEDEA;
 
-  --color-hero: #1A1C1E;
-  --color-hero-2: #26292c;
+  --color-hero: #0B0E14;
+  --color-hero-2: #141925;
 
   --color-code-bg: #141618;
   --color-code-ink: #BFC5CC;
@@ -139,43 +139,126 @@
   .btn-pill-outline { background: #fff; color: var(--color-ink); border-color: #E3E3DF; }
   .btn-pill-outline:hover { background: var(--color-surface); border-color: #D2D2CD; transform: translateY(-1px); }
 
-  /* NEW — §1.3. .btn-pill-glass: the .site-header-glass recipe
-     (blur/saturate/brightness + inset highlight) applied to the
-     .btn-pill shape. Replaces .btn-pill-light/.btn-pill-dark
-     specifically on hero CTAs across www's home/kael/harness/chat.
-     --glass-ring carries a translucent version of the page's own
-     accent so the ring reads as "this product's color" rather than
-     one fixed tint everywhere; set per-instance below. */
+  /* Glass pills — the actual recipe shipped on platform (not an
+     improvised approximation): two layered backgrounds — a diagonal
+     specular streak (sells "glass" even with nothing behind the button
+     to blur) over a tinted base fill — plus real backdrop-filter.
+     Two colorways, chosen by what sits BEHIND the button:
+       .btn-pill-glass       light glass — dark/busy backdrops (hero)
+       .btn-pill-glass-dark  dark glass  — light/flat backdrops (a
+                              white closing-CTA band, say)
+     --glass-ring layers a translucent version of the page's own accent
+     on top of the base recipe's neutral ring, so the same two
+     colorways still read as "this product" per page; set per-instance
+     via the modifier classes below. */
   .btn-pill-glass {
-    --glass-ring: rgba(255, 255, 255, 0.20);
-    background: rgba(255, 255, 255, 0.10);
-    -webkit-backdrop-filter: blur(30px) saturate(180%) brightness(1.03);
-    backdrop-filter: blur(30px) saturate(180%) brightness(1.03);
-    border: 1px solid var(--glass-ring);
+    position: relative;
+    isolation: isolate;
+    color: #fff;
+    background:
+      linear-gradient(115deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.10) 26%, rgba(255,255,255,0) 46%),
+      linear-gradient(155deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.07) 60%, rgba(255,255,255,0.13) 100%);
+    border-color: rgba(255, 255, 255, 0.34);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.60),
+      inset 0 -1px 0 0 rgba(0, 0, 0, 0.12),
+      0 10px 30px -10px rgba(0, 0, 0, 0.40);
+  }
+  .btn-pill-glass:hover {
+    border-color: rgba(255, 255, 255, 0.46);
+    background:
+      linear-gradient(115deg, rgba(255,255,255,0.62) 0%, rgba(255,255,255,0.14) 26%, rgba(255,255,255,0) 46%),
+      linear-gradient(155deg, rgba(255,255,255,0.26) 0%, rgba(255,255,255,0.10) 60%, rgba(255,255,255,0.17) 100%);
+    transform: translateY(-1px);
+  }
+  .btn-pill-glass-red { border-color: rgba(216, 59, 50, 0.55); }
+  .btn-pill-glass-harness { border-color: rgba(79, 63, 216, 0.6); }
+  .btn-pill-glass-chat { border-color: rgba(216, 138, 59, 0.6); }
+
+  .btn-pill-glass-dark {
+    position: relative;
+    isolation: isolate;
+    color: #fff;
+    background:
+      linear-gradient(120deg, rgba(255,255,255,0.24) 0%, rgba(255,255,255,0) 40%),
+      linear-gradient(155deg, rgba(44,48,53,0.60) 0%, rgba(18,20,22,0.52) 55%, rgba(34,38,43,0.57) 100%);
+    border-color: rgba(255, 255, 255, 0.24);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    backdrop-filter: blur(22px) saturate(180%);
     box-shadow:
       inset 0 1px 0 0 rgba(255, 255, 255, 0.30),
-      inset 0 -1px 0 0 rgba(0, 0, 0, 0.12),
-      0 12px 40px -16px rgba(0, 0, 0, 0.35);
-    color: #fff;
+      inset 0 -1px 0 0 rgba(0, 0, 0, 0.30),
+      0 14px 34px -14px rgba(20, 22, 24, 0.45);
   }
-  .btn-pill-glass:hover { background: rgba(255, 255, 255, 0.16); transform: translateY(-1px); }
-  .btn-pill-glass-red { --glass-ring: rgba(216, 59, 50, 0.45); }
-  .btn-pill-glass-harness { --glass-ring: rgba(79, 63, 216, 0.5); }
-  .btn-pill-glass-chat { --glass-ring: rgba(216, 138, 59, 0.5); }
+  .btn-pill-glass-dark:hover {
+    border-color: rgba(255, 255, 255, 0.32);
+    background:
+      linear-gradient(120deg, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0) 40%),
+      linear-gradient(155deg, rgba(54,58,63,0.66) 0%, rgba(24,26,29,0.58) 55%, rgba(42,46,51,0.63) 100%);
+    transform: translateY(-1px);
+  }
+  .btn-pill-glass-dark-red { border-color: rgba(216, 59, 50, 0.5); }
+  .btn-pill-glass-dark-harness { border-color: rgba(79, 63, 216, 0.55); }
+  .btn-pill-glass-dark-chat { border-color: rgba(216, 138, 59, 0.55); }
 
-  /* NEW — §1.3, "on white body sections" variant: same recipe, base
-     tint shifts to translucent white — a frosted white chip. */
-  .btn-pill-glass-light {
-    background: rgba(255, 255, 255, 0.55);
-    -webkit-backdrop-filter: blur(30px) saturate(180%) brightness(1.03);
-    backdrop-filter: blur(30px) saturate(180%) brightness(1.03);
-    border: 1px solid rgba(255, 255, 255, 0.7);
+  /* Code-language tab switcher (Kael's Integration section). A glass
+     tray holds the tab labels; a sliding glass indicator (same dark
+     colorway as btn-pill-glass-dark) sits behind whichever language is
+     active. left/width are set inline from JS, measured from the real
+     DOM — see CodeIntegration.tsx. */
+  .tabbar-glass {
+    position: relative;
+    background: linear-gradient(155deg, rgba(255,255,255,0.80) 0%, rgba(255,255,255,0.42) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    backdrop-filter: blur(16px) saturate(160%);
     box-shadow:
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.9),
-      0 10px 30px -14px rgba(20, 22, 24, 0.18);
-    color: var(--color-ink);
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.85),
+      inset 0 -1px 0 0 rgba(0, 0, 0, 0.03),
+      0 8px 22px -14px rgba(20, 22, 24, 0.18);
   }
-  .btn-pill-glass-light:hover { background: rgba(255, 255, 255, 0.75); transform: translateY(-1px); }
+  .tab-indicator-glass {
+    position: absolute;
+    z-index: 1;
+    top: 4px;
+    height: 38px;
+    border-radius: 999px;
+    background:
+      linear-gradient(120deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 38%),
+      linear-gradient(155deg, rgba(44,48,53,0.68) 0%, rgba(18,20,22,0.60) 60%, rgba(34,38,43,0.65) 100%);
+    -webkit-backdrop-filter: blur(14px) saturate(170%);
+    backdrop-filter: blur(14px) saturate(170%);
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.26),
+      inset 0 -1px 0 0 rgba(0, 0, 0, 0.25),
+      0 6px 16px -6px rgba(20, 22, 24, 0.35);
+    transition: left 0.38s var(--ease-brand), width 0.38s var(--ease-brand);
+    will-change: left, width;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tab-indicator-glass { transition: none; }
+  }
+
+  /* Light glass outline pill — the Copy button beside the tray above.
+     Used standalone (not layered on .btn-pill like the other glass
+     classes, which is where those get their border-width/style from),
+     so this needs the full border shorthand itself — border-color
+     alone does nothing without it (border-style defaults to none). */
+  .btn-glass-outline {
+    border: 1px solid rgba(255, 255, 255, 0.70);
+    background: linear-gradient(155deg, rgba(255,255,255,0.70) 0%, rgba(255,255,255,0.34) 100%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    backdrop-filter: blur(14px) saturate(160%);
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.75), 0 4px 14px -8px rgba(20, 22, 24, 0.14);
+    transition: background 0.25s var(--ease-brand), border-color 0.25s var(--ease-brand), transform 0.25s var(--ease-brand);
+  }
+  .btn-glass-outline:hover {
+    border-color: rgba(255, 255, 255, 0.85);
+    background: linear-gradient(155deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.48) 100%);
+    transform: translateY(-1px);
+  }
 
   /* Conic "attention glow" ring used on the focused prompt / composer
      box — a small signature interaction lifted from the reference. */
