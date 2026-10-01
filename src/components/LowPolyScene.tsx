@@ -151,7 +151,12 @@ export const LowPolyScene: React.FC<LowPolySceneProps> = ({ variant, accent, cla
           group.rotation.y = 0.5 + Math.sin(t * 0.08) * 0.12;
           const cyclePos = (t * 0.55) % COUNT;
           blocks.forEach((b, i) => {
-            const d = Math.abs(((i - cyclePos + COUNT / 2) % COUNT) - COUNT / 2);
+            // Circular distance from this block to the pulse. JavaScript's %
+            // keeps the sign of the left operand, so the raw value goes
+            // negative for blocks behind the pulse and the glow never wrapped
+            // from the last block back to the first; normalise it to 0..COUNT.
+            const wrapped = (((i - cyclePos + COUNT / 2) % COUNT) + COUNT) % COUNT;
+            const d = Math.abs(wrapped - COUNT / 2);
             const glow = Math.max(0, 1 - d * 1.4);
             (b.material as THREE.MeshStandardMaterial).color.copy(baseColor).lerp(pulseColor, glow);
             b.position.y = glow * 0.28;
@@ -222,6 +227,11 @@ export const LowPolyScene: React.FC<LowPolySceneProps> = ({ variant, accent, cla
         resizeObserver.disconnect();
         io.disconnect();
         disposables.forEach((d) => d.dispose());
+        // Release the GPU context now instead of waiting for garbage
+        // collection — browsers cap live WebGL contexts (about 16), and each
+        // page change builds a new scene. Safe here because this canvas is
+        // created by the renderer itself and removed just below.
+        renderer.forceContextLoss();
         if (renderer.domElement.parentNode === container) {
           container.removeChild(renderer.domElement);
         }

@@ -1,23 +1,44 @@
 import type { Metadata } from 'next';
-import { Check, Minus } from 'lucide-react';
+import Link from 'next/link';
+import { Check } from 'lucide-react';
 import { Hero } from '../../components/Hero';
-import { PlaceholderNote } from '../../components/PlaceholderNote';
 import { LowPolyScene } from '../../components/LowPolyScene';
-import { EXTERNAL } from '../../lib/routes';
+import { EXTERNAL, ROUTES } from '../../lib/routes';
 import { ACCENT_GLASS_DARK_CLASS } from '../../lib/accents';
+import { pageMetadata } from '../../lib/seo';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Quan Harness',
   description:
     'Built on Kael, the same composite intelligence behind the API. Point it at a codebase and it plans, writes, and finishes the work — not just suggests it.',
-};
+  path: '/harness',
+});
 
-const COMPARISON_ROWS: { label: string; harness: string; typical: string }[] = [
-  { label: 'Live preview', harness: 'Deployed instantly, test it in the browser', typical: 'Terminal only' },
-  { label: 'Your own language & framework', harness: 'Whatever stack you already use', typical: 'Often locked to one' },
-  { label: 'Cloud file system', harness: 'Full file manager, move things freely', typical: 'Limited or none' },
-  { label: 'Git', harness: 'Push and pull, just like local', typical: 'Varies' },
-  { label: 'Agent architecture', harness: 'A purpose-built agent per task type', typical: 'One agent for everything' },
+// What the Harness environment includes. Every row restates something this
+// page already says in prose; nothing here claims anything about other tools.
+const FEATURE_ROWS: { label: string; detail: string }[] = [
+  {
+    label: 'Live preview',
+    detail: 'The project is deployed instantly, so you test the running thing in the browser, not just the code.',
+  },
+  { label: 'Your own language & framework', detail: 'Build in whatever stack you already use.' },
+  {
+    label: 'Cloud file system',
+    detail: 'A full file manager scoped to your project. Browse, edit and move things freely with the built-in editor.',
+  },
+  { label: 'Git', detail: 'Push and pull to GitHub, just like local.' },
+  {
+    label: 'MCP and skills',
+    detail: 'Connect your other tools through MCP, and give the agent skills for the specific jobs you need done.',
+  },
+  {
+    label: 'An agent per task type',
+    detail: 'Each kind of task is routed to a purpose-built agent, instead of one agent trying to do everything.',
+  },
+  {
+    label: 'Runs in the cloud',
+    detail: 'Send the task and get on with your day. You are notified when it is done.',
+  },
 ];
 
 export default function HarnessPage() {
@@ -85,16 +106,15 @@ export default function HarnessPage() {
             A Real Project Environment, Not A Chat Window.
           </h2>
           <p className="max-w-[720px] text-ink-2 leading-[1.7]" style={{ fontSize: 'clamp(1.0625rem, 1.4vw, 1.1875rem)' }}>
-            Most AI coding tools — Claude Code, Cursor, and others like them — give you a conversation: you describe
-            what you want, they write code in your terminal. Harness gives you a project instead: a full file system
-            scoped to what you&apos;re building, that you can browse and edit yourself with the built-in file editor,
-            plus a live preview the moment something changes — so you&apos;re looking at the running thing, not just
-            the code that&apos;s supposed to produce it.
+            Many AI coding tools give you a conversation: you describe what you want, and they write code on a
+            machine you run yourself. Harness gives you a project instead: a full file system scoped to what
+            you&apos;re building, that you can browse and edit yourself with the built-in file editor, plus a live
+            preview the moment something changes — so you&apos;re looking at the running thing, not just the code
+            that&apos;s supposed to produce it.
           </p>
           <p className="max-w-[720px] mt-5 text-ink-2 leading-[1.7]" style={{ fontSize: 'clamp(1.0625rem, 1.4vw, 1.1875rem)' }}>
-            Push and pull to GitHub the same way you would locally. And unlike browser-based builders such as Replit
-            or Lovable, you&apos;re not boxed into one language or framework — build in whatever stack you&apos;re
-            already comfortable with.
+            Push and pull to GitHub the same way you would locally. And you&apos;re not boxed into one language or
+            framework — build in whatever stack you&apos;re already comfortable with.
           </p>
         </div>
       </section>
@@ -149,59 +169,60 @@ export default function HarnessPage() {
         </div>
       </section>
 
-      {/* ================= COMPARISON ================= */}
+      {/* ================= WHAT'S IN THE BOX ================= */}
       <section className="px-[clamp(20px,5vw,48px)] pb-[clamp(88px,15vh,176px)] scroll-mt-[100px]">
         <div className="max-w-[1160px] mx-auto">
-          <span className="text-xs font-medium tracking-[0.14em] uppercase text-ink-3">At A Glance</span>
+          <span className="text-xs font-medium tracking-[0.14em] uppercase text-ink-3">What&apos;s Inside</span>
           <h2
             className="mt-3.5 mb-8 font-medium text-ink leading-[1.14] tracking-[-0.032em]"
             style={{ fontSize: 'clamp(1.75rem, 3.3vw, 2.6rem)' }}
           >
-            Where It Fits.
+            Everything In The Harness.
           </h2>
 
           <div className="card-panel overflow-hidden">
-            <div className="grid grid-cols-1 sm:grid-cols-[1.3fr_1fr_1fr] text-sm">
-              <div className="hidden sm:block px-6 py-4 border-b border-line-soft bg-surface" />
-              <div className="hidden sm:flex items-center px-6 py-4 border-b border-line-soft bg-surface font-medium text-ink">
-                Quan Harness
-              </div>
-              <div className="hidden sm:flex items-center px-6 py-4 border-b border-line-soft bg-surface font-medium text-ink-2">
-                Typical coding agents
-              </div>
-
-              {COMPARISON_ROWS.map((row, i) => {
-                const rowBorder = i > 0 ? 'border-t border-line-soft' : '';
-                return (
-                  <div key={row.label} className="contents">
-                    <div className={`px-6 py-5 font-medium text-ink ${rowBorder}`}>{row.label}</div>
-                    <div className={`flex items-start gap-2 px-6 py-2.5 sm:py-5 text-ink-2 ${rowBorder}`}>
-                      <Check className="mt-0.5 h-4 w-4 flex-none text-accent-harness" strokeWidth={2} />
-                      <span>{row.harness}</span>
-                    </div>
-                    <div className={`flex items-start gap-2 px-6 pb-5 sm:py-5 text-ink-3 ${rowBorder}`}>
-                      <Minus className="mt-0.5 h-4 w-4 flex-none" strokeWidth={2} />
-                      <span>{row.typical}</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <dl className="m-0">
+              {FEATURE_ROWS.map((row, i) => (
+                <div
+                  key={row.label}
+                  className={`grid grid-cols-1 gap-x-8 gap-y-1.5 px-6 py-5 sm:grid-cols-[0.8fr_1.2fr] ${
+                    i > 0 ? 'border-t border-line-soft' : ''
+                  }`}
+                >
+                  <dt className="flex items-start gap-2 text-sm font-medium text-ink">
+                    <Check className="mt-0.5 h-4 w-4 flex-none text-accent-harness" strokeWidth={2} aria-hidden="true" />
+                    <span>{row.label}</span>
+                  </dt>
+                  <dd className="m-0 text-sm leading-[1.6] text-ink-2">{row.detail}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
-          <p className="mt-4 text-sm text-ink-3">
-            Our own read on how we differ, in the spirit of a fair comparison — not every tool above works
-            identically, and this will get more specific as we publish real benchmarks alongside it.
-          </p>
         </div>
       </section>
 
-      {/* ================= SCREENSHOTS / DEMO ================= */}
+      {/* ================= BUILT ON KAEL ================= */}
+      {/* A demo or screenshots section belongs here once real media exists. */}
       <section className="px-[clamp(20px,5vw,48px)] pb-[clamp(88px,15vh,176px)] scroll-mt-[100px]">
         <div className="max-w-[1160px] mx-auto">
-          <span className="text-xs font-medium tracking-[0.14em] uppercase text-ink-3">See It Work</span>
-          <PlaceholderNote label="Placeholder" className="mt-3.5 max-w-[720px]">
-            Product screenshots or a short demo clip.
-          </PlaceholderNote>
+          <span className="text-xs font-medium tracking-[0.14em] uppercase text-ink-3">Built On Kael</span>
+          <h2
+            className="mt-3.5 mb-6 font-medium text-ink leading-[1.14] tracking-[-0.032em]"
+            style={{ fontSize: 'clamp(1.75rem, 3.3vw, 2.6rem)' }}
+          >
+            The Same System As The API.
+          </h2>
+          <p className="max-w-[720px] text-ink-2 leading-[1.7]" style={{ fontSize: 'clamp(1.0625rem, 1.4vw, 1.1875rem)' }}>
+            Harness runs on Kael, so it shares Kael&apos;s character: accuracy over speed, strongest at code,
+            security and multi-step engineering work. If you want the model without the agent around it, the same
+            system is available as an API.
+          </p>
+          <Link
+            href={ROUTES.kael}
+            className="inline-block mt-8 text-[0.9375rem] font-medium text-ink border-b border-[#D5D5D1] hover:border-ink transition-colors cursor-pointer pb-0.5"
+          >
+            How Kael works →
+          </Link>
         </div>
       </section>
 
