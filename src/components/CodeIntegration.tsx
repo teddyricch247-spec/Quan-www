@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Check, Copy } from 'lucide-react';
 
-type Lang = 'python' | 'typescript' | 'curl' | 'langchain';
+type Lang = 'python' | 'typescript' | 'curl' | 'langchain' | 'responses';
 
 // Same endpoint, same auth shape, same model name as platform's own
 // Integration section — this is the real api.quancis.space/v1 surface,
@@ -61,6 +61,20 @@ llm = ChatOpenAI(
 )
 
 llm.invoke("Refactor our distributed cache...")`,
+  responses: `from openai import OpenAI
+
+# The Responses API works the same way: same base URL, same key.
+client = OpenAI(
+    api_key="sk-quan-...",
+    base_url="https://api.quancis.space/v1",
+)
+
+response = client.responses.create(
+    model="kael-beta",
+    input="Refactor our distributed cache...",
+)
+
+print(response.output_text)`,
 };
 
 const TABS: { id: Lang; label: string }[] = [
@@ -68,20 +82,55 @@ const TABS: { id: Lang; label: string }[] = [
   { id: 'typescript', label: 'TypeScript' },
   { id: 'curl', label: 'cURL' },
   { id: 'langchain', label: 'LangChain' },
+  { id: 'responses', label: 'Responses API' },
 ];
+
+/** Copy text to the clipboard. Uses the async Clipboard API when it exists
+ *  and falls back to a hidden textarea + execCommand where it does not
+ *  (plain-http pages and some in-app browsers have no navigator.clipboard,
+ *  and calling it there throws before any .catch() can run). Resolves true
+ *  only if something was actually copied. */
+async function copyText(text: string): Promise<boolean> {
+  try {
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    // fall through to the legacy path
+  }
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.top = '-1000px';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Kael's Integration section — the same tab-switcher pattern shipped on
  * platform's homepage (same API, same snippets), sized for a teaser
- * rather than full documentation: one endpoint, four languages, a
- * working copy button. Full request/response shapes, error handling,
- * streaming, and every parameter still live in the real docs — this
- * is "here's how little it takes to switch," not a docs replacement.
+ * rather than full documentation: one endpoint, five examples, a working
+ * copy button. Full request/response shapes, error handling, streaming,
+ * and every parameter still live in the real docs — this is "here's how
+ * little it takes to switch," not a docs replacement.
  */
 export const CodeIntegration: React.FC = () => {
   const [tab, setTab] = useState<Lang>('python');
   const [copied, setCopied] = useState(false);
   const [direction, setDirection] = useState(1);
+  const baseId = useId();
+  const panelId = `${baseId}-panel`;
+  const tabId = (id: Lang) => `${baseId}-tab-${id}`;
 
   const handleTabChange = (next: Lang) => {
     if (next === tab) return;
@@ -97,6 +146,7 @@ export const CodeIntegration: React.FC = () => {
     typescript: null,
     curl: null,
     langchain: null,
+    responses: null,
   });
   const [indicator, setIndicator] = useState<{ left: number; width: number } | null>(null);
 
@@ -114,13 +164,26 @@ export const CodeIntegration: React.FC = () => {
     positionIndicator(tab);
   }, [tab, positionIndicator]);
 
+  // Re-measure whenever the tray's size changes (window resize, rotation, and
+  // the web font swapping in and changing every label's width), so the glass
+  // indicator can never be left sitting on the wrong tab.
   useEffect(() => {
+    const tray = trayRef.current;
     const onResize = () => positionIndicator(tab);
     window.addEventListener('resize', onResize);
     window.addEventListener('orientationchange', onResize);
+    let ro: ResizeObserver | null = null;
+    if (tray && 'ResizeObserver' in window) {
+      ro = new ResizeObserver(onResize);
+      ro.observe(tray);
+    }
+    if ('fonts' in document) {
+      document.fonts.ready.then(onResize).catch(() => {});
+    }
     return () => {
       window.removeEventListener('resize', onResize);
       window.removeEventListener('orientationchange', onResize);
+      ro?.disconnect();
     };
   }, [tab, positionIndicator]);
 
@@ -135,18 +198,35 @@ export const CodeIntegration: React.FC = () => {
     exit: (dir: number) => ({ opacity: 0, x: dir * -codeSlide }),
   };
 
-  const handleCopy = () => {
-    navigator.clipboard
-      .writeText(CODE_SNIPPETS[tab])
-      .then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      })
-      .catch(() => {
-        // Clipboard write can fail (insecure context, permission denied) —
-        // fail quietly rather than claiming success or throwing an
-        // unhandled rejection.
-      });
+  const copiedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (copiedTimer.current) clearTimeout(copiedTimer.current);
+    },
+    []
+  );
+
+  const handleCopy = async () => {
+    const ok = await copyText(CODE_SNIPPETS[tab]);
+    if (!ok) return; // fail quietly rather than claiming success
+    setCopied(true);
+    if (copiedTimer.current) clearTimeout(copiedTimer.current);
+    copiedTimer.current = setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Arrow-key / Home / End navigation between tabs (WAI-ARIA tabs pattern),
+  // with a roving tabindex so Tab moves past the whole group in one stop.
+  const handleTabKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
+    let target = -1;
+    if (e.key === 'ArrowRight') target = (index + 1) % TABS.length;
+    else if (e.key === 'ArrowLeft') target = (index - 1 + TABS.length) % TABS.length;
+    else if (e.key === 'Home') target = 0;
+    else if (e.key === 'End') target = TABS.length - 1;
+    if (target < 0) return;
+    e.preventDefault();
+    const next = TABS[target].id;
+    handleTabChange(next);
+    tabRefs.current[next]?.focus();
   };
 
   return (
@@ -158,9 +238,11 @@ export const CodeIntegration: React.FC = () => {
       >
         Swap The Base URL.
       </h2>
-      <p className="mb-1.5 text-ink-2 leading-[1.6]" style={{ fontSize: 'clamp(0.9375rem, 1.05vw, 1.0625rem)' }}>
-        No custom SDK. No migration. If you already speak OpenAI, you already speak Quancis — point the SDK you
-        already have at our base URL, keep your existing auth pattern, and everything downstream keeps working.
+      <p className="mb-1.5 max-w-[760px] text-ink-2 leading-[1.6]" style={{ fontSize: 'clamp(0.9375rem, 1.05vw, 1.0625rem)' }}>
+        No custom SDK and no migration. Kael accepts Chat Completions, the Responses API and the Anthropic Messages
+        format, so the SDK you already have keeps working. For OpenAI-style requests, point it at our base URL, use
+        the model name <span className="font-mono text-[0.9em] text-ink">kael-beta</span>, keep your existing auth
+        pattern, and everything downstream stays the same.
       </p>
       <code className="block mb-[clamp(26px,3.4vw,36px)] font-mono text-sm text-ink-3 break-all">
         https://api.quancis.space/v1
@@ -177,17 +259,20 @@ export const CodeIntegration: React.FC = () => {
             {indicator && (
               <div aria-hidden="true" className="tab-indicator-glass" style={{ left: indicator.left, width: indicator.width }} />
             )}
-            {TABS.map((t) => (
+            {TABS.map((t, index) => (
               <button
                 key={t.id}
-                id={`code-tab-${t.id}`}
+                id={tabId(t.id)}
                 ref={(el) => {
                   tabRefs.current[t.id] = el;
                 }}
+                type="button"
                 role="tab"
                 aria-selected={tab === t.id}
-                aria-controls="code-tabpanel"
+                aria-controls={panelId}
+                tabIndex={tab === t.id ? 0 : -1}
                 onClick={() => handleTabChange(t.id)}
+                onKeyDown={(e) => handleTabKeyDown(e, index)}
                 className={`relative z-10 h-[38px] px-[18px] rounded-full text-[0.8125rem] font-medium cursor-pointer transition-colors ${
                   tab === t.id && indicator ? 'text-white' : 'text-[#6E747A] hover:text-ink'
                 }`}
@@ -198,6 +283,7 @@ export const CodeIntegration: React.FC = () => {
           </div>
         </div>
         <button
+          type="button"
           onClick={handleCopy}
           className="btn-glass-outline flex-none h-9 px-4 rounded-full text-ink-2 text-[0.8125rem] font-medium hover:text-ink transition-colors cursor-pointer flex items-center gap-1.5"
         >
@@ -206,7 +292,7 @@ export const CodeIntegration: React.FC = () => {
         </button>
       </div>
 
-      <div id="code-tabpanel" role="tabpanel" aria-labelledby={`code-tab-${tab}`} className="bg-code-bg rounded-2xl overflow-hidden">
+      <div id={panelId} role="tabpanel" aria-labelledby={tabId(tab)} className="bg-code-bg rounded-2xl overflow-hidden">
         <AnimatePresence mode="wait" initial={false} custom={direction}>
           <motion.pre
             key={tab}
@@ -224,8 +310,8 @@ export const CodeIntegration: React.FC = () => {
       </div>
 
       <p className="mt-5 mb-0 text-sm text-ink-3 leading-[1.6]">
-        This covers the shape of a request in four languages — request/response schemas, streaming, error codes, and
-        every parameter live in the full docs, which this page isn&apos;t trying to replace.
+        This covers the shape of a request. Request and response schemas, streaming, error codes and every
+        parameter live in the full docs, which this page isn&apos;t trying to replace.
       </p>
     </div>
   );

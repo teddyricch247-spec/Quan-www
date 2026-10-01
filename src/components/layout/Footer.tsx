@@ -47,6 +47,11 @@ export const Footer: React.FC = () => {
           <h4 className="mb-4 text-xs font-medium uppercase tracking-[0.13em] text-ink-3">Company</h4>
           <ul className="flex flex-col gap-2.5 text-sm">
             <li>
+              <Link href={ROUTES.home} className="text-ink-2 hover:text-ink transition-colors cursor-pointer">
+                Home
+              </Link>
+            </li>
+            <li>
               <Link href={ROUTES.blog} className="text-ink-2 hover:text-ink transition-colors cursor-pointer">
                 Blog
               </Link>
@@ -71,8 +76,29 @@ export const Footer: React.FC = () => {
               </a>
             </li>
             <li>
+              <a
+                href={EXTERNAL.platformDocs}
+                className="text-ink-2 hover:text-ink transition-colors cursor-pointer"
+              >
+                API docs
+              </a>
+            </li>
+            <li>
+              <a
+                href={EXTERNAL.platformPricing}
+                className="text-ink-2 hover:text-ink transition-colors cursor-pointer"
+              >
+                Kael API pricing
+              </a>
+            </li>
+            <li>
               <a href={EXTERNAL.app} className="text-ink-2 hover:text-ink transition-colors cursor-pointer">
                 Harness &amp; Chat App
+              </a>
+            </li>
+            <li>
+              <a href={EXTERNAL.appPricing} className="text-ink-2 hover:text-ink transition-colors cursor-pointer">
+                App pricing
               </a>
             </li>
           </ul>

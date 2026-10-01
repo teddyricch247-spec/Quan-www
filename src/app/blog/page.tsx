@@ -1,11 +1,13 @@
 import type { Metadata } from 'next';
 import { BlogList } from './BlogList';
 import { getAllPosts } from '../../data/blog';
+import { pageMetadata } from '../../lib/seo';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Blog',
   description: 'Product news, engineering notes, and the occasional deep dive.',
-};
+  path: '/blog',
+});
 
 // No dynamic data fetching here — this page (and every post it links
 // to) is statically generated at build time from src/data/blog.ts.

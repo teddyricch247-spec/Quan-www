@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { getAllPosts, getPostBySlug } from '../../../data/blog';
 import { ROUTES } from '../../../lib/routes';
+import { SITE_URL } from '../../../lib/seo';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -25,10 +26,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const post = getPostBySlug(slug);
   if (!post) return {};
+  const path = `/blog/${post.slug}`;
   return {
     title: post.title,
     description: post.excerpt,
-    openGraph: { title: post.title, description: post.excerpt, type: 'article', publishedTime: post.date },
+    alternates: { canonical: path },
+    openGraph: {
+      title: `${post.title} | Quancis`,
+      description: post.excerpt,
+      url: `${SITE_URL}${path}`,
+      siteName: 'Quancis',
+      type: 'article',
+      publishedTime: post.date,
+    },
+    twitter: { card: 'summary_large_image', title: `${post.title} | Quancis`, description: post.excerpt },
   };
 }
 

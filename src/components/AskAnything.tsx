@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { ArrowUp, Globe2, Sparkles } from 'lucide-react';
 import { EXTERNAL } from '../lib/routes';
 
@@ -12,17 +12,31 @@ export interface AskAnythingProps {
 }
 
 /**
- * The "Ask Anything" composer — reused unchanged from platform's
- * homepage per spec §3.4: "this is its new home. Keep the
- * reasoning/web toggle icons and behavior identical; only the
- * surrounding page context changes." The textarea and toggles are a
- * live preview of the interaction; sending hands off to the real Quan
- * Chat app, the same way this exact component handed off to sign-in
- * on platform.
+ * The "Ask Anything" composer — reused from platform's homepage per spec
+ * §3.4: keep the reasoning/web toggle icons and behavior identical; only the
+ * surrounding page context changes. The textarea and toggles are a live
+ * preview of the interaction; sending hands off to the real Quan Chat app,
+ * the same way this exact component handed off to sign-in on platform.
+ *
+ * Enter now does what the send button does (it used to do nothing, which
+ * made the composer feel broken), Shift+Enter adds a new line, and the box
+ * grows with what you type up to a limit.
  */
 export const AskAnything: React.FC<AskAnythingProps> = ({ href = EXTERNAL.appChat }) => {
   const [reasoningOn, setReasoningOn] = useState(false);
   const [webOn, setWebOn] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const send = () => {
+    window.location.assign(href);
+  };
+
+  const grow = () => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${Math.min(el.scrollHeight, 220)}px`;
+  };
 
   return (
     <div className="max-w-[720px] mx-auto text-center">
@@ -30,19 +44,30 @@ export const AskAnything: React.FC<AskAnythingProps> = ({ href = EXTERNAL.appCha
         className="m-0 mb-[clamp(34px,5vh,52px)] font-medium text-ink leading-[1.08] tracking-[-0.036em]"
         style={{ fontSize: 'clamp(2rem, 4.4vw, 3.1rem)' }}
       >
-        Ask Anything.<span className="typed-cursor" />
+        Ask Anything.<span className="typed-cursor" aria-hidden="true" />
       </h2>
 
       <form
-        onSubmit={(e) => e.preventDefault()}
+        onSubmit={(e) => {
+          e.preventDefault();
+          send();
+        }}
         className="glow-box relative flex flex-col gap-3.5 p-[22px_22px_14px] bg-white border border-[#E5E5E1] rounded-[28px] text-left"
       >
         <label htmlFor="chat-prompt" className="sr-only">Your prompt</label>
         <textarea
           id="chat-prompt"
+          ref={textareaRef}
           rows={1}
           placeholder="Ask Quancis Anything…"
-          className="relative z-[3] w-full border-0 outline-none resize-none bg-transparent text-[1.0625rem] leading-[1.55] text-ink p-[4px_2px] min-h-8 placeholder:text-[#9AA0A6]"
+          onInput={grow}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+              e.preventDefault();
+              send();
+            }
+          }}
+          className="relative z-[3] w-full border-0 outline-none resize-none bg-transparent text-[1.0625rem] leading-[1.55] text-ink p-[4px_2px] min-h-8 max-h-[220px] placeholder:text-[#9AA0A6]"
         />
         <div className="relative z-[3] flex items-center justify-between gap-3">
           <div className="flex gap-2">
@@ -82,6 +107,7 @@ export const AskAnything: React.FC<AskAnythingProps> = ({ href = EXTERNAL.appCha
           </a>
         </div>
       </form>
+      <p className="mt-4 mb-0 text-sm text-ink-3">Sending opens Quan Chat in the app.</p>
     </div>
   );
 };
