@@ -52,3 +52,12 @@ export const ACCENT_HOVER_TEXT_CLASS: Record<AccentName, string> = {
   harness: 'hover:text-accent-harness',
   chat: 'hover:text-accent-chat',
 };
+
+// Solid background fills for the small accent squares (the brand mark's
+// "red cell" motif) used as list bullets and product markers. Same rule
+// as above: each full class string must appear literally in source.
+export const ACCENT_BG_CLASS: Record<AccentName, string> = {
+  red: 'bg-accent-red',
+  harness: 'bg-accent-harness',
+  chat: 'bg-accent-chat',
+};

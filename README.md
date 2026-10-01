@@ -38,8 +38,10 @@ src/app/                    routes — each page.tsx is the real implementation 
 src/app/blog/[slug]/        one statically generated page per post (generateStaticParams)
 src/app/sitemap.ts          sitemap.xml, generated at build time
 src/app/robots.ts           robots.txt, generated at build time
-src/components/             Hero, AskAnything, ProductTiles, PlaceholderNote, BrandMark
+src/components/             Hero, AskAnything, ProductShowcase, SystemStory, PlaceholderNote, BrandMark
 src/components/three/       HeroCanvas.tsx — same WebGL hero as platform, accent tint now a prop
+src/components/three/scenes/  the three home-page product scenes (kaelCube, harnessLaptop, chatComposer) + their shared runtime
+src/components/three/SceneStage.tsx  lazy/pausing host for one scene
 src/components/layout/      SiteShell, Navbar (glass drawer), Footer — no auth state, unlike platform's
 src/lib/routes.ts           internal ROUTES + external platform./app.quancis.space URLs
 src/lib/accents.ts          the three accent colors (red/harness/chat) as stable-reference constants
@@ -93,6 +95,22 @@ automatically.
 - **Kael's closing CTA** now points to `/pricing` on the platform domain instead of the platform root.
 - **Low-poly 3D visuals**: `src/components/LowPolyScene.tsx`, a small reusable Three.js component (flat-shaded primitives only, no loaded models) with three variants — `orbit` (Kael), `pipeline` (Harness), `pulse` (Chat) — each placed inline in that page's content, not full-hero-sized.
 - **Harness page**: substantially rewritten with the harness-vs-agent distinction, the cloud project environment (file system, live preview, git, language flexibility), the multi-agent routing rationale, the precision-over-speed philosophy, and a comparison table. Named-competitor comparisons (Claude Code, Cursor, Replit, Lovable) are framed as factual capability differences, not disparagement — worth your own pass to confirm every claim still holds.
+
+## Home page product scenes
+
+The home page's three product rows (`src/components/ProductShowcase.tsx`) are each led by a live 3D scene instead of an icon:
+
+| Scene | File | Shows |
+|---|---|---|
+| `kael` | `three/scenes/kaelCube.ts` | a 4×4×4 cube whose faces are the brand mark charges, bursts, reveals the name, snaps shut |
+| `harness` | `three/scenes/harnessLaptop.ts` | a modelled laptop: a task is typed, the agent edits four files, reports back |
+| `chat` | `three/scenes/chatComposer.ts` | the real composer in 3D: a prompt is typed, Kael thinks, replies |
+
+Ported from the dev's standalone demos. What changed in the port: sized from their container (the demos used `window` and appended to `<body>`); the `while (true)` async show and the GSAP timeline were rewritten as pure functions of time (nothing can leak, they pause with the scene, no GSAP dependency); the cube and laptop now show the real brand mark (the demos used a different pattern and red); the three.js r128 code was moved to the project's three r160 with environment lighting; scoped CSS; every GPU resource is disposed.
+
+How they behave: `SceneStage` imports a scene (and three.js) only when its stage is within ~240px of the viewport, animates only while visible and the tab is foregrounded, frees its WebGL context once ~1800px away, drops pixel ratio if it cannot hold ~40fps, shows one still frame under `prefers-reduced-motion`, and keeps a static brand mark if WebGL is unavailable. Demo text is configurable: `<SceneStage scene="harness" prompt="..." />`, `<SceneStage scene="chat" prompt="..." reply="..." replyAsFile />`.
+
+**Not visually verified.** There is no GPU or browser in the environment these were written in. The timelines, brand-mark face orientation and type-checking were verified numerically; lighting, exposure and framing were not seen on screen. Check each stage in a real browser (desktop and a phone) before shipping. The tunable constants are at the top of each scene file (`CFG`, `T`).
 
 ## Bug-fix pass
 
