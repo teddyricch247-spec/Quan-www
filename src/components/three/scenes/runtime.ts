@@ -297,7 +297,11 @@ export function createLoop(opts: LoopOptions): Loop {
     // Pixel-ratio governor. Ignore long stalls (tab switches, GC).
     if (raw < 0.25) {
       ema += (raw - ema) * 0.05;
-      if (ema > 0.026) {
+      // A steady ~30fps (ema 0.030-0.037) is a display or battery-saver cap,
+      // e.g. iOS Low Power Mode. Lowering resolution would not speed that up,
+      // only blur it, so only genuinely slower frame rates count as "slow".
+      const cappedAt30 = ema > 0.03 && ema < 0.037;
+      if (ema > 0.026 && !cappedAt30) {
         slowFrames += 1;
         if (slowFrames > 120) {
           slowFrames = 0;

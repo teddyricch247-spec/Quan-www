@@ -5,6 +5,8 @@ export const ROUTES = {
   kael: '/kael',
   harness: '/harness',
   chat: '/chat',
+  pricing: '/pricing',
+  about: '/about',
   legal: '/legal',
   blog: '/blog',
 } as const;
@@ -13,7 +15,7 @@ export type RouteKey = keyof typeof ROUTES;
 
 // Routes whose hero is the dark HeroCanvas section — the header starts
 // transparent over these and crosses to the glass pill on scroll. Every
-// other page (legal, blog, blog posts) has no dark hero, so the header
+// other page (pricing, about, legal, blog, blog posts) has no dark hero, so the header
 // stays in the "scrolled" glass-pill state the whole time.
 export const HERO_ROUTES: ReadonlySet<string> = new Set([
   ROUTES.home,

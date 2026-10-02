@@ -19,7 +19,7 @@ export interface HeroProps {
   /** A second, quieter button beside the main one (no accent ring). */
   secondaryCta?: HeroCta;
   /** Shorter hero with no bottom CTA — used by the home page, which
-   *  moves straight into the three product tiles below it. */
+   *  moves straight into the product showcase below it. */
   compact?: boolean;
 }
 

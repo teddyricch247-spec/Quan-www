@@ -62,7 +62,7 @@ export const SceneStage: React.FC<SceneStageProps> = ({
     const mount = mountRef.current;
     if (!host || !mount) return;
 
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
     let handle: SceneHandle | null = null;
     let wanted = false;
@@ -71,34 +71,12 @@ export const SceneStage: React.FC<SceneStageProps> = ({
     let inView = false;
     let pageVisible = !document.hidden;
     let failed = false;
+    // A scene that stops mid-run (GPU reset, a throwing frame) gets one fresh
+    // start; a second stop means this device can't hold it, so the stage keeps
+    // its static brand mark.
+    let runtimeStops = 0;
 
     const sync = () => handle?.setActive(inView && pageVisible);
-
-    const create = async () => {
-      wanted = true;
-      if (handle || failed || loadingGeneration === generation) return;
-      const mine = generation;
-      loadingGeneration = mine;
-      try {
-        const factory = await LOADERS[scene]();
-        if (!wanted || mine !== generation) return; // torn down while loading
-        handle = factory(mount, {
-          reducedMotion: reduced,
-          prompt,
-          reply,
-          replyAsFile,
-          onReady: () => {
-            if (mine === generation) setStatus('ready');
-          },
-        });
-        sync();
-      } catch (err) {
-        // WebGL missing or blocked: keep the static stage, never take the page down.
-        failed = true;
-        console.warn(`SceneStage(${scene}): could not start the animation.`, err);
-        if (mine === generation) setStatus('failed');
-      }
-    };
 
     const destroy = () => {
       wanted = false;
@@ -110,8 +88,58 @@ export const SceneStage: React.FC<SceneStageProps> = ({
       }
     };
 
+    const create = async () => {
+      wanted = true;
+      if (handle || failed || loadingGeneration === generation) return;
+      const mine = generation;
+      loadingGeneration = mine;
+      try {
+        const factory = await LOADERS[scene]();
+        if (!wanted || mine !== generation) return; // torn down while loading
+        const created = factory(mount, {
+          reducedMotion: motionQuery.matches,
+          prompt,
+          reply,
+          replyAsFile,
+          onReady: () => {
+            if (mine === generation) setStatus('ready');
+          },
+          onError: (err) => {
+            // A frame threw or the GPU context was lost. The scene has already
+            // stopped itself; free it and either restart once or fall back.
+            if (mine !== generation) return;
+            runtimeStops += 1;
+            console.warn(`SceneStage(${scene}): the animation stopped.`, err);
+            destroy();
+            if (runtimeStops >= 2) {
+              failed = true;
+              setStatus('failed');
+            } else if (inView) {
+              void create();
+            }
+          },
+        });
+        if (!wanted || mine !== generation) {
+          // Torn down (or stopped itself) while it was being built.
+          created.dispose();
+          return;
+        }
+        handle = created;
+        sync();
+      } catch (err) {
+        // WebGL missing or blocked: keep the static stage, never take the page down.
+        failed = true;
+        console.warn(`SceneStage(${scene}): could not start the animation.`, err);
+        // A scene that threw halfway through setup may have left a canvas behind.
+        while (mount.firstChild) mount.removeChild(mount.firstChild);
+        if (mine === generation) setStatus('failed');
+      }
+    };
+
     const near = new IntersectionObserver(
-      ([entry]) => {
+      (entries) => {
+        // Several changes can arrive in one batch; the last one is the truth.
+        const entry = entries[entries.length - 1];
         inView = entry.isIntersecting;
         if (inView) void create();
         sync();
@@ -119,8 +147,8 @@ export const SceneStage: React.FC<SceneStageProps> = ({
       { rootMargin: NEAR_MARGIN, threshold: 0 }
     );
     const far = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) destroy();
+      (entries) => {
+        if (!entries[entries.length - 1].isIntersecting) destroy();
       },
       { rootMargin: FAR_MARGIN, threshold: 0 }
     );

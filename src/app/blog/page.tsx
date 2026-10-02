@@ -3,11 +3,15 @@ import { BlogList } from './BlogList';
 import { getAllPosts } from '../../data/blog';
 import { pageMetadata } from '../../lib/seo';
 
-export const metadata: Metadata = pageMetadata({
-  title: 'Blog',
-  description: 'Product news, engineering notes, and the occasional deep dive.',
-  path: '/blog',
-});
+export const metadata: Metadata = {
+  ...pageMetadata({
+    title: 'Blog',
+    description: 'Product news, engineering notes, and the occasional deep dive.',
+    path: '/blog',
+  }),
+  // pageMetadata sets `alternates` (canonical); this adds the feed to it.
+  alternates: { canonical: '/blog', types: { 'application/rss+xml': '/feed.xml' } },
+};
 
 // No dynamic data fetching here — this page (and every post it links
 // to) is statically generated at build time from src/data/blog.ts.

@@ -36,16 +36,22 @@ No environment variables needed — this site has no backend of its own.
 ```
 src/app/                    routes — each page.tsx is the real implementation (no thin-wrapper split, this site is small enough not to need one)
 src/app/blog/[slug]/        one statically generated page per post (generateStaticParams)
+src/app/feed.xml/route.ts   RSS feed of the blog, generated at build time
 src/app/sitemap.ts          sitemap.xml, generated at build time
 src/app/robots.ts           robots.txt, generated at build time
-src/components/             Hero, AskAnything, ProductShowcase, SystemStory, PlaceholderNote, BrandMark
+src/app/error.tsx           friendly error page (same look as the 404)
+src/app/*/opengraph-image.png  one share image per route (see "Share images" below)
+src/components/             Hero, AskAnything, ProductShowcase, SystemStory, Section, JsonLd, BrandMark, LowPolyScene, CodeIntegration
+src/components/kael/        the building blocks of the /kael page (spec sheet, pricing table, thinking levels, pipeline, FAQ)
 src/components/three/       HeroCanvas.tsx — same WebGL hero as platform, accent tint now a prop
 src/components/three/scenes/  the three home-page product scenes (kaelCube, harnessLaptop, chatComposer) + their shared runtime
 src/components/three/SceneStage.tsx  lazy/pausing host for one scene
 src/components/layout/      SiteShell, Navbar (glass drawer), Footer — no auth state, unlike platform's
 src/lib/routes.ts           internal ROUTES + external platform./app.quancis.space URLs
 src/lib/accents.ts          the three accent colors (red/harness/chat) as stable-reference constants
+src/lib/seo.ts              SITE_URL (the one place it is defined) + pageMetadata() for per-page titles, canonicals and share cards
 src/data/blog.ts            blog post content — see "Blog content" below
+src/data/kael.ts            every number and string on /kael (specs, pricing, speed, FAQ) — edit here, not in the page
 src/app/globals.css         ported design system + the 2 new accent tokens + .btn-pill-glass
 ```
 
@@ -72,12 +78,21 @@ Nothing else in the app needs to change either way.
 
 | Route | Accent | Notes |
 |---|---|---|
-| `/` | red (no CTA) | 3 product tiles + the "One Intelligence" section |
-| `/kael` | red | benchmarks section is a flagged placeholder — no numbers invented |
-| `/harness` | harness (indigo) | positioning section has a "Fill in" flag for real differentiation copy; screenshots/demo also flagged |
+| `/` | red (no CTA) | hero, three product rows (each led by a 3D scene), "Kael, in brief" spec sheet, the "One Intelligence" story |
+| `/kael` | red | full model page. Benchmarks are deliberately number-free: independent results only, none self-reported |
+| `/harness` | harness (indigo) | harness-vs-agent positioning, the 3D "In Action" demo, the cloud environment. Makes no claims about other tools |
+| `/pricing` | — | Kael per-token pricing (same data as `/kael`) + a pointer to app pricing for Harness and Chat. States no price that isn't already on the site |
+| `/about` | — | name origin, what the company cares about, the three products. Built only from copy the product pages already publish |
 | `/chat` | chat (amber) | reuses the exact "Ask Anything" composer from platform's homepage, now handing off to `app.quancis.space/chat` instead of login |
 | `/legal` | — | router page only; links out to platform's and app's real Terms/Privacy |
-| `/blog`, `/blog/[slug]` | — | tag filter + statically generated post pages |
+| `/blog`, `/blog/[slug]` | — | tag filter + statically generated post pages. `/feed.xml` is the RSS feed |
+
+## Search and sharing
+
+- **Structured data** (`components/JsonLd.tsx`): `Organization` + `WebSite` on every page (root layout), `FAQPage` on `/kael` (built from the same `FAQ` array the page renders, so they cannot drift), `BlogPosting` on each post.
+- **Share images**: Next only attaches a file-based `opengraph-image.png` to the route that owns it, and `pageMetadata()` replaces the parent's social card, so each route folder holds its own copy of the one image. To change it, replace `src/app/opengraph-image.png` and copy it over the others.
+- **RSS**: `/feed.xml`, linked from the blog index, the About page and the footer.
+- **Wordmark**: the logo is the `Q` mark plus the text "uancis". The text is `aria-hidden` and the link carries an `aria-label`, so screen readers say "Quancis" once, not "Quancis uancis".
 
 ## Blog content
 
@@ -136,9 +151,9 @@ The catch: right now this is source code, not a live site. It becomes real the m
 Carried over from the spec's own Part 4 — nothing below was invented,
 each is left as an explicit in-page flag instead:
 
-- `/kael`'s benchmark numbers
-- `/harness` and `/chat`'s positioning sections (differentiation vs. named competitors)
-- Screenshots/demo media on `/harness` and `/chat`
+- `/kael`'s benchmark numbers, once independent results exist (the section says so on purpose)
+- Real product screenshots on `/harness` and `/chat` (the 3D scene covers the demo on `/harness`; `/chat` has the live composer)
+- A contact address. There is no contact route anywhere on the site yet; Legal and the footer are the only places a visitor could look
 - The two new accent hex values — worth a quick visual check once rendered against the live hero shader
 - Whether Harness/Chat really live at `app.quancis.space/harness` + `/chat` — used throughout since the spec used that pattern, but per the spec it's a call to confirm (see `src/lib/routes.ts`, `EXTERNAL`)
 - Blog content itself (see above)

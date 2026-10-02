@@ -10,6 +10,8 @@ import { PipelineSteps } from '../../components/kael/PipelineSteps';
 import { ThinkingLevels } from '../../components/kael/ThinkingLevels';
 import { PricingTable } from '../../components/kael/PricingTable';
 import { Faq } from '../../components/kael/Faq';
+import { JsonLd } from '../../components/JsonLd';
+import { FAQ } from '../../data/kael';
 import { EXTERNAL, ROUTES } from '../../lib/routes';
 import { ACCENT_GLASS_DARK_CLASS } from '../../lib/accents';
 import { pageMetadata } from '../../lib/seo';
@@ -72,13 +74,26 @@ const LOOK_ELSEWHERE: string[] = [
   'You need weights you can download or run yourself. Kael is closed.',
 ];
 
+// Lets search engines show the questions people ask as rich results. Built
+// from the same FAQ data the on-page accordion renders, so they cannot drift.
+const FAQ_JSON_LD = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FAQ.map((item) => ({
+    '@type': 'Question',
+    name: item.q,
+    acceptedAnswer: { '@type': 'Answer', text: item.a.join(' ') },
+  })),
+};
+
 export default function KaelPage() {
   return (
     <div className="w-full bg-white">
+      <JsonLd data={FAQ_JSON_LD} />
       <Hero
         accent="red"
         eyebrow="Kael, in beta"
-        headline="The World's First Composite Intelligence."
+        headline="Models That Check Each Other's Work."
         subhead="Kael is a system of specialist models that drafts, checks and refines every answer before it reaches you. It is built to catch bugs, security holes and wrong answers early, behind an API you already know how to call."
         cta={{ label: 'Get API Access', href: EXTERNAL.platform, external: true }}
         secondaryCta={{ label: 'Read the docs', href: EXTERNAL.platformDocs, external: true }}

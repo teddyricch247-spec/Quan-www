@@ -15,10 +15,10 @@ export const Footer: React.FC = () => {
         <div>
           <span className="flex items-center gap-2 font-semibold text-[1.0625rem] tracking-[-0.015em] text-ink">
             <BrandMark size={24} />
-            uancis
+            <span aria-hidden="true">uancis</span>
           </span>
           <p className="mt-4 max-w-[320px] text-sm leading-relaxed text-ink-2">
-            The world&apos;s first composite intelligence — and the products people actually use it through.
+            A composite intelligence — and the products people actually use it through.
           </p>
         </div>
 
@@ -40,6 +40,11 @@ export const Footer: React.FC = () => {
                 Quan Chat
               </Link>
             </li>
+            <li>
+              <Link href={ROUTES.pricing} className="text-ink-2 hover:text-ink transition-colors cursor-pointer">
+                Pricing
+              </Link>
+            </li>
           </ul>
         </div>
 
@@ -47,14 +52,19 @@ export const Footer: React.FC = () => {
           <h4 className="mb-4 text-xs font-medium uppercase tracking-[0.13em] text-ink-3">Company</h4>
           <ul className="flex flex-col gap-2.5 text-sm">
             <li>
-              <Link href={ROUTES.home} className="text-ink-2 hover:text-ink transition-colors cursor-pointer">
-                Home
+              <Link href={ROUTES.about} className="text-ink-2 hover:text-ink transition-colors cursor-pointer">
+                About
               </Link>
             </li>
             <li>
               <Link href={ROUTES.blog} className="text-ink-2 hover:text-ink transition-colors cursor-pointer">
                 Blog
               </Link>
+            </li>
+            <li>
+              <a href="/feed.xml" className="text-ink-2 hover:text-ink transition-colors cursor-pointer">
+                RSS feed
+              </a>
             </li>
             <li>
               <Link href={ROUTES.legal} className="text-ink-2 hover:text-ink transition-colors cursor-pointer">

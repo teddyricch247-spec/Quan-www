@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { getAllPosts, getPostBySlug } from '../../../data/blog';
+import { JsonLd } from '../../../components/JsonLd';
 import { ROUTES } from '../../../lib/routes';
 import { SITE_URL } from '../../../lib/seo';
 
@@ -56,8 +57,23 @@ export default async function BlogPostPage({ params }: PageProps) {
     return null;
   }
 
+  const url = `${SITE_URL}${ROUTES.blog}/${post.slug}`;
+  const articleJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.excerpt,
+    datePublished: post.date,
+    dateModified: post.date,
+    url,
+    mainEntityOfPage: url,
+    author: { '@type': 'Organization', name: 'Quancis' },
+    publisher: { '@id': `${SITE_URL}/#organization` },
+  };
+
   return (
     <article className="w-full bg-white px-[clamp(20px,5vw,48px)] pt-[clamp(56px,9vh,96px)] pb-[clamp(88px,14vh,150px)]">
+      <JsonLd data={articleJsonLd} />
       <div className="max-w-[680px] mx-auto">
         <Link
           href={ROUTES.blog}

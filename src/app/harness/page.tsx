@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Check } from 'lucide-react';
 import { Hero } from '../../components/Hero';
 import { LowPolyScene } from '../../components/LowPolyScene';
+import { SceneStage } from '../../components/three/SceneStage';
 import { EXTERNAL, ROUTES } from '../../lib/routes';
 import { ACCENT_GLASS_DARK_CLASS } from '../../lib/accents';
 import { pageMetadata } from '../../lib/seo';
@@ -67,6 +68,31 @@ export default function HarnessPage() {
             before handing it back — the same draft-then-check discipline that makes Kael what it is, applied to
             your repo.
           </p>
+        </div>
+      </section>
+
+      {/* ================= IN ACTION ================= */}
+      <section className="px-[clamp(20px,5vw,48px)] pb-[clamp(88px,15vh,176px)] scroll-mt-[100px]">
+        <div className="max-w-[1160px] mx-auto grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-14">
+          <div className="lg:col-span-7">
+            <SceneStage
+              scene="harness"
+              label="Animation: on a laptop, a task is typed into Quan Harness, the agent edits four files, and reports all bugs fixed with no errors."
+            />
+          </div>
+          <div className="lg:col-span-5">
+            <span className="text-xs font-medium tracking-[0.14em] uppercase text-ink-3">In Action</span>
+            <h2
+              className="mt-3.5 mb-6 font-medium text-ink leading-[1.14] tracking-[-0.032em]"
+              style={{ fontSize: 'clamp(1.75rem, 3.3vw, 2.6rem)' }}
+            >
+              Watch A Task Become A Change.
+            </h2>
+            <p className="max-w-[460px] text-ink-2 leading-[1.7]" style={{ fontSize: 'clamp(1.0625rem, 1.4vw, 1.1875rem)' }}>
+              A task goes in as plain language. Files change, the work is checked, and a report comes back with what
+              was done.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -202,7 +228,6 @@ export default function HarnessPage() {
       </section>
 
       {/* ================= BUILT ON KAEL ================= */}
-      {/* A demo or screenshots section belongs here once real media exists. */}
       <section className="px-[clamp(20px,5vw,48px)] pb-[clamp(88px,15vh,176px)] scroll-mt-[100px]">
         <div className="max-w-[1160px] mx-auto">
           <span className="text-xs font-medium tracking-[0.14em] uppercase text-ink-3">Built On Kael</span>

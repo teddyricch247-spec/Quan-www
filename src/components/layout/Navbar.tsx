@@ -5,13 +5,14 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ROUTES, HERO_ROUTES, EXTERNAL } from '../../lib/routes';
 import { BrandMark } from '../BrandMark';
-import { Cpu, Hammer, House, MessageCircle, Newspaper, X } from 'lucide-react';
+import { Cpu, Hammer, House, MessageCircle, Newspaper, Tag, X } from 'lucide-react';
 
 const NAV_LINKS = [
   { href: ROUTES.home, label: 'Home', icon: House, accentClass: 'text-ink' },
   { href: ROUTES.kael, label: 'Kael', icon: Cpu, accentClass: 'text-accent-red' },
   { href: ROUTES.harness, label: 'Harness', icon: Hammer, accentClass: 'text-accent-harness' },
   { href: ROUTES.chat, label: 'Chat', icon: MessageCircle, accentClass: 'text-accent-chat' },
+  { href: ROUTES.pricing, label: 'Pricing', icon: Tag, accentClass: 'text-ink' },
   { href: ROUTES.blog, label: 'Blog', icon: Newspaper, accentClass: 'text-ink' },
 ] as const;
 
@@ -24,7 +25,7 @@ function isActivePath(pathname: string, href: string): boolean {
 
 /**
  * Shared header for every www page (spec §Part 3): brand mark, then a
- * slide-in menu with Home · Kael · Harness · Chat · Blog. No login link —
+ * slide-in menu with Home · Kael · Harness · Chat · Pricing · Blog. No login link —
  * www sends people to a product page, which carries its own CTA.
  *
  * Same glass-pill mechanic as the platform app's Navbar: transparent over a
@@ -127,12 +128,13 @@ export const Navbar: React.FC = () => {
       >
         <Link
           href={ROUTES.home}
+          aria-label="Quancis, home"
           className={`flex items-center gap-2 font-semibold text-[1.0625rem] tracking-[-0.015em] cursor-pointer ${
             headerLight ? 'text-white' : 'text-ink'
           }`}
         >
           <BrandMark size={26} />
-          <span>uancis</span>
+          <span aria-hidden="true">uancis</span>
         </Link>
 
         <button
@@ -180,7 +182,7 @@ export const Navbar: React.FC = () => {
           <div className="flex-none flex items-center justify-between px-7 py-5 border-b border-line-soft">
             <span className="flex items-center gap-2 font-semibold text-[1.0625rem] tracking-[-0.015em] text-ink">
               <BrandMark size={24} />
-              uancis
+              <span aria-hidden="true">uancis</span>
             </span>
             <button
               ref={closeButtonRef}
