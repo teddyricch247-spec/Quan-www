@@ -93,6 +93,21 @@ export default function LegalPage() {
             order to deliver pages.
           </p>
         </div>
+
+        <div className="mt-12 pt-12 border-t border-line-soft">
+          <h2 className="m-0 text-[1.0625rem] font-medium tracking-[-0.015em] text-ink">Questions About These Terms</h2>
+          <p className="mt-3 max-w-[560px] text-ink-2 leading-[1.7]" style={{ fontSize: '0.9375rem' }}>
+            Write to us on the{' '}
+            <Link href={ROUTES.contact} className={LINK_CLASS}>
+              contact page
+            </Link>
+            , or manage your account and read the full policies on the{' '}
+            <a href={EXTERNAL.platform} className={LINK_CLASS}>
+              Quancis Developer Platform
+            </a>
+            .
+          </p>
+        </div>
       </div>
     </div>
   );

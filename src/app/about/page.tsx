@@ -1,12 +1,17 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { JsonLd } from '../../components/JsonLd';
+import { PlatformCta } from '../../components/PlatformCta';
+import { ADDRESS_LINE, ORG } from '../../lib/org';
 import { ROUTES } from '../../lib/routes';
-import { pageMetadata } from '../../lib/seo';
+import { aboutPageJsonLd, breadcrumbJsonLd, pageMetadata } from '../../lib/seo';
+
+const ABOUT_DESCRIPTION =
+  'Quancis builds Kael, a composite intelligence, and the products people use it through. Where the name comes from, what we care about, what Kael is built on and what is not available yet.';
 
 export const metadata: Metadata = pageMetadata({
-  title: 'About',
-  description:
-    'Quancis builds Kael, a composite intelligence, and the products people use it through. Where the name comes from and what we care about.',
+  title: 'About Quancis',
+  description: ABOUT_DESCRIPTION,
   path: '/about',
 });
 
@@ -36,6 +41,17 @@ const BELIEFS: { title: string; body: string }[] = [
   },
 ];
 
+// From the business brief's "not available yet" list. Plain statements of
+// what does not exist today, so nobody has to guess.
+const NOT_YET: string[] = [
+  'A model card or formal technical report',
+  'Published rate limits and uptime or SLA figures',
+  'Published benchmark results',
+  'The Auto thinking level, and the z-low and z-high levels',
+  'Support for PDFs, video and other file types',
+  'Support for languages other than English',
+];
+
 const PRODUCTS: { name: string; line: string; href: string }[] = [
   { name: 'Kael', line: 'The model itself, behind an API.', href: ROUTES.kael },
   { name: 'Quan Harness', line: 'An agent that works on your codebase.', href: ROUTES.harness },
@@ -45,6 +61,15 @@ const PRODUCTS: { name: string; line: string; href: string }[] = [
 export default function AboutPage() {
   return (
     <div className="w-full bg-white px-[clamp(20px,5vw,48px)] pt-[clamp(56px,9vh,96px)] pb-[clamp(88px,14vh,150px)]">
+      <JsonLd
+        data={[
+          aboutPageJsonLd({ name: 'About Quancis', description: ABOUT_DESCRIPTION, path: '/about' }),
+          breadcrumbJsonLd([
+            { name: 'Home', path: '/' },
+            { name: 'About', path: '/about' },
+          ]),
+        ]}
+      />
       <div className="max-w-[760px] mx-auto">
         <span className="page-eyebrow">Quancis</span>
         <h1 className="page-title mt-3.5">About Quancis.</h1>
@@ -113,6 +138,19 @@ export default function AboutPage() {
           </ul>
         </section>
 
+        {/* ================= WHAT KAEL IS BUILT ON ================= */}
+        <section id="built-on" className={SECTION_CLASS}>
+          <span className={EYEBROW_CLASS}>Under the hood</span>
+          <h2 className={H2_CLASS} style={H2_STYLE}>
+            What Kael Is Built On.
+          </h2>
+          <p className="max-w-[680px] text-ink-2 leading-[1.7]" style={PROSE_STYLE}>
+            Kael is not trained from scratch. Its component models start from open-weight models and are
+            fine-tuned by Quancis so that each one understands the environment it runs in and works properly
+            inside the system. The weights are closed, and we do not publish the names of the component models.
+          </p>
+        </section>
+
         {/* ================= WHERE WE ARE ================= */}
         <section id="status" className={SECTION_CLASS}>
           <span className={EYEBROW_CLASS}>Where we are</span>
@@ -120,8 +158,14 @@ export default function AboutPage() {
             Kael Is In Beta.
           </h2>
           <p className="max-w-[680px] text-ink-2 leading-[1.7]" style={PROSE_STYLE}>
-            Things will change as we learn from real use. The blog is where we share what changes.
+            Things will change as we learn from real use. The blog is where we share what changes. Here is what
+            is not there yet, so nobody has to guess:
           </p>
+          <ul className="m-0 mt-5 flex list-disc flex-col gap-2 pl-6 text-[1rem] leading-[1.65] text-ink-2 marker:text-ink-3">
+            {NOT_YET.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
           <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-3">
             <Link href={ROUTES.blog} className={LINK_CLASS}>
               Read the blog →
@@ -131,6 +175,32 @@ export default function AboutPage() {
             </a>
           </div>
         </section>
+
+        {/* ================= WHO IS BEHIND IT ================= */}
+        <section id="team" className={SECTION_CLASS}>
+          <span className={EYEBROW_CLASS}>Who we are</span>
+          <h2 className={H2_CLASS} style={H2_STYLE}>
+            Who Is Behind It.
+          </h2>
+          <p className="max-w-[680px] text-ink-2 leading-[1.7]" style={PROSE_STYLE}>
+            Quancis is owned and run by {ORG.owner}, from {ORG.address.region}, {ORG.address.country}. Write to us
+            at{' '}
+            <a href={`mailto:${ORG.email.business}`} className="border-b border-[#D5D5D1] font-medium text-ink transition-colors hover:border-ink">
+              {ORG.email.business}
+            </a>{' '}
+            or on the{' '}
+            <Link href={ROUTES.contact} className="border-b border-[#D5D5D1] font-medium text-ink transition-colors hover:border-ink">
+              contact page
+            </Link>
+            . Our address is {ADDRESS_LINE}.
+          </p>
+        </section>
+
+        <PlatformCta
+          className="mt-[clamp(56px,9vh,96px)]"
+          heading="Start with the API."
+          body="The Quancis Developer Platform is where you create an account, get an API key, read the documentation and see the pricing. Sign-up is open to anyone while Kael is in beta."
+        />
       </div>
     </div>
   );

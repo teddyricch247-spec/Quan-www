@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { PricingTable } from '../../components/kael/PricingTable';
 import { EXTERNAL, ROUTES } from '../../lib/routes';
-import { pageMetadata } from '../../lib/seo';
+import { JsonLd } from '../../components/JsonLd';
+import { breadcrumbJsonLd, pageMetadata } from '../../lib/seo';
 
 export const metadata: Metadata = pageMetadata({
   title: 'Pricing',
@@ -28,6 +29,12 @@ const WHICH_ONE: { need: string; name: string; href: string }[] = [
 export default function PricingPage() {
   return (
     <div className="w-full bg-white px-[clamp(20px,5vw,48px)] pt-[clamp(56px,9vh,96px)] pb-[clamp(88px,14vh,150px)]">
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: 'Home', path: '/' },
+          { name: 'Pricing', path: '/pricing' },
+        ])}
+      />
       <div className="max-w-[920px] mx-auto">
         <span className="page-eyebrow">Quancis</span>
         <h1 className="page-title mt-3.5">Pricing.</h1>
@@ -44,13 +51,17 @@ export default function PricingPage() {
           </h2>
           <p className="mb-9 max-w-[720px] text-ink-2 leading-[1.7]" style={PROSE_STYLE}>
             Pricing is usage-based, per million tokens. The three levels you can use today cost the same. The Z
-            levels, when they launch, cost more because they send requests through a different internal route that
-            produces better results.
+            levels, when they launch, cost more because they send requests through a different internal route.
+            You are billed for your own input tokens and the final output tokens only. The extra model calls Kael
+            makes inside the system are never billed to you.
           </p>
           <PricingTable />
           <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-3">
             <a href={EXTERNAL.platformPricing} className={LINK_CLASS}>
               See live pricing on the console →
+            </a>
+            <a href={EXTERNAL.platform} className={LINK_CLASS}>
+              Create a Kael API account →
             </a>
             <Link href={`${ROUTES.kael}#thinking`} className={LINK_CLASS}>
               How the thinking levels differ →

@@ -10,16 +10,20 @@ import { PipelineSteps } from '../../components/kael/PipelineSteps';
 import { ThinkingLevels } from '../../components/kael/ThinkingLevels';
 import { PricingTable } from '../../components/kael/PricingTable';
 import { Faq } from '../../components/kael/Faq';
+import { DemoCard } from '../../components/demos/DemoCard';
 import { JsonLd } from '../../components/JsonLd';
 import { FAQ } from '../../data/kael';
+import { getAllDemos } from '../../data/demos';
 import { EXTERNAL, ROUTES } from '../../lib/routes';
 import { ACCENT_GLASS_DARK_CLASS } from '../../lib/accents';
-import { pageMetadata } from '../../lib/seo';
+import { breadcrumbJsonLd, pageMetadata, softwareApplicationJsonLd } from '../../lib/seo';
+
+const KAEL_DESCRIPTION =
+  'Kael is a composite intelligence system built for accurate coding, security, math and agentic work, behind an API that works with the SDKs you already use.';
 
 export const metadata: Metadata = pageMetadata({
-  title: 'Kael',
-  description:
-    'Kael is a composite intelligence system built for accurate coding, security, math and agentic work, behind an API that works with the SDKs you already use.',
+  title: 'Kael API: Composite Intelligence for Code and Agents',
+  description: KAEL_DESCRIPTION,
   path: '/kael',
 });
 
@@ -32,6 +36,7 @@ const ON_THIS_PAGE: { href: string; label: string }[] = [
   { href: '#benchmarks', label: 'Benchmarks' },
   { href: '#data', label: 'Your data' },
   { href: '#integration', label: 'Integration' },
+  { href: '#demos', label: 'Demos' },
   { href: '#faq', label: 'FAQ' },
 ];
 
@@ -89,7 +94,21 @@ const FAQ_JSON_LD = {
 export default function KaelPage() {
   return (
     <div className="w-full bg-white">
-      <JsonLd data={FAQ_JSON_LD} />
+      <JsonLd
+        data={[
+          softwareApplicationJsonLd({
+            name: 'Kael',
+            path: '/kael',
+            description: KAEL_DESCRIPTION,
+            category: 'DeveloperApplication',
+          }),
+          breadcrumbJsonLd([
+            { name: 'Home', path: '/' },
+            { name: 'Kael', path: '/kael' },
+          ]),
+          FAQ_JSON_LD,
+        ]}
+      />
       <Hero
         accent="red"
         eyebrow="Kael, in beta"
@@ -157,7 +176,14 @@ export default function KaelPage() {
               Models keep getting smarter, but not more accurate. The gap between impressive and correct is where
               bugs, vulnerabilities and confident wrong answers live. We believe the next gains come from systems
               of models checking one another, not from one ever-larger model, and that this holds well beyond
-              coding.
+              coding. The research behind that idea is in{' '}
+              <Link
+                href="/blog/best-of-n-to-mind-evolution"
+                className="border-b border-[#D5D5D1] font-medium text-ink transition-colors hover:border-ink"
+              >
+                From Best-of-N to Mind Evolution
+              </Link>
+              .
             </p>
           </div>
           <div>
@@ -257,14 +283,22 @@ export default function KaelPage() {
         <Eyebrow>Thinking</Eyebrow>
         <H2>Accuracy Takes Time. Here Is How Much.</H2>
         <Prose>
-          Kael is slower than most models on purpose. It has five thinking levels, and you choose how much
-          thinking a request gets. Pick a level to see what it costs and where it fits.
+          Kael is slower than most models on purpose. You choose how much thinking a request gets: Low, High or
+          Max today, or off entirely. Pick a level to see what it costs and where it fits. The Z levels are not
+          released yet, and an Auto level, where Kael decides for you, is not available yet.
         </Prose>
         <Prose className="mb-10 mt-5">
           With thinking on, at any level, Kael takes about 2.2 times as long to think as an average AI model.
           Once it starts writing, the answer streams out between 220 and 340 tokens per second. With thinking
-          switched off completely, the first word usually arrives within 0.7 to 3 seconds, at roughly 90 to 140
-          tokens per second.
+          switched off, the first word usually arrives within 0.7 to 3 seconds, at roughly 90 to 140 tokens per
+          second. The longer story, with a chart, is in{' '}
+          <Link
+            href="/blog/why-kael-is-slower-on-purpose"
+            className="border-b border-[#D5D5D1] font-medium text-ink transition-colors hover:border-ink"
+          >
+            Why Kael Is Slower, On Purpose
+          </Link>
+          .
         </Prose>
         <ThinkingLevels />
       </Section>
@@ -275,8 +309,9 @@ export default function KaelPage() {
         <H2>Pay For What You Use.</H2>
         <Prose className="mb-10">
           Pricing is usage-based, per million tokens. The three levels you can use today cost the same. The Z
-          levels, when they launch, cost more because they send requests through a different internal route that
-          produces better results.
+          levels, when they launch, cost more because they send requests through a different internal route.
+          You are billed for your own input tokens and the final output tokens only. The extra model calls Kael
+          makes inside the system are never billed to you.
         </Prose>
         <PricingTable />
         <div className="mt-8">
@@ -295,12 +330,25 @@ export default function KaelPage() {
         <H2>Independent Results First.</H2>
         <Prose>
           We haven’t published benchmark numbers for Kael yet, and we aren’t publishing numbers we ran ourselves.
-          Independent evaluations, including the Artificial Analysis Intelligence Index, are in progress. When
-          results come in, we plan to share them here.
+          Independent evaluation is being sought. When results exist, we plan to share them here.
         </Prose>
         <Prose className="mt-5">
           Until then, the best test is your own. Because Kael is a base-URL change, you can point the SDK you
-          already use at it and run your hardest prompts in a few minutes.
+          already use at it and run your hardest prompts in a few minutes.{' '}
+          <a
+            href={EXTERNAL.platform}
+            className="border-b border-[#D5D5D1] font-medium text-ink transition-colors hover:border-ink"
+          >
+            Create a Kael API account
+          </a>
+          , or browse the{' '}
+          <Link
+            href={ROUTES.examples}
+            className="border-b border-[#D5D5D1] font-medium text-ink transition-colors hover:border-ink"
+          >
+            examples page
+          </Link>{' '}
+          as we fill it with real outputs.
         </Prose>
       </Section>
 
@@ -359,6 +407,30 @@ export default function KaelPage() {
         >
           Full docs and code samples →
         </a>
+      </Section>
+
+      {/* ================= DEMOS ================= */}
+      <Section id="demos">
+        <Eyebrow>Demos</Eyebrow>
+        <H2>See What Kael Writes.</H2>
+        <Prose className="mb-10">
+          Playable programs that Kael wrote in a chat window, with no building tools, each as a single HTML
+          file. Play them in your browser. They show something Kael wrote, not how often it gets things right,
+          so they sit apart from the benchmarks above.
+        </Prose>
+        <ul className="m-0 grid list-none grid-cols-1 gap-x-10 gap-y-14 p-0 md:grid-cols-2">
+          {getAllDemos().map((demo) => (
+            <li key={demo.slug}>
+              <DemoCard demo={demo} />
+            </li>
+          ))}
+        </ul>
+        <Link
+          href={ROUTES.demo}
+          className="mt-10 inline-block border-b border-[#D5D5D1] pb-0.5 text-[0.9375rem] font-medium text-ink transition-colors hover:border-ink cursor-pointer"
+        >
+          All demos and how they were made →
+        </Link>
       </Section>
 
       {/* ================= WHERE TO USE IT ================= */}

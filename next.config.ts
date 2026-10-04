@@ -16,6 +16,46 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
+
+  // Addresses people commonly type or search for that would otherwise 404.
+  //
+  // The /docs, /privacy and /terms ones are temporary (307) on purpose, so
+  // they can be pointed somewhere else later without browsers or search
+  // engines remembering the old destination. There is deliberately no
+  // /pricing redirect: /pricing is a real page (it covers both the API and
+  // the apps).
+  //
+  // The demos live at /kael/demo (see src/app/kael/demo). People will type or
+  // guess /demo, so send it, and /demo/<slug>, to the real place. Those are
+  // permanent (308) so search engines keep only the /kael/demo URLs.
+  //
+  // Deliberately NOT redirected: /demo-files/*. That is where the raw
+  // single-file HTML games are served from (public/demo-files), and the player
+  // iframes load them from there.
+  async redirects() {
+    return [
+      { source: '/docs', destination: 'https://platform.quancis.space/docs', permanent: false },
+      { source: '/privacy', destination: '/legal', permanent: false },
+      { source: '/terms', destination: '/legal', permanent: false },
+      { source: '/privacy-policy', destination: '/legal', permanent: false },
+      { source: '/terms-of-service', destination: '/legal', permanent: false },
+      { source: '/demo', destination: '/kael/demo', permanent: true },
+      { source: '/demos', destination: '/kael/demo', permanent: true },
+      { source: '/demo/:slug', destination: '/kael/demo/:slug', permanent: true },
+    ];
+  },
+
+  // The raw game files duplicate what their pages say, so keep them out of
+  // search results; the pages at /kael/demo/<slug> are what should be found.
+  // Playing them (in the page's iframe, or in a tab) is unaffected.
+  async headers() {
+    return [
+      {
+        source: '/demo-files/:path*',
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex' }],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { BrandMark } from '../components/BrandMark';
-import { ROUTES } from '../lib/routes';
+import { EXTERNAL, ROUTES } from '../lib/routes';
 
 export default function NotFound() {
   return (
@@ -14,6 +14,21 @@ export default function NotFound() {
         <Link href={ROUTES.home} className="btn-pill btn-pill-dark mt-9 inline-flex">
           Back to Quancis
         </Link>
+        <p className="mb-0 mt-8 text-sm text-ink-3">
+          Or try the{' '}
+          <Link href={ROUTES.kael} className="border-b border-[#D5D5D1] font-medium text-ink-2 hover:border-ink hover:text-ink">
+            Kael page
+          </Link>
+          , the{' '}
+          <Link href={ROUTES.blog} className="border-b border-[#D5D5D1] font-medium text-ink-2 hover:border-ink hover:text-ink">
+            blog
+          </Link>
+          , or the{' '}
+          <a href={EXTERNAL.platformDocs} className="border-b border-[#D5D5D1] font-medium text-ink-2 hover:border-ink hover:text-ink">
+            API docs
+          </a>
+          .
+        </p>
       </div>
     </div>
   );

@@ -10,7 +10,7 @@ export const PricingTable: React.FC = () => {
   return (
     <div>
       <div className="card-panel overflow-x-auto">
-        <table className="w-full min-w-[520px] border-collapse text-left text-[0.9375rem]">
+        <table className="w-full min-w-[600px] border-collapse text-left text-[0.9375rem]">
           <caption className="sr-only">Kael pricing by thinking level, per 1M tokens</caption>
           <thead>
             <tr className="bg-surface text-sm text-ink-2">
@@ -22,6 +22,9 @@ export const PricingTable: React.FC = () => {
               </th>
               <th scope="col" className="px-6 py-4 text-right font-medium">
                 Input
+              </th>
+              <th scope="col" className="px-6 py-4 text-right font-medium">
+                Cached input
               </th>
               <th scope="col" className="px-6 py-4 text-right font-medium">
                 Output
@@ -38,6 +41,7 @@ export const PricingTable: React.FC = () => {
                   {STATUS_LABEL[level.status]}
                 </td>
                 <td className="px-6 py-5 text-right font-mono text-ink">{level.input}</td>
+                <td className="px-6 py-5 text-right font-mono text-ink">{level.cachedInput ?? '—'}</td>
                 <td className="px-6 py-5 text-right font-mono text-ink">{level.output}</td>
               </tr>
             ))}

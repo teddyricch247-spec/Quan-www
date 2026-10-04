@@ -2,17 +2,28 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
-import { getAllPosts, getPostBySlug } from '../../../data/blog';
+import {
+  formatPostDate,
+  getAllPosts,
+  getAuthor,
+  getModifiedDate,
+  getPostBySlug,
+  getReadingMinutes,
+  getRelatedPosts,
+  getWordCount,
+} from '../../../data/blog';
 import { JsonLd } from '../../../components/JsonLd';
+import { PlatformCta } from '../../../components/PlatformCta';
+import { PostBody, PostReferences, PostToc } from '../../../components/blog/PostBody';
 import { ROUTES } from '../../../lib/routes';
-import { SITE_URL } from '../../../lib/seo';
+import { SITE_NAME, absoluteUrl, blogPostingJsonLd, breadcrumbJsonLd } from '../../../lib/seo';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
 // The parameterized-SSG case: every post's page is pre-rendered at
-// build time from src/data/blog.ts, one static HTML page per slug.
+// build time from src/data/posts, one static HTML page per slug.
 export function generateStaticParams() {
   return getAllPosts().map((post) => ({ slug: post.slug }));
 }
@@ -28,25 +39,37 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const post = getPostBySlug(slug);
   if (!post) return {};
   const path = `/blog/${post.slug}`;
+  const title = post.seoTitle ?? post.title;
+  const social = `${post.title} | ${SITE_NAME}`;
+  // Each post names its own 1200x630 share image (public/og/<slug>.png).
+  // It is set here rather than as an opengraph-image file because a file
+  // in this folder would apply to every post.
+  const image = { url: post.ogImage, width: 1200, height: 630, alt: post.title };
   return {
-    title: post.title,
+    title,
     description: post.excerpt,
+    keywords: post.keywords,
+    authors: [{ name: getAuthor(post).name }],
     alternates: { canonical: path },
     openGraph: {
-      title: `${post.title} | Quancis`,
+      title: social,
       description: post.excerpt,
-      url: `${SITE_URL}${path}`,
-      siteName: 'Quancis',
+      url: absoluteUrl(path),
+      siteName: SITE_NAME,
       type: 'article',
       publishedTime: post.date,
+      modifiedTime: getModifiedDate(post),
+      authors: [getAuthor(post).name],
+      tags: post.keywords,
+      images: [image],
     },
-    twitter: { card: 'summary_large_image', title: `${post.title} | Quancis`, description: post.excerpt },
+    twitter: {
+      card: 'summary_large_image',
+      title: social,
+      description: post.excerpt,
+      images: [post.ogImage],
+    },
   };
-}
-
-function formatDate(iso: string): string {
-  const d = new Date(`${iso}T00:00:00Z`);
-  return new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).format(d);
 }
 
 export default async function BlogPostPage({ params }: PageProps) {
@@ -57,23 +80,34 @@ export default async function BlogPostPage({ params }: PageProps) {
     return null;
   }
 
-  const url = `${SITE_URL}${ROUTES.blog}/${post.slug}`;
-  const articleJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'BlogPosting',
-    headline: post.title,
-    description: post.excerpt,
-    datePublished: post.date,
-    dateModified: post.date,
-    url,
-    mainEntityOfPage: url,
-    author: { '@type': 'Organization', name: 'Quancis' },
-    publisher: { '@id': `${SITE_URL}/#organization` },
-  };
+  const author = getAuthor(post);
+  const modified = getModifiedDate(post);
+  const path = `/blog/${post.slug}`;
+  const related = getRelatedPosts(post);
 
   return (
     <article className="w-full bg-white px-[clamp(20px,5vw,48px)] pt-[clamp(56px,9vh,96px)] pb-[clamp(88px,14vh,150px)]">
-      <JsonLd data={articleJsonLd} />
+      <JsonLd
+        data={[
+          blogPostingJsonLd({
+            title: post.title,
+            description: post.excerpt,
+            path,
+            datePublished: post.date,
+            dateModified: modified,
+            authorName: author.name,
+            image: post.ogImage,
+            wordCount: getWordCount(post),
+            keywords: post.keywords,
+            section: post.tag,
+          }),
+          breadcrumbJsonLd([
+            { name: 'Home', path: '/' },
+            { name: 'Blog', path: ROUTES.blog },
+            { name: post.title, path },
+          ]),
+        ]}
+      />
       <div className="max-w-[680px] mx-auto">
         <Link
           href={ROUTES.blog}
@@ -86,24 +120,53 @@ export default async function BlogPostPage({ params }: PageProps) {
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <span className="badge-pill badge-pill-neutral">{post.tag}</span>
           <time dateTime={post.date} className="text-sm text-ink-3">
-            {formatDate(post.date)}
+            {formatPostDate(post.date)}
           </time>
+          <span className="text-sm text-ink-3">{getReadingMinutes(post)} min read</span>
         </div>
 
         <h1
-          className="mt-4 mb-8 font-medium text-ink leading-[1.12] tracking-[-0.034em]"
+          className="mt-4 mb-5 font-medium text-ink leading-[1.12] tracking-[-0.034em]"
           style={{ fontSize: 'clamp(2rem, 4.4vw, 2.9rem)' }}
         >
           {post.title}
         </h1>
 
-        <div className="flex flex-col gap-5">
-          {post.body.map((paragraph, i) => (
-            <p key={i} className="text-ink-2 leading-[1.75]" style={{ fontSize: '1.0625rem' }}>
-              {paragraph}
-            </p>
-          ))}
-        </div>
+        <p className="m-0 mb-10 text-sm leading-[1.6] text-ink-3">
+          By <span className="font-medium text-ink-2">{author.name}</span>, {author.role}
+          {modified !== post.date ? (
+            <>
+              {' '}
+              · Updated <time dateTime={modified}>{formatPostDate(modified)}</time>
+            </>
+          ) : null}
+        </p>
+
+        <PostToc blocks={post.body} />
+        <PostBody blocks={post.body} />
+        {post.references && post.references.length > 0 ? <PostReferences references={post.references} /> : null}
+
+        {related.length > 0 ? (
+          <section aria-labelledby="related-heading" className="mt-16 border-t border-line pt-10">
+            <h2 id="related-heading" className="m-0 text-[1.25rem] font-medium tracking-[-0.02em] text-ink">
+              Keep reading
+            </h2>
+            <ul className="m-0 mt-5 flex list-none flex-col gap-5 p-0">
+              {related.map((r) => (
+                <li key={r.slug}>
+                  <Link href={`/blog/${r.slug}`} className="group block cursor-pointer">
+                    <span className="text-[1.0625rem] font-medium text-ink transition-colors group-hover:text-ink-2">
+                      {r.title}
+                    </span>
+                    <span className="mt-1 block text-[0.9375rem] leading-[1.6] text-ink-2">{r.excerpt}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
+        <PlatformCta className="mt-16" />
       </div>
     </article>
   );

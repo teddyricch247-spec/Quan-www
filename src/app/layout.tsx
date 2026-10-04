@@ -3,7 +3,7 @@ import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { SiteShell } from '../components/layout/SiteShell';
 import { JsonLd } from '../components/JsonLd';
-import { SITE_URL } from '../lib/seo';
+import { SITE_NAME, SITE_URL, organizationJsonLd, websiteJsonLd } from '../lib/seo';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -20,45 +20,32 @@ const jetBrainsMono = JetBrains_Mono({
   display: 'swap',
 });
 
-const DEFAULT_TITLE = 'Quancis — One Model. Three Ways In.';
+const DEFAULT_TITLE = 'Quancis — Kael Composite Intelligence, Harness & Chat';
 const DEFAULT_DESCRIPTION =
-  'Quancis builds Kael, a composite intelligence, and the products people actually use it through: Kael, Quan Harness, and Quan Chat.';
-
-// Tells search engines who publishes the site. Only facts the site already
-// states: no social profiles or contact details are claimed here.
-const SITE_JSON_LD = {
-  '@context': 'https://schema.org',
-  '@graph': [
-    {
-      '@type': 'Organization',
-      '@id': `${SITE_URL}/#organization`,
-      name: 'Quancis',
-      url: SITE_URL,
-      description: DEFAULT_DESCRIPTION,
-    },
-    {
-      '@type': 'WebSite',
-      '@id': `${SITE_URL}/#website`,
-      name: 'Quancis',
-      url: SITE_URL,
-      publisher: { '@id': `${SITE_URL}/#organization` },
-    },
-  ],
-};
+  'Kael drafts, checks and refines every answer. Use it through an OpenAI-compatible API, the Quan Harness coding agent, or Quan Chat.';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: DEFAULT_TITLE,
-    template: '%s | Quancis',
+    template: `%s | ${SITE_NAME}`,
   },
   description: DEFAULT_DESCRIPTION,
+  applicationName: SITE_NAME,
+  // Pages are indexable by default; individual pages opt out (see pageMetadata's noindex).
+  // max-image-preview:large lets search results show the full share image.
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 },
+  },
   openGraph: {
     title: DEFAULT_TITLE,
     description: DEFAULT_DESCRIPTION,
     url: SITE_URL,
-    siteName: 'Quancis',
+    siteName: SITE_NAME,
     type: 'website',
+    locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
@@ -75,7 +62,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${jetBrainsMono.variable}`}>
       <body className="bg-white text-ink antialiased font-sans selection:bg-ink selection:text-white">
-        <JsonLd data={SITE_JSON_LD} />
+        <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
         <SiteShell>{children}</SiteShell>
       </body>
     </html>

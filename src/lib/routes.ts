@@ -3,20 +3,31 @@
 export const ROUTES = {
   home: '/',
   kael: '/kael',
+  demo: '/kael/demo',
   harness: '/harness',
   chat: '/chat',
   pricing: '/pricing',
+  examples: '/examples',
   about: '/about',
+  contact: '/contact',
   legal: '/legal',
   blog: '/blog',
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;
 
+/** A demo's own page: /kael/demo/<slug>. */
+export const demoPath = (slug: string): string => `${ROUTES.demo}/${slug}`;
+
+/** The raw single-file HTML for a demo, served from public/demo-files/.
+ *  Kept on a different prefix from the pages so the two can never collide. */
+export const DEMO_FILES_DIR = '/demo-files';
+export const demoFileUrl = (file: string): string => `${DEMO_FILES_DIR}/${file}`;
+
 // Routes whose hero is the dark HeroCanvas section — the header starts
 // transparent over these and crosses to the glass pill on scroll. Every
-// other page (pricing, about, legal, blog, blog posts) has no dark hero, so the header
-// stays in the "scrolled" glass-pill state the whole time.
+// other page (pricing, examples, about, contact, legal, blog, blog posts) has no
+// dark hero, so the header stays in the "scrolled" glass-pill state the whole time.
 export const HERO_ROUTES: ReadonlySet<string> = new Set([
   ROUTES.home,
   ROUTES.kael,
@@ -40,3 +51,8 @@ export const EXTERNAL = {
   appTerms: 'https://app.quancis.space/terms-of-service',
   appPrivacy: 'https://app.quancis.space/privacy-policy',
 } as const;
+
+/** Hosts that belong to Quancis. Links to these are plain, same-owner
+ *  links (no new tab, no rel="noopener"); everything else is treated as an
+ *  outside citation. */
+export const OWN_HOSTS: readonly string[] = ['quancis.space', 'www.quancis.space', 'platform.quancis.space', 'app.quancis.space'];

@@ -6,12 +6,15 @@ import { LowPolyScene } from '../../components/LowPolyScene';
 import { SceneStage } from '../../components/three/SceneStage';
 import { EXTERNAL, ROUTES } from '../../lib/routes';
 import { ACCENT_GLASS_DARK_CLASS } from '../../lib/accents';
-import { pageMetadata } from '../../lib/seo';
+import { JsonLd } from '../../components/JsonLd';
+import { breadcrumbJsonLd, pageMetadata, softwareApplicationJsonLd } from '../../lib/seo';
+
+const HARNESS_DESCRIPTION =
+  'Built on Kael, the same composite intelligence behind the API. Point it at a codebase and it plans, writes, and finishes the work — not just suggests it.';
 
 export const metadata: Metadata = pageMetadata({
-  title: 'Quan Harness',
-  description:
-    'Built on Kael, the same composite intelligence behind the API. Point it at a codebase and it plans, writes, and finishes the work — not just suggests it.',
+  title: 'Quan Harness — Cloud Coding Agent Built on Kael',
+  description: HARNESS_DESCRIPTION,
   path: '/harness',
 });
 
@@ -45,6 +48,20 @@ const FEATURE_ROWS: { label: string; detail: string }[] = [
 export default function HarnessPage() {
   return (
     <div className="w-full bg-white">
+      <JsonLd
+        data={[
+          softwareApplicationJsonLd({
+            name: 'Quan Harness',
+            path: '/harness',
+            description: HARNESS_DESCRIPTION,
+            category: 'DeveloperApplication',
+          }),
+          breadcrumbJsonLd([
+            { name: 'Home', path: '/' },
+            { name: 'Quan Harness', path: '/harness' },
+          ]),
+        ]}
+      />
       <Hero
         accent="harness"
         eyebrow="Quan Harness"
@@ -272,6 +289,23 @@ export default function HarnessPage() {
                 See pricing →
               </a>
             </div>
+            <p className="mx-auto mb-0 mt-7 max-w-[520px] text-sm leading-[1.6] text-ink-3">
+              Want the model without the agent? Harness runs on Kael, which you can call directly through the{' '}
+              <a
+                href={EXTERNAL.platform}
+                className="border-b border-[#D5D5D1] font-medium text-ink-2 transition-colors hover:border-ink hover:text-ink"
+              >
+                Kael API
+              </a>
+              , or read how it works on the{' '}
+              <Link
+                href={ROUTES.kael}
+                className="border-b border-[#D5D5D1] font-medium text-ink-2 transition-colors hover:border-ink hover:text-ink"
+              >
+                Kael page
+              </Link>
+              .
+            </p>
           </div>
         </div>
       </section>

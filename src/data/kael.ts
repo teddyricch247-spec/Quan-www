@@ -18,8 +18,10 @@ export interface ThinkingLevel {
   id: 'low' | 'high' | 'max' | 'z-low' | 'z-high';
   label: string;
   status: LevelStatus;
-  /** USD per 1M input tokens, quoted at up to an 80% cache hit rate. */
+  /** USD per 1M input tokens (standard, uncached). */
   input: string;
+  /** USD per 1M cached input tokens. Omitted where the cached rate has not been announced. */
+  cachedInput?: string;
   /** USD per 1M output tokens. */
   output: string;
   /** What the level is. */
@@ -34,8 +36,9 @@ export const THINKING_LEVELS: ThinkingLevel[] = [
     label: 'Low',
     status: 'default',
     input: '$2',
+    cachedInput: '$0.40',
     output: '$6',
-    blurb: 'The default. Thinking is on, at the lowest of the five levels.',
+    blurb: 'The default. Thinking is on, at the lowest level available today.',
     useFor: 'Everyday coding and math, when you want Kael’s checking without the longest wait.',
   },
   {
@@ -43,6 +46,7 @@ export const THINKING_LEVELS: ThinkingLevel[] = [
     label: 'High',
     status: 'available',
     input: '$2',
+    cachedInput: '$0.40',
     output: '$6',
     blurb: 'More thinking before the answer than Low.',
     useFor: 'Harder debugging, code review, and changes that touch several files.',
@@ -52,6 +56,7 @@ export const THINKING_LEVELS: ThinkingLevel[] = [
     label: 'Max',
     status: 'available',
     input: '$2',
+    cachedInput: '$0.40',
     output: '$6',
     blurb: 'The most thinking available today.',
     useFor: 'Security reviews, large refactors, and anything where being right matters more than being quick.',
@@ -63,7 +68,7 @@ export const THINKING_LEVELS: ThinkingLevel[] = [
     input: '$6',
     output: '$15',
     blurb:
-      'The first level of the Z tier. Requests take a different route through the system, which costs more and produces better results.',
+      'The first level of the Z tier. Requests take a different route through the system, which costs more.',
   },
   {
     id: 'z-high',
@@ -82,7 +87,7 @@ export const STATUS_LABEL: Record<LevelStatus, string> = {
 };
 
 export const PRICE_NOTE =
-  'Prices are per 1M tokens. Input prices are quoted at up to an 80% cache hit rate. See the console for the exact numbers.';
+  'Prices are per 1M tokens. Cached input is billed at up to 80% off the standard input rate. You are billed for your own input tokens and the final output tokens only: the extra model calls Kael makes inside the system are never billed to you. See the console for the exact numbers.';
 
 // ---------------------------------------------------------------------------
 // Speed
@@ -95,7 +100,7 @@ export const SPEED = {
     tpsLow: 220,
     tpsHigh: 340,
   },
-  /** Thinking off, with auto-thinking off as well. */
+  /** Thinking off. */
   thinkingOff: {
     firstWordLow: '0.7',
     firstWordHigh: '3',
@@ -152,8 +157,8 @@ export const SPECS: Spec[] = [
   {
     id: 'thinking',
     label: 'Thinking levels',
-    value: 'Five',
-    note: 'Low, High and Max today. z-low and z-high are not released yet.',
+    value: 'Off, Low, High, Max',
+    note: 'z-low and z-high are not released yet. An Auto level is not available yet.',
   },
   { id: 'speed', label: 'Speed', value: 'Accuracy over speed', note: 'Details in the Thinking section below.' },
 ];
@@ -186,14 +191,14 @@ export const FAQ: FaqItem[] = [
     q: 'Why is Kael slower than other models?',
     a: [
       'It does more work per answer. Every response goes through a draft, a check and a refinement before it reaches you. With thinking on, at any level, Kael takes about 2.2 times as long to think as an average AI model.',
-      'That is a deliberate trade: we chose accuracy over speed. If you need the fastest response, turn thinking off. With thinking and auto-thinking both off, the first word usually arrives in 0.7 to 3 seconds.',
+      'That is a deliberate trade: we chose accuracy over speed. If you need the fastest response, turn thinking off. With thinking off, the first word usually arrives in 0.7 to 3 seconds.',
     ],
   },
   {
     q: 'Which thinking level should I use?',
     a: [
       'Start with Low, the default. Move up to High or Max when a task is hard enough that being right matters more than being quick, such as a security review or a large refactor.',
-      'z-low and z-high are the highest levels and are not released yet.',
+      'z-low and z-high are the highest levels and are not released yet. An Auto level, where Kael decides how much to think, is not available yet either.',
     ],
   },
   {
@@ -244,20 +249,42 @@ export const FAQ: FaqItem[] = [
   {
     q: 'How is Kael priced?',
     a: [
-      'Per million tokens. At the Low, High and Max thinking levels it is $2 for input, at up to an 80% cache hit rate, and $6 for output.',
+      'Per million tokens. At the Low, High and Max thinking levels it is $2 for input, $0.40 for cached input (up to 80% off), and $6 for output.',
       'The Z levels will be $6 for input and $15 for output when they launch. The pricing section and the console have the exact numbers.',
     ],
   },
   {
     q: 'Where are the benchmarks?',
     a: [
-      'We haven’t published any. We don’t want to grade ourselves, so we are waiting on independent evaluations, including the Artificial Analysis Intelligence Index, and we plan to share the results here once they are in.',
+      'We haven’t published any. We don’t want to grade ourselves, so we are seeking independent evaluation and plan to share the results here once there are any.',
     ],
   },
   {
     q: 'When will z-low and z-high be available?',
     a: [
-      'We don’t have a date yet. They are the highest thinking levels. They send requests through a different internal route that costs more and produces better results, priced at $6 for input and $15 for output per million tokens.',
+      'We don’t have a date yet. They are the highest thinking levels. They send requests through a different internal route that costs more, priced at $6 for input and $15 for output per million tokens.',
+    ],
+  },
+  {
+    q: 'Am I billed for the extra model calls Kael makes inside the system?',
+    a: [
+      'No. You pay for your own input tokens and the final output tokens only. Whatever happens inside the system, such as extra model calls, retrieval and checking, is never billed to you.',
+    ],
+  },
+  {
+    q: 'Can I set the temperature?',
+    a: [
+      'You can send it, so existing code does not break, but Kael does not use it. Sampling parameters are accepted and ignored, which means output is not deterministic and runs can vary.',
+    ],
+  },
+  {
+    q: 'Does Kael support streaming, tool calls and JSON mode?',
+    a: ['Yes, all three.'],
+  },
+  {
+    q: 'Which models is Kael made of?',
+    a: [
+      'Kael’s component models start from open-weight models and are fine-tuned by Quancis to work together inside the system. We have not published the names of the component models.',
     ],
   },
 ];

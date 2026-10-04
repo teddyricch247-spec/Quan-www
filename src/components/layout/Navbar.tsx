@@ -5,27 +5,34 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ROUTES, HERO_ROUTES, EXTERNAL } from '../../lib/routes';
 import { BrandMark } from '../BrandMark';
-import { Cpu, Hammer, House, MessageCircle, Newspaper, Tag, X } from 'lucide-react';
+import { Cpu, Gamepad2, Hammer, House, MessageCircle, Newspaper, Tag, X } from 'lucide-react';
 
 const NAV_LINKS = [
   { href: ROUTES.home, label: 'Home', icon: House, accentClass: 'text-ink' },
   { href: ROUTES.kael, label: 'Kael', icon: Cpu, accentClass: 'text-accent-red' },
   { href: ROUTES.harness, label: 'Harness', icon: Hammer, accentClass: 'text-accent-harness' },
   { href: ROUTES.chat, label: 'Chat', icon: MessageCircle, accentClass: 'text-accent-chat' },
+  { href: ROUTES.demo, label: 'Demos', icon: Gamepad2, accentClass: 'text-accent-red' },
   { href: ROUTES.pricing, label: 'Pricing', icon: Tag, accentClass: 'text-ink' },
   { href: ROUTES.blog, label: 'Blog', icon: Newspaper, accentClass: 'text-ink' },
 ] as const;
 
 /** Home is only "active" on exactly "/"; every other link also stays active
- *  on its sub-pages (so /blog/some-post still highlights Blog). */
+ *  on its sub-pages (so /blog/some-post still highlights Blog).
+ *
+ *  When one link's path is nested inside another's (Demos lives at
+ *  /kael/demo, under Kael at /kael), only the most specific match is active,
+ *  so /kael/demo/chess highlights Demos and not Kael as well. */
 function isActivePath(pathname: string, href: string): boolean {
   if (href === ROUTES.home) return pathname === ROUTES.home;
-  return pathname === href || pathname.startsWith(`${href}/`);
+  const matches = (h: string) => pathname === h || pathname.startsWith(`${h}/`);
+  if (!matches(href)) return false;
+  return !NAV_LINKS.some((l) => l.href !== href && l.href.length > href.length && matches(l.href));
 }
 
 /**
  * Shared header for every www page (spec §Part 3): brand mark, then a
- * slide-in menu with Home · Kael · Harness · Chat · Pricing · Blog. No login link —
+ * slide-in menu with Home · Kael · Harness · Chat · Demos · Pricing · Blog. No login link —
  * www sends people to a product page, which carries its own CTA.
  *
  * Same glass-pill mechanic as the platform app's Navbar: transparent over a

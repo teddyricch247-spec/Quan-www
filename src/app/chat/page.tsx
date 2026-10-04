@@ -5,11 +5,14 @@ import { AskAnything } from '../../components/AskAnything';
 import { LowPolyScene } from '../../components/LowPolyScene';
 import { EXTERNAL, ROUTES } from '../../lib/routes';
 import { ACCENT_GLASS_DARK_CLASS } from '../../lib/accents';
-import { pageMetadata } from '../../lib/seo';
+import { JsonLd } from '../../components/JsonLd';
+import { breadcrumbJsonLd, pageMetadata, softwareApplicationJsonLd } from '../../lib/seo';
+
+const CHAT_DESCRIPTION = 'The same composite intelligence behind the API and behind Harness — here, just talk to it.';
 
 export const metadata: Metadata = pageMetadata({
-  title: 'Quan Chat',
-  description: 'The same composite intelligence behind the API and behind Harness — here, just talk to it.',
+  title: 'Quan Chat — AI Assistant That Checks Its Answers',
+  description: CHAT_DESCRIPTION,
   path: '/chat',
 });
 
@@ -22,6 +25,20 @@ const PROSE_STYLE = { fontSize: 'clamp(1.0625rem, 1.4vw, 1.1875rem)' } as const;
 export default function ChatPage() {
   return (
     <div className="w-full bg-white">
+      <JsonLd
+        data={[
+          softwareApplicationJsonLd({
+            name: 'Quan Chat',
+            path: '/chat',
+            description: CHAT_DESCRIPTION,
+            category: 'UtilitiesApplication',
+          }),
+          breadcrumbJsonLd([
+            { name: 'Home', path: '/' },
+            { name: 'Quan Chat', path: '/chat' },
+          ]),
+        ]}
+      />
       <Hero
         accent="chat"
         eyebrow="Quan Chat"
@@ -105,6 +122,23 @@ export default function ChatPage() {
                 See pricing →
               </a>
             </div>
+            <p className="mx-auto mb-0 mt-7 max-w-[520px] text-sm leading-[1.6] text-ink-3">
+              Building your own product? The model behind Chat is available through the{' '}
+              <a
+                href={EXTERNAL.platform}
+                className="border-b border-[#D5D5D1] font-medium text-ink-2 transition-colors hover:border-ink hover:text-ink"
+              >
+                Kael API
+              </a>
+              , and the{' '}
+              <Link
+                href={ROUTES.examples}
+                className="border-b border-[#D5D5D1] font-medium text-ink-2 transition-colors hover:border-ink hover:text-ink"
+              >
+                examples page
+              </Link>{' '}
+              shows what it produces.
+            </p>
           </div>
         </div>
       </section>

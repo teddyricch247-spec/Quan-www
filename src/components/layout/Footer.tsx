@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { ROUTES, EXTERNAL } from '../../lib/routes';
+import { ADDRESS_LINE, ORG } from '../../lib/org';
 import { BrandMark } from '../BrandMark';
 
 /**
@@ -41,8 +42,18 @@ export const Footer: React.FC = () => {
               </Link>
             </li>
             <li>
+              <Link href={ROUTES.demo} className="text-ink-2 hover:text-ink transition-colors cursor-pointer">
+                Demos
+              </Link>
+            </li>
+            <li>
               <Link href={ROUTES.pricing} className="text-ink-2 hover:text-ink transition-colors cursor-pointer">
                 Pricing
+              </Link>
+            </li>
+            <li>
+              <Link href={ROUTES.examples} className="text-ink-2 hover:text-ink transition-colors cursor-pointer">
+                Examples
               </Link>
             </li>
           </ul>
@@ -59,6 +70,11 @@ export const Footer: React.FC = () => {
             <li>
               <Link href={ROUTES.blog} className="text-ink-2 hover:text-ink transition-colors cursor-pointer">
                 Blog
+              </Link>
+            </li>
+            <li>
+              <Link href={ROUTES.contact} className="text-ink-2 hover:text-ink transition-colors cursor-pointer">
+                Contact
               </Link>
             </li>
             <li>
@@ -116,10 +132,17 @@ export const Footer: React.FC = () => {
       </div>
 
       <div className="max-w-[1160px] mx-auto mt-[clamp(56px,8vh,88px)] flex flex-wrap items-center justify-between gap-4 text-[0.8125rem] text-ink-3">
-        <span>© {new Date().getFullYear()} Quancis.</span>
-        <Link href={ROUTES.legal} className="hover:text-ink transition-colors cursor-pointer">
-          Legal
-        </Link>
+        <span>
+          © {new Date().getFullYear()} Quancis · {ADDRESS_LINE}
+        </span>
+        <span className="flex flex-wrap items-center gap-x-5 gap-y-1">
+          <a href={`mailto:${ORG.email.support}`} className="hover:text-ink transition-colors cursor-pointer">
+            {ORG.email.support}
+          </a>
+          <Link href={ROUTES.legal} className="hover:text-ink transition-colors cursor-pointer">
+            Legal
+          </Link>
+        </span>
       </div>
     </footer>
   );

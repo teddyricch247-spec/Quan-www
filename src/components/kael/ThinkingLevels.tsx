@@ -126,7 +126,8 @@ export const ThinkingLevels: React.FC = () => {
                       {active.input}
                     </span>
                     <span className="mt-1.5 block text-sm leading-[1.5] text-ink-2">
-                      per 1M tokens, at up to 80% cache hit
+                      per 1M tokens
+                      {active.cachedInput ? `, or ${active.cachedInput} when cached` : ''}
                     </span>
                   </dd>
                 </div>
@@ -168,7 +169,7 @@ export const ThinkingLevels: React.FC = () => {
           <div>
             <h3 className="m-0 text-[1.0625rem] font-medium text-ink">Thinking off</h3>
             <p className="mb-0 mt-2 text-sm leading-[1.65] text-ink-2">
-              With auto-thinking off too, the first word usually arrives in {SPEED.thinkingOff.firstWordLow} to{' '}
+              With thinking off, the first word usually arrives in {SPEED.thinkingOff.firstWordLow} to{' '}
               {SPEED.thinkingOff.firstWordHigh} seconds.
             </p>
           </div>
