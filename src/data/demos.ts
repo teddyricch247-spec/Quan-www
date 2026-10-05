@@ -8,6 +8,9 @@
  *      `ogImage` so the demo has its own share card (otherwise it uses the
  *      site's default card).
  *
+ * Every demo page, and the hub, also offers the HTML file as a download (an
+ * <a download> link to the same file), so nothing else is needed for that.
+ *
  * That is all. The hub page (/kael/demo), the demo's own page
  * (/kael/demo/<slug>), the Kael page's demo strip, the "more demos" list and
  * the sitemap are all generated from this array at build time. File size and
@@ -25,7 +28,7 @@
  *  future demo (made in Quan Harness, made through the API, and so on). */
 export type DemoOrigin = 'kael-chat';
 
-export type CoverArt = 'snake' | 'chess' | 'generic';
+export type CoverArt = 'snake' | 'chess' | 'voxel' | 'generic';
 
 export interface DemoControl {
   /** The key, gesture or button. Shown in a mono pill. */
@@ -69,6 +72,8 @@ export interface Demo {
   /** Hosts the file loads code from. Shown next to the player so nobody is
    *  surprised that a CDN sees the request. */
   cdnHosts: string[];
+  /** Hosts the file only tries if the first one fails to load. Optional. */
+  cdnFallbacks?: string[];
   /** What, if anything, the demo keeps in the browser. */
   storage: string;
 }
@@ -105,6 +110,59 @@ export const ORIGINS: Record<DemoOrigin, OriginStory> = {
 };
 
 export const DEMOS: Demo[] = [
+  {
+    slug: 'blockscape',
+    title: 'Blockscape',
+    tagline: 'A voxel sandbox with a day and night cycle, in one HTML file.',
+    summary:
+      'Explore an endless generated world of forests, deserts, mountains and oceans, then dig and build with ten block types. Sunrises, stars, rippling water and wandering animals, in one file.',
+    description: [
+      'Blockscape is a voxel sandbox. The world is generated from a seed as you walk: oceans, beaches, plains, forests, deserts, taiga, rocky mountains and snow caps, with caves underneath and a bedrock floor. Oak, birch and spruce trees, tall grass and flowers fill in the surface. Dig any block out and place a new one from the ten in your hotbar.',
+      'The sky runs a full day and night cycle, 10 minutes long at the normal setting, with a sun and moon, stars, sunrise and sunset colours, drifting cube clouds, mist rising off the water at dawn, and a sun glare that the clouds and terrain can block. Water is its own shader, with ripples, reflections, foam at the shore and light patterns on the sea floor. Pigs, cows, sheep and villagers wander around. They are only there to look at.',
+      'Everything on screen is generated in code. The block textures are drawn on a canvas, and the footsteps, digging, wind, water and bird sounds are synthesised with the Web Audio API. Your edits, position, time of day and settings are saved in your browser, so you can close the tab and come back to the same world. Settings let you change the graphics level, render distance, shadows, day length and more, and you can start a new world from any seed.',
+    ],
+    date: '2026-10-04',
+    file: 'blockscape.html',
+    tags: ['Game', '3D', 'Sandbox', 'Procedural'],
+    ogImage: '/og/demo-blockscape.png',
+    origin: 'kael-chat',
+    cover: { art: 'voxel', from: '#3f78b8', to: '#a9d3f2' },
+    highlights: [
+      'Generated world from a seed: eight biomes, caves, trees and flowers',
+      'Dig and place blocks, with ten block types in the hotbar',
+      'Day and night cycle with sun, moon, stars, clouds and mist',
+      'Water shader with ripples, reflections and foam',
+      'Wandering pigs, cows, sheep and villagers',
+      'Saved in your browser, with a new-world seed option',
+      'Full touch controls, and graphics that adapt to your device',
+      'Textures and sound generated in code, no asset files',
+    ],
+    controls: {
+      desktop: [
+        { input: 'W A S D', action: 'Move' },
+        { input: 'Space', action: 'Jump (swim up in water)' },
+        { input: 'Shift', action: 'Sprint while moving forward' },
+        { input: 'Mouse', action: 'Look around' },
+        { input: 'Left / right click', action: 'Dig a block / place a block' },
+        { input: 'Middle click', action: 'Pick the block you are looking at' },
+        { input: '1 to 0, or scroll', action: 'Choose a block in the hotbar' },
+        { input: 'F, or double-tap Space', action: 'Toggle flying (Shift or C to descend, Ctrl or Q to go faster)' },
+        { input: 'Esc', action: 'Pause and open settings' },
+      ],
+      touch: [
+        { input: 'Left thumb', action: 'Floating joystick; push to the edge to sprint' },
+        { input: 'Right thumb', action: 'Drag to look around' },
+        { input: 'Jump, Dig and Place buttons', action: 'Hold Dig or Place to repeat' },
+        { input: 'Fly button', action: 'Toggle flying; a down arrow appears while you fly' },
+        { input: 'Tap the block bar', action: 'Choose a block' },
+      ],
+    },
+    tech: ['three.js r128', 'WebGL with custom sky and water shaders', 'Web Audio API', 'IndexedDB'],
+    cdnHosts: ['cdnjs.cloudflare.com'],
+    cdnFallbacks: ['cdn.jsdelivr.net', 'unpkg.com'],
+    storage:
+      'Your block edits, position, time of day, hotbar and settings are saved in your browser (IndexedDB, with local storage as a fallback). Nothing is sent to us.',
+  },
   {
     slug: 'ouroboros',
     title: 'Ouroboros',
@@ -151,43 +209,44 @@ export const DEMOS: Demo[] = [
   {
     slug: 'chess',
     title: '3D Chess',
-    tagline: 'A full chess game with real physics, in one HTML file.',
+    tagline: 'A full chess game against an AI, in one HTML file.',
     summary:
-      'Play chess on a rendered wooden board, against a friend or the built-in AI. Captured pieces are knocked off by a physics engine and clatter across the board.',
+      'Play chess on a rendered black-and-white board against the built-in AI, or switch it off to play a friend. Click a piece to see every move it can make, and watch captured pieces float away to rest.',
     description: [
-      '3D Chess is a complete chess game on a rendered wooden board. The pieces are built in code from turned profiles and simple shapes, lit with physically based materials and soft shadows.',
-      'The rules are all there: castling, en passant, promotion with a piece picker, check, checkmate, stalemate, and draws by threefold repetition, the fifty-move rule or insufficient material. Moves are logged in standard algebraic notation, and you can undo them.',
-      'Turn the AI on and it plays Black: an alpha-beta search with a capture search at the end, up to five plies (half-moves) deep, thinking for at most a second and a half on a desktop. We haven’t measured its strength. When a piece is captured it is not simply removed. The cannon-es physics engine knocks it off the square and lets it tumble across the board, with wood-on-wood sound synthesised on the fly.',
+      '3D Chess is a complete chess game on a rendered board with black and white squares, a gold grid and a–h, 1–8 labels. The pieces are built in code from turned profiles and simple shapes, lit with physically based materials and soft shadows.',
+      'The rules are all there: castling, en passant, promotion with a piece picker, check, checkmate, stalemate, and draws by threefold repetition, the fifty-move rule or insufficient material. Moves are logged in standard algebraic notation, and you can undo them. Click one of your pieces and it lifts and lights up, with a dot on every square it can legally move to, red on squares where it can capture. The last move and any check are highlighted too.',
+      'The AI is on by default and plays Black against you. It uses an alpha-beta search with a capture search at the end, up to five plies (half-moves) deep, thinking for at most a second and a half on a desktop. We haven’t measured its strength. Turn it off to play two people on one screen. When a piece is captured it is not simply removed: it lifts off the board, drifts through the air trailing sparkles and lowers itself, upright, onto a felt tray at the side. Sounds are synthesised on the fly.',
     ],
     date: '2026-10-04',
     file: 'chess.html',
-    tags: ['Game', '3D', 'Physics', 'AI opponent'],
+    tags: ['Game', '3D', 'AI opponent'],
     ogImage: '/og/demo-chess.png',
     origin: 'kael-chat',
     cover: { art: 'chess', from: '#0d0b09', to: '#3a2a1c' },
     highlights: [
       'Full rules: castling, en passant, promotion and every kind of draw',
-      'An AI opponent that plays Black, with iterative deepening',
-      'Captured pieces knocked off by a physics engine (cannon-es)',
+      'AI opponent on by default, playing Black, with iterative deepening',
+      'Click a piece to lift it and see all of its legal moves',
+      'Captured pieces float through the air to a rest tray at the side',
       'Move list in algebraic notation, undo, and flip board',
       'Orbit, zoom and pan camera, tap or click to move',
-      'Wood, felt and sound generated in code, no asset files',
+      'Board, wood, felt and sound generated in code, no asset files',
     ],
     controls: {
       desktop: [
-        { input: 'Click a piece, then a square', action: 'Move' },
+        { input: 'Click a piece, then a square', action: 'Select it and see its legal moves, then move' },
         { input: 'Drag', action: 'Orbit the camera' },
         { input: 'Scroll', action: 'Zoom' },
-        { input: 'Undo, Flip, AI, Sound', action: 'Take back a move, turn the board, play the AI, mute' },
+        { input: 'New, Undo, Flip, AI, Sound', action: 'Start over, take back a move, turn the board, switch the AI on or off, mute' },
       ],
       touch: [
-        { input: 'Tap a piece, then a square', action: 'Move' },
+        { input: 'Tap a piece, then a square', action: 'Select it and see its legal moves, then move' },
         { input: 'Drag', action: 'Orbit the camera' },
         { input: 'Pinch', action: 'Zoom' },
         { input: 'Two-finger drag', action: 'Pan' },
       ],
     },
-    tech: ['three.js 0.160', 'cannon-es 0.20 physics', 'Web Audio API'],
+    tech: ['three.js 0.160', 'WebGL with physically based materials', 'Web Audio API'],
     cdnHosts: ['cdn.jsdelivr.net'],
     storage: 'Nothing is stored in your browser.',
   },

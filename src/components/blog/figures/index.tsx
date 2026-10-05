@@ -3,6 +3,26 @@ import type { FigureId } from '../../../data/blog-types';
 import { FlowFigure } from '../FlowFigure';
 import { BarFigure } from '../BarFigure';
 import { RangeFigure } from '../RangeFigure';
+import {
+  ContextNarrows,
+  DecodeLoop,
+  EmbeddingSpace,
+  IdeaLadder,
+  ManyStudents,
+  PrefillKv,
+  ScratchPaper,
+  SecondStudent,
+  TokensPipeline,
+} from './theory';
+import {
+  KaelRequestPath,
+  MindEvolutionIslands,
+  PoolAndPicker,
+  SqlInjectionFlow,
+  SwissCheese,
+  ThinkingStack,
+  WaitAtTheFront,
+} from './more';
 
 /**
  * Every figure used in a blog post lives here, keyed by the id a post names
@@ -10,6 +30,10 @@ import { RangeFigure } from '../RangeFigure';
  * cited papers and reports publish; each figure's caption in the post says
  * where they come from. Diagrams that illustrate an idea (rather than report
  * a measurement) say so in their caption.
+ *
+ * Two kinds of figure live here. FlowFigure, BarFigure and RangeFigure are
+ * plain HTML so text reflows on a phone. The drawn ones (theory.tsx, more.tsx)
+ * are self-contained SVGs built from the helpers in svg.tsx.
  */
 export const FIGURES: Record<FigureId, React.ReactElement> = {
   'three-families': (
@@ -186,4 +210,24 @@ export const FIGURES: Record<FigureId, React.ReactElement> = {
       ]}
     />
   ),
+
+  // --- Drawn figures: "The Thinking Behind Kael" -------------------------
+  'tokens-pipeline': <TokensPipeline />,
+  'prefill-kv': <PrefillKv />,
+  'decode-loop': <DecodeLoop />,
+  'embedding-space': <EmbeddingSpace />,
+  'context-narrows': <ContextNarrows />,
+  'scratch-paper': <ScratchPaper />,
+  'second-student': <SecondStudent />,
+  'many-students': <ManyStudents />,
+  'idea-ladder': <IdeaLadder />,
+
+  // --- Drawn figures: the earlier posts -----------------------------------
+  'pool-and-picker': <PoolAndPicker />,
+  'mind-evolution-islands': <MindEvolutionIslands />,
+  'swiss-cheese': <SwissCheese />,
+  'sql-injection-flow': <SqlInjectionFlow />,
+  'kael-request-path': <KaelRequestPath />,
+  'wait-at-the-front': <WaitAtTheFront />,
+  'thinking-stack': <ThinkingStack />,
 };

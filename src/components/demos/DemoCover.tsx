@@ -237,10 +237,11 @@ function ChessArt({ id }: { id: string }) {
     );
   };
 
-  // The captured pawn: knocked over, tumbling away from the square it was taken on.
+  // The captured pawn: lifted off its square and floating upright, with a glow
+  // and a trail of sparkles on its way to the tray at the side.
   const fx = X(5.5, 3.6);
-  const fy = Y(3.6);
-  const fs = 86 * sc(3.6);
+  const fy = Y(3.6) - 96;
+  const fs = 86 * sc(3.6) * 0.92;
 
   return (
     <>
@@ -260,6 +261,10 @@ function ChessArt({ id }: { id: string }) {
           <stop offset="0.4" stopColor="#4a4a5a" />
           <stop offset="1" stopColor="#101015" />
         </linearGradient>
+        <radialGradient id={`${id}-halo`}>
+          <stop offset="0" stopColor="#ffe9b8" stopOpacity="0.55" />
+          <stop offset="1" stopColor="#ffe9b8" stopOpacity="0" />
+        </radialGradient>
         <linearGradient id={`${id}-gloss`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#fff" stopOpacity="0.16" />
           <stop offset="0.5" stopColor="#fff" stopOpacity="0" />
@@ -278,7 +283,7 @@ function ChessArt({ id }: { id: string }) {
         fill="#2a170b"
       />
       {squares.map((s, i) => (
-        <path key={i} d={s.d} fill={s.dark ? '#5b3822' : '#d7b98a'} />
+        <path key={i} d={s.d} fill={s.dark ? '#2c2e35' : '#e9e5d9'} />
       ))}
       <path
         d={`M${X(0, 0).toFixed(1)} ${Y(0)} L${X(8, 0).toFixed(1)} ${Y(0)} L${X(8, 8).toFixed(1)} ${Y(8)} L${X(0, 8).toFixed(1)} ${Y(8)} Z`}
@@ -288,21 +293,150 @@ function ChessArt({ id }: { id: string }) {
       {/* back to front so nearer pieces cover farther ones */}
       {stand.slice().sort((a, b) => a.v - b.v).map(renderPiece)}
 
-      {/* the captured pawn, lying on its side, with its flight path */}
+      {/* the captured pawn, floating upright, with its flight path and sparkles */}
       <path
-        d={`M${(fx - 70).toFixed(1)} ${(fy - 64).toFixed(1)} Q${(fx - 30).toFixed(1)} ${(fy - 96).toFixed(1)} ${(fx + 6).toFixed(1)} ${(fy - 24).toFixed(1)}`}
+        d={`M${(fx - 8).toFixed(1)} ${(fy + 4).toFixed(1)} Q${(fx + 60).toFixed(1)} ${(fy - 70).toFixed(1)} ${(fx + 150).toFixed(1)} ${(fy + 40).toFixed(1)}`}
         stroke="#ffd479"
-        strokeOpacity="0.55"
+        strokeOpacity="0.6"
         strokeWidth="2"
         strokeDasharray="3 7"
         strokeLinecap="round"
         fill="none"
       />
-      <g transform={`translate(${fx.toFixed(1)} ${fy.toFixed(1)}) rotate(78)`}>
-        <ellipse cx="0" cy="3" rx={0.45 * fs} ry={0.14 * fs} fill="#000" opacity="0.35" transform="rotate(-78)" />
+      {[
+        [-26, 34, 3], [20, 18, 2.2], [-12, -24, 2.6], [34, -8, 2], [4, 52, 2.4], [-34, 6, 1.8],
+      ].map(([dx, dy, r], i) => (
+        <circle key={i} cx={fx + dx} cy={fy - 20 + dy} r={r} fill="#ffe9b8" opacity={0.85 - i * 0.08} />
+      ))}
+      <ellipse cx={fx + 3} cy={Y(3.6) + 2} rx={0.42 * fs} ry={0.13 * fs} fill="#000" opacity="0.32" />
+      <circle cx={fx} cy={fy - 0.42 * fs} r={0.95 * fs} fill={`url(#${id}-halo)`} />
+      <g transform={`translate(${fx.toFixed(1)} ${fy.toFixed(1)})`}>
         <path d={turnedPath(PROF_PAWN, fs)} fill={`url(#${id}-black)`} />
+        <path d={turnedPath(PROF_PAWN, fs)} fill="none" stroke="#fff" strokeOpacity="0.2" strokeWidth="1" />
       </g>
 
+      <rect width={W} height={H} fill={`url(#${id}-vig)`} />
+    </>
+  );
+}
+
+/* ---------------------------------------------------------------- voxel */
+
+type VoxelKind = 'grass' | 'dirt' | 'sand' | 'water' | 'log' | 'leaf' | 'stone';
+
+const VOX: Record<VoxelKind, { top: string; left: string; right: string; strip?: boolean; alpha?: number }> = {
+  grass: { top: '#78bf4f', left: '#8a6540', right: '#6f4f31', strip: true },
+  dirt: { top: '#8f6a43', left: '#7e5a37', right: '#654629' },
+  sand: { top: '#e6d49b', left: '#d2bf86', right: '#bda870' },
+  water: { top: '#4a9be0', left: '#3a82c4', right: '#2f6faa', alpha: 0.82 },
+  log: { top: '#a98558', left: '#6e4f2e', right: '#5a3f24' },
+  leaf: { top: '#4f9a3a', left: '#3f8230', right: '#336a27' },
+  stone: { top: '#9a9aa2', left: '#85858d', right: '#70707a' },
+};
+
+function VoxelArt({ id }: { id: string }) {
+  const CW = 26; // half cube width on screen
+  const CH = 15; // half diamond height
+  const CZ = 30; // cube height
+  const ox = 320;
+  const oy = 136;
+
+  type Cube = { x: number; y: number; z: number; kind: VoxelKind };
+  const cubes: Cube[] = [];
+  const N = 6;
+  // Terrain: 0 = water (over a sand bed), 1 = grass, 2 = a small hill.
+  const heights = [
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 2, 1, 1],
+    [1, 1, 2, 2, 1, 0],
+    [1, 1, 1, 1, 0, 0],
+    [1, 1, 1, 0, 0, 0],
+    [1, 1, 0, 0, 0, 0],
+  ];
+  for (let z = 0; z < N; z++) {
+    for (let x = 0; x < N; x++) {
+      const h = heights[z][x];
+      cubes.push({ x, y: -1, z, kind: h === 0 ? 'sand' : 'dirt' });
+      if (h === 0) {
+        cubes.push({ x, y: 0, z, kind: 'water' });
+      } else {
+        for (let y = 0; y < h - 1; y++) cubes.push({ x, y, z, kind: 'dirt' });
+        cubes.push({ x, y: h - 1, z, kind: 'grass' });
+      }
+    }
+  }
+  // An oak tree on the grass.
+  const tx = 1;
+  const tz = 2;
+  for (let y = 1; y <= 3; y++) cubes.push({ x: tx, y, z: tz, kind: 'log' });
+  for (let dz = -1; dz <= 1; dz++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      if (dx !== 0 || dz !== 0) cubes.push({ x: tx + dx, y: 3, z: tz + dz, kind: 'leaf' });
+      if (Math.abs(dx) + Math.abs(dz) < 2) cubes.push({ x: tx + dx, y: 4, z: tz + dz, kind: 'leaf' });
+    }
+  }
+  // A couple of stone blocks the player has placed.
+  cubes.push({ x: 4, y: 1, z: 1, kind: 'stone' });
+  cubes.push({ x: 4, y: 0, z: 1, kind: 'stone' });
+
+  cubes.sort((a, b) => a.x + a.z - (b.x + b.z) || a.y - b.y);
+
+  const renderCube = (c: Cube, i: number) => {
+    const v = VOX[c.kind];
+    const px = ox + (c.x - c.z) * CW;
+    const py = oy + (c.x + c.z) * CH - c.y * CZ;
+    const op = v.alpha ?? 1;
+    const top = `${px},${py - CH} ${px + CW},${py} ${px},${py + CH} ${px - CW},${py}`;
+    const left = `${px - CW},${py} ${px},${py + CH} ${px},${py + CH + CZ} ${px - CW},${py + CZ}`;
+    const right = `${px},${py + CH} ${px + CW},${py} ${px + CW},${py + CZ} ${px},${py + CH + CZ}`;
+    return (
+      <g key={i} opacity={op}>
+        <polygon points={left} fill={v.left} />
+        <polygon points={right} fill={v.right} />
+        {v.strip ? (
+          <>
+            <polygon points={`${px - CW},${py} ${px},${py + CH} ${px},${py + CH + 9} ${px - CW},${py + 9}`} fill="#5fa03e" />
+            <polygon points={`${px},${py + CH} ${px + CW},${py} ${px + CW},${py + 9} ${px},${py + CH + 9}`} fill="#4c8a30" />
+          </>
+        ) : null}
+        <polygon points={top} fill={v.top} />
+        <polygon points={top} fill="none" stroke="#000" strokeOpacity="0.14" strokeWidth="1" />
+      </g>
+    );
+  };
+
+  const clouds = [
+    { x: 70, y: 70, w: 120, h: 22 },
+    { x: 96, y: 56, w: 70, h: 18 },
+    { x: 420, y: 44, w: 130, h: 24 },
+    { x: 450, y: 30, w: 70, h: 18 },
+  ];
+
+  return (
+    <>
+      <defs>
+        <linearGradient id={`${id}-sky`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#2f6fc0" />
+          <stop offset="0.55" stopColor="#7fb6e8" />
+          <stop offset="1" stopColor="#d7ecfa" />
+        </linearGradient>
+        <radialGradient id={`${id}-sun`}>
+          <stop offset="0" stopColor="#fffbe8" stopOpacity="1" />
+          <stop offset="0.2" stopColor="#fff0c0" stopOpacity="0.8" />
+          <stop offset="1" stopColor="#ffe08a" stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id={`${id}-vig`} cx="0.5" cy="0.5" r="0.75">
+          <stop offset="0.6" stopColor="#000" stopOpacity="0" />
+          <stop offset="1" stopColor="#000" stopOpacity="0.35" />
+        </radialGradient>
+      </defs>
+      <rect width={W} height={H} fill={`url(#${id}-sky)`} />
+      <circle cx="530" cy="92" r="120" fill={`url(#${id}-sun)`} />
+      <rect x="518" y="80" width="24" height="24" fill="#fffdf0" />
+      {clouds.map((c, i) => (
+        <rect key={i} x={c.x} y={c.y} width={c.w} height={c.h} fill="#fff" opacity="0.9" />
+      ))}
+      {cubes.map(renderCube)}
       <rect width={W} height={H} fill={`url(#${id}-vig)`} />
     </>
   );
@@ -376,6 +510,7 @@ export const DemoCover: React.FC<{
         >
           {cover.art === 'snake' ? <SnakeArt id={id} /> : null}
           {cover.art === 'chess' ? <ChessArt id={id} /> : null}
+          {cover.art === 'voxel' ? <VoxelArt id={id} /> : null}
           {cover.art === 'generic' ? <GenericArt id={id} title={title} /> : null}
         </svg>
       )}

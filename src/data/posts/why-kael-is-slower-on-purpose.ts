@@ -6,7 +6,7 @@ export const post: BlogPost = {
   title: 'Why Kael Is Slower, On Purpose',
   seoTitle: 'Why Kael Is Slower: Thinking Levels, Speed and Pricing Explained',
   date: '2026-10-01',
-  updated: '2026-10-02',
+  updated: '2026-10-05',
   tag: 'Engineering',
   author: 'response-mosese',
   excerpt:
@@ -39,6 +39,10 @@ export const post: BlogPost = {
       'speed-ranges',
       'Output speed once Kael starts writing. These ranges are what we usually see, not guarantees. Time to the first word is a separate figure: 0.7 to 3 seconds with thinking off, and longer with thinking on.'
     ),
+    figure(
+      'wait-at-the-front',
+      'The shape of the wait, as a schematic. With thinking on, the delay comes before the first word and the text then arrives quickly. With thinking off, the first word comes sooner and the text arrives more slowly. The speeds are the ranges stated above; the drawing is not to scale.'
+    ),
     p(
       'We do not have published worst-case latency numbers for long prompts yet, and we would rather say that than imply otherwise.'
     ),
@@ -46,6 +50,10 @@ export const post: BlogPost = {
     h2('Choosing how much Kael thinks'),
     p(
       'You choose how much thinking a request gets, and the setting does more than a simple on-off switch. It changes how the system works on the request. Three levels are available today, plus off.'
+    ),
+    figure(
+      'thinking-stack',
+      'Thinking levels pictured as scratch paper. A schematic: it shows that each level allows more thinking, not how much any level uses.'
     ),
     table(
       'Thinking levels and prices, per 1 million tokens. Cached input is billed at up to 80% off the standard input rate. Prices for Off and Auto are not listed separately here; the console shows exact numbers.',

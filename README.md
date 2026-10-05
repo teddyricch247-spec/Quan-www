@@ -1,6 +1,6 @@
 # Quancis www
 
-See `CHANGES.md` for what changed in the 3 October 2026 revision.
+See `CHANGES.md` for what changed in the 5 October 2026 revision.
 
 The public marketing site — `www.quancis.space`. Next.js 16 (App Router),
 React 19, TypeScript, Tailwind CSS 4, Three.js for the hero. A separate,
@@ -51,7 +51,7 @@ src/app/about, contact, pricing, examples/   company pages, the pricing overview
 src/app/*/opengraph-image.png  the share image for that route (drawn by scripts/make-og.py, see "Share images")
 src/components/             Hero, AskAnything, ProductShowcase, SystemStory, Section, PlaceholderNote, PlatformCta, JsonLd, BrandMark, LowPolyScene, CodeIntegration
 src/components/kael/        the building blocks of the /kael page (spec sheet, pricing table, thinking levels, pipeline, FAQ)
-src/components/blog/        PostBody (renders a post), Inline (links/bold/code), FlowFigure, BarFigure, RangeFigure, figures/index.tsx (every figure)
+src/components/blog/        PostBody (renders a post), Inline (links/bold/code), FlowFigure, BarFigure, RangeFigure, figures/index.tsx (every figure), figures/svg.tsx (drawing helpers), figures/theory.tsx and figures/more.tsx (the drawn SVG figures)
 src/components/examples/    ExamplesGallery (filterable cards)
 src/components/demos/       DemoCard, DemoCover (drawn SVG covers), GameFrame (the click-to-play player), Provenance ("made in chat")
 src/components/three/       HeroCanvas.tsx — same WebGL hero as platform, accent tint now a prop
@@ -142,7 +142,7 @@ Inside any text: `[label](https://...)` link, `**bold**`, `*italic*`, `` `code` 
 5. Add a line for it to `POSTS` in `scripts/make-og.py` and run `python3 scripts/make-og.py` to draw its share image (`public/og/<slug>.png`).
 6. Set `date` to the **real** day you publish. Do not backdate. Set `updated` when you make a real edit.
 
-To add a figure: add its id to `FigureId` in `blog-types.ts` and its element to `FIGURES`. Use `BarFigure` (bars), `RangeFigure` (ranges) or `FlowFigure` (steps). Chart numbers must be the numbers the cited source publishes, and the caption must say where they came from.
+To add a figure: add its id to `FigureId` in `blog-types.ts` and its element to `FIGURES`. Use `BarFigure` (bars), `RangeFigure` (ranges) or `FlowFigure` (steps). For a drawing rather than a chart, write a small component with the helpers in `components/blog/figures/svg.tsx` (`Svg`, `T`, `Arrow`, `ArrowDefs`, the `C` palette) in `theory.tsx` or `more.tsx`, give it an `aria-label` that says what it shows, and register it the same way. Keep the viewBox about 400 wide so the text stays readable on a phone, and say in the caption that it is an illustration if it is not a measurement. Chart numbers must be the numbers the cited source publishes, and the caption must say where they came from.
 
 ## The examples page
 
@@ -177,9 +177,11 @@ Not in the code, and what actually moves rankings:
 ## Demos
 
 `/kael/demo` is the hub; each demo has its own page at `/kael/demo/<slug>` with
-the playable game on it. The two launch demos, **Ouroboros** (3D snake survival)
-and **3D Chess** (with a physics engine for captures), were written by Kael in a
-chat conversation as single HTML files, and the pages say so. Every number
+the playable game on it. The demos, **Blockscape** (a voxel sandbox), **Ouroboros**
+(3D snake survival) and **3D Chess** (with an AI opponent), were written by Kael
+in a chat conversation as single HTML files, and the pages say so. Every demo
+page and the hub also offer the HTML file as a download (an `<a download>` link
+to the same file in `public/demo-files/`, so there is nothing extra to add). Every number
 (lines, KB) is read from the HTML file at build time; nothing is typed in twice.
 
 **Add a demo in two steps**
@@ -213,19 +215,21 @@ different origin story (made in Harness, made through the API) add a key to
 
 **Things to know**
 
-- The games load three.js (and cannon-es for chess) from a public CDN (unpkg and
-  jsDelivr respectively), so those hosts see the request. The demo pages say so.
-  The site's Legal page says the site "doesn't set tracking cookies"; that is
-  still true (Ouroboros keeps its best score in `localStorage`, nothing is sent
-  anywhere), but you may want a line about the CDNs there.
+- The games load three.js from a public CDN (Ouroboros from unpkg, 3D Chess from
+  jsDelivr, Blockscape from cdnjs, falling back to jsDelivr and unpkg only if
+  that fails), so those hosts see the request. The demo pages say so. The
+  site's Legal page says the site "doesn't set tracking cookies"; that is still
+  true (Ouroboros keeps its best score in `localStorage`, Blockscape keeps its
+  world in IndexedDB; nothing is sent anywhere), but you may want a line about
+  the CDNs there.
 - The HTML files are exactly as pasted from the chat; nothing in them was changed
   for this site, so they have no link back to Quancis. That is on purpose.
 - Covers are drawn SVG, not screenshots (there was no browser or GPU where this
   was written). Replace them with real screenshots when you have them.
 - Like the rest of this repo, **none of this was built or run** here (no network
   for `npm install`, no browser). It was type-checked against stubs and the game
-  scripts were syntax-checked. Run `npm install && npm run build`, then play both
-  games on desktop and on a phone, before shipping.
+  scripts were syntax-checked. Run `npm install && npm run build`, then play all
+  three games on desktop and on a phone, before shipping.
 
 ## Home page product scenes
 

@@ -91,12 +91,12 @@
     <button id="btnNew">New</button>
     <button id="btnUndo">Undo</button>
     <button id="btnFlip">Flip</button>
-    <button id="btnAI">AI: Off</button>
+    <button id="btnAI" class="on" title="Challenge mode: you play White against the AI">AI: On</button>
     <button id="btnSound">🔊</button>
   </div>
 </div>
 <div id="moveList" class="panel"><div id="moves"></div></div>
-<div id="hint">Drag: orbit • Pinch / scroll: zoom • Two-finger drag: pan</div>
+<div id="hint">Tap a piece to see its moves • Drag: orbit • Pinch / scroll: zoom • Two-finger drag: pan</div>
 <div id="promo" class="panel hidden">
   <button data-p="5">Queen</button>
   <button data-p="4">Rook</button>
@@ -114,15 +114,13 @@
 {
   "imports": {
     "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
-    "cannon-es": "https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
   }
 }
 </script>
 <script type="module">
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import * as CANNON from 'cannon-es';
 
 /* ============================================================
    CHESS ENGINE
@@ -309,7 +307,7 @@ function toSAN(st,m){
     s+=dest;
     if(m.promo) s+='='+PROMO_MAP[m.promo];
   } else {
-    s+='  PNBRQK'[t];
+    s+=' PNBRQK'[t];
     const others=legalMoves(st,color).filter(x=>x.to===m.to && x.from!==m.from && Math.abs(b[x.from])===t);
     if(others.length){
       const sameFile=others.some(x=>x.from%8===ff);
@@ -346,28 +344,9 @@ const posKey=s=>s.board.join(',')+s.turn+Object.values(s.castling).map(Number).j
 const BOARD_TOP=0.5;
 const BOARD_HALF=4.5;
 
-const PIECE_MASS = { [PAWN]:0.85, [KNIGHT]:1.30, [BISHOP]:1.20, [ROOK]:1.55, [QUEEN]:1.85, [KING]:2.05 };
-const PIECE_COM  = { [PAWN]:0.32, [KNIGHT]:0.50, [BISHOP]:0.46, [ROOK]:0.40, [QUEEN]:0.54, [KING]:0.58 };
-
-const PHYS = {
-  [PAWN]:   { w:0.27, s:[[0.40,0.17],[0.70,0.15]] },
-  [KNIGHT]: { w:0.30, s:[[0.40,0.24],[0.65,0.22]] },
-  [BISHOP]: { w:0.27, s:[[0.45,0.20],[0.80,0.18]] },
-  [ROOK]:   { w:0.31, s:[[0.50,0.26],[0.76,0.28]] },
-  [QUEEN]:  { w:0.32, s:[[0.50,0.24],[0.85,0.22],[1.10,0.16]] },
-  [KING]:   { w:0.34, s:[[0.52,0.26],[0.90,0.22],[1.15,0.18]] },
-};
-
-const TUNE = {
-  gravity: -13.5,
-  captureSpeedMin: 3.2, captureSpeedMax: 6.8,
-  captureUpMin: 1.6, captureUpMax: 3.6,
-  spinMin: 6, spinMax: 22,
-  friction: 0.42,
-  restitution: 0.18,
-  linearDamping: 0.02,
-  angularDamping: 0.20,
-};
+// Captured pieces rest on a felt tray on each side of the board.
+const TRAY_TOP=0.06;      // surface height of the trays
+const TRAY_SCALE=0.8;     // resting pieces are a little smaller
 
 /* ============================================================
    RENDERER / SCENE
@@ -491,8 +470,6 @@ function makeFeltTexture(hex){
 }
 
 const woodTableTex = makeWoodTexture('#3a2418', 7727, 4);
-const woodLightTex = makeWoodTexture('#c9a875', 1122, 1);
-const woodDarkTex  = makeWoodTexture('#4a2d1a', 3388, 1);
 
 /* ============================================================
    BOARD (visual)
@@ -525,27 +502,99 @@ slab.position.y=BOARD_TOP/2;
 slab.castShadow=true; slab.receiveShadow=true;
 scene.add(slab);
 
-const lightSqMat=new THREE.MeshPhysicalMaterial({
-  map: woodLightTex, color:0xffffff, roughness:0.38, metalness:0.0,
-  clearcoat:0.5, clearcoatRoughness:0.42
-});
-const darkSqMat=new THREE.MeshPhysicalMaterial({
-  map: woodDarkTex, color:0xffffff, roughness:0.34, metalness:0.0,
-  clearcoat:0.55, clearcoatRoughness:0.36
-});
-const sqGeo=new THREE.PlaneGeometry(1,1);
-for(let r=0;r<8;r++) for(let f=0;f<8;f++){
-  const m=new THREE.Mesh(sqGeo,((r+f)%2===0)?lightSqMat:darkSqMat);
-  m.rotation.x=-Math.PI/2;
-  m.position.set(f-3.5, BOARD_TOP+0.0018, 3.5-r);
-  m.receiveShadow=true;
-  scene.add(m);
-}
+/* Black-and-white board, drawn once on a canvas: 64 squares (a1 is dark, as it
+   should be), thin gold grid lines, a gold outer frame and a–h / 1–8 labels. */
+function makeBoardTexture(){
+  const U=isMobile?176:256;                 // pixels per board unit
+  const N=Math.round(U*9);                  // 8 squares + a half-unit frame each side
+  const c=document.createElement('canvas'); c.width=c.height=N;
+  const g=c.getContext('2d');
+  let seed=90210;
+  const rnd=()=>{ seed=(seed*1664525+1013904223)>>>0; return seed/4294967296; };
+  const x0=U*0.5;
 
-const borderMat=new THREE.MeshStandardMaterial({color:0x1a0d05, roughness:0.9});
-const borderRing=new THREE.Mesh(new THREE.BoxGeometry(8.05,0.02,8.05),borderMat);
-borderRing.position.y=BOARD_TOP+0.0008;
-scene.add(borderRing);
+  // wooden frame
+  g.fillStyle='#2b180b'; g.fillRect(0,0,N,N);
+  for(let i=0;i<260;i++){
+    const y=rnd()*N, amp=(1+rnd()*4)*(U/128), fr=0.002+rnd()*0.01, ph=rnd()*6.283;
+    g.beginPath();
+    for(let x=0;x<=N;x+=12){ const yy=y+Math.sin(x*fr+ph)*amp; if(x===0) g.moveTo(x,yy); else g.lineTo(x,yy); }
+    g.strokeStyle=rnd()<0.5?`rgba(0,0,0,${0.03+rnd()*0.06})`:`rgba(255,210,150,${0.02+rnd()*0.04})`;
+    g.lineWidth=0.5+rnd()*2; g.stroke();
+  }
+
+  // squares: rank r (0 = rank 1), file f (0 = a). (r+f) even => dark.
+  for(let r=0;r<8;r++) for(let f=0;f<8;f++){
+    const dark=((r+f)%2===0);
+    const x=x0+f*U, y=x0+(7-r)*U;
+    const gr=g.createLinearGradient(x,y,x+U,y+U);
+    if(dark){ gr.addColorStop(0,'#3a3c45'); gr.addColorStop(1,'#25272d'); }
+    else    { gr.addColorStop(0,'#eeeadf'); gr.addColorStop(1,'#d6d1c3'); }
+    g.fillStyle=gr; g.fillRect(x,y,U,U);
+  }
+
+  // faint veining over the squares
+  g.save(); g.beginPath(); g.rect(x0,x0,U*8,U*8); g.clip();
+  for(let i=0;i<140;i++){
+    const x=rnd()*N, y=rnd()*N, len=U*(0.6+rnd()*2.2), ang=rnd()*6.283;
+    g.beginPath(); g.moveTo(x,y);
+    g.quadraticCurveTo(x+Math.cos(ang)*len*0.5+(rnd()-0.5)*U*0.4, y+Math.sin(ang)*len*0.5+(rnd()-0.5)*U*0.4,
+                       x+Math.cos(ang)*len, y+Math.sin(ang)*len);
+    g.strokeStyle=rnd()<0.5?`rgba(255,255,255,${0.025+rnd()*0.03})`:`rgba(0,0,0,${0.03+rnd()*0.04})`;
+    g.lineWidth=0.6+rnd()*1.6; g.stroke();
+  }
+  g.restore();
+
+  // grid lines between squares
+  g.lineWidth=Math.max(1.5,U*0.012); g.strokeStyle='rgba(196,160,84,0.6)';
+  for(let i=0;i<=8;i++){
+    const p=x0+i*U;
+    g.beginPath(); g.moveTo(p,x0); g.lineTo(p,x0+8*U); g.stroke();
+    g.beginPath(); g.moveTo(x0,p); g.lineTo(x0+8*U,p); g.stroke();
+  }
+  // outer frame lines
+  g.lineWidth=U*0.045; g.strokeStyle='#c9a24b'; g.strokeRect(x0,x0,8*U,8*U);
+  g.lineWidth=U*0.02;  g.strokeStyle='#120a04'; g.strokeRect(x0-U*0.05,x0-U*0.05,8*U+U*0.1,8*U+U*0.1);
+
+  // coordinates. Bottom/left read upright from White's side, top/right from Black's.
+  g.fillStyle='#d9b970';
+  g.font=`700 ${Math.round(U*0.27)}px -apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif`;
+  g.textAlign='center'; g.textBaseline='middle';
+  const lab=(t,cx,cy,flip)=>{ g.save(); g.translate(cx,cy); if(flip) g.rotate(Math.PI); g.fillText(t,0,0); g.restore(); };
+  for(let i=0;i<8;i++){
+    const cx=x0+(i+0.5)*U, cy=x0+(7-i)*U+U*0.5;
+    lab(FILES[i],cx,N-U*0.25,false);
+    lab(FILES[i],cx,U*0.25,true);
+    lab(String(i+1),U*0.25,cy,false);
+    lab(String(i+1),N-U*0.25,cy,true);
+  }
+  return c;
+}
+const boardTex=new THREE.CanvasTexture(makeBoardTexture());
+boardTex.colorSpace=THREE.SRGBColorSpace;
+boardTex.anisotropy=renderer.capabilities.getMaxAnisotropy();
+const boardMat=new THREE.MeshPhysicalMaterial({
+  map:boardTex, color:0xffffff, roughness:0.34, metalness:0.0,
+  clearcoat:0.55, clearcoatRoughness:0.3,
+  polygonOffset:true, polygonOffsetFactor:-1, polygonOffsetUnits:-1
+});
+const boardFace=new THREE.Mesh(new THREE.PlaneGeometry(BOARD_HALF*2,BOARD_HALF*2),boardMat);
+boardFace.rotation.x=-Math.PI/2;
+boardFace.position.y=BOARD_TOP+0.003;
+boardFace.receiveShadow=true;
+scene.add(boardFace);
+
+/* Felt trays on each side where captured pieces come to rest. */
+const trayMat=new THREE.MeshStandardMaterial({color:0x12251c,roughness:0.95,metalness:0});
+const trimMat=new THREE.MeshStandardMaterial({color:0x6a4526,roughness:0.4,metalness:0});
+for(const side of [-1,1]){
+  const base=new THREE.Mesh(new THREE.BoxGeometry(1.7,TRAY_TOP,8.7),trayMat);
+  base.position.set(side*5.6,TRAY_TOP/2,0); base.receiveShadow=true; scene.add(base);
+  for(const [w,d,x,z] of [[1.78,0.08,0,4.39],[1.78,0.08,0,-4.39],[0.08,8.7,0.85,0],[0.08,8.7,-0.85,0]]){
+    const t=new THREE.Mesh(new THREE.BoxGeometry(w,TRAY_TOP+0.03,d),trimMat);
+    t.position.set(side*5.6+x,(TRAY_TOP+0.03)/2,z); t.receiveShadow=true; scene.add(t);
+  }
+}
 
 /* ============================================================
    PIECE GEOMETRIES
@@ -635,12 +684,12 @@ function knightHeadGeo(){
 }
 
 const whiteMat=new THREE.MeshPhysicalMaterial({
-  color:0xf4ecd8, roughness:0.32, metalness:0.0,
+  color:0xf2e6c8, roughness:0.32, metalness:0.0,
   clearcoat:0.85, clearcoatRoughness:0.22,
   sheen:0.4, sheenColor:new THREE.Color(0xffffff), sheenRoughness:0.5
 });
 const blackMat=new THREE.MeshPhysicalMaterial({
-  color:0x1c1c22, roughness:0.28, metalness:0.05,
+  color:0x15151b, roughness:0.28, metalness:0.05,
   clearcoat:0.9, clearcoatRoughness:0.18,
   sheen:0.4, sheenColor:new THREE.Color(0x8899bb), sheenRoughness:0.5
 });
@@ -697,79 +746,31 @@ function buildPiece(type, colorChar){
 }
 
 /* ============================================================
-   PHYSICS WORLD
+   PIECES
    ============================================================ */
-const world=new CANNON.World({ gravity: new CANNON.Vec3(0, TUNE.gravity, 0) });
-world.broadphase=new CANNON.SAPBroadphase(world);
-world.allowSleep=true;
-world.defaultContactMaterial.friction=TUNE.friction;
-world.defaultContactMaterial.restitution=TUNE.restitution;
-world.defaultContactMaterial.contactEquationStiffness=1e7;
-world.defaultContactMaterial.contactEquationRelaxation=3;
-world.solver.iterations=14;
-
-const tableBody=new CANNON.Body({ mass:0, shape:new CANNON.Plane() });
-tableBody.quaternion.setFromEuler(-Math.PI/2,0,0);
-world.addBody(tableBody);
-
-const boardBody=new CANNON.Body({ mass:0 });
-boardBody.addShape(new CANNON.Box(new CANNON.Vec3(BOARD_HALF, BOARD_TOP/2, BOARD_HALF)));
-boardBody.position.set(0, BOARD_TOP/2, 0);
-world.addBody(boardBody);
-
-const pieces=[];
+const pieces=[];                       // every piece mesh record (on the board or resting)
 const boardPieces=new Array(64).fill(null);
-
-function createPieceRecord(type, color, squareIdx){
-  const mesh=buildPiece(type, color);
-  const pos=squarePos(squareIdx);
-  mesh.position.copy(pos);
-  mesh.userData.sq=squareIdx;
-  scene.add(mesh);
-
-  const comH = PIECE_COM[type];
-  const mass = PIECE_MASS[type];
-
-  const body=new CANNON.Body({
-    mass:0,
-    type:CANNON.Body.STATIC,
-    linearDamping: TUNE.linearDamping,
-    angularDamping: TUNE.angularDamping
-  });
-  const P=PHYS[type];
-  body.addShape(new CANNON.Box(new CANNON.Vec3(P.w, 0.08, P.w)),
-                new CANNON.Vec3(0, 0.08-comH, 0));
-  for(const [y,r] of P.s)
-    body.addShape(new CANNON.Sphere(r), new CANNON.Vec3(0, y-comH, 0));
-
-  body.position.set(pos.x, pos.y + comH, pos.z);
-
-  body.addEventListener('collide', e=>{
-    const v = Math.abs(e.contact.getImpactVelocityAlongNormal());
-    if(v>0.7) sndClatter(Math.min(1.0, v/6));
-  });
-
-  world.addBody(body);
-
-  const rec={ mesh, body, type, color, comH, mass, free:false };
-  pieces.push(rec);
-  return rec;
-}
-
-const _syncV=new THREE.Vector3();
-function syncMeshFromBody(rec){
-  rec.mesh.quaternion.copy(rec.body.quaternion);
-  _syncV.set(0, rec.comH, 0).applyQuaternion(rec.mesh.quaternion);
-  rec.mesh.position.set(
-    rec.body.position.x - _syncV.x,
-    rec.body.position.y - _syncV.y,
-    rec.body.position.z - _syncV.z
-  );
-}
+const capCount={w:0,b:0};              // how many of each colour are resting on a tray
 
 function squarePos(idx){
   const r=(idx/8)|0, f=idx%8;
   return new THREE.Vector3(f-3.5, BOARD_TOP, 3.5-r);
+}
+/* Where the n-th captured piece of a colour rests. Black pieces go on the right
+   tray, white pieces on the left; two columns, eight rows, filled near to far. */
+function trayPos(color,n){
+  const side=color==='b'?1:-1;
+  return new THREE.Vector3(side*(5.25+0.7*(n&1)), TRAY_TOP, 3.5-(n>>1));
+}
+
+function createPieceRecord(type, color, squareIdx, pos){
+  const mesh=buildPiece(type, color);
+  mesh.position.copy(pos||squarePos(squareIdx));
+  mesh.userData.sq=squareIdx;
+  scene.add(mesh);
+  const rec={ mesh, type, color, lift:0, moving:false };
+  pieces.push(rec);
+  return rec;
 }
 
 /* ============================================================
@@ -829,25 +830,27 @@ function woodThump(vol,freq,dur,thump){
   }catch(e){}
 }
 
-let lastClatter=0;
-function sndClatter(intensity){
-  if(!audioCtx||!soundOn) return;
-  const now=performance.now();
-  if(now-lastClatter<45) return;
-  lastClatter=now;
-  woodThump(Math.min(0.32, 0.10+intensity*0.25), 700+Math.random()*1400,
-            0.045+Math.random()*0.045, 140+Math.random()*180);
-}
-
 const snd={
   pickup(){ woodThump(0.10, 2800, 0.035, 1050); },
   place(){ woodThump(0.42, 1050, 0.09, 210); },
-  bigCapture(){
-    for(let i=0;i<5;i++){
-      setTimeout(()=>woodThump(0.28*(0.5+Math.random()*0.7),
-        480+Math.random()*1600, 0.05+Math.random()*0.09,
-        120+Math.random()*180), i*40+Math.random()*40);
-    }
+  softPlace(){ woodThump(0.16, 1250, 0.07, 240); },
+  magic(){
+    if(!audioCtx||!soundOn) return;
+    try{
+      const t=audioCtx.currentTime;
+      [660,880,1320,1760].forEach((f,i)=>{
+        const st=t+i*0.07;
+        const o=audioCtx.createOscillator(); o.type='sine';
+        o.frequency.setValueAtTime(f,st);
+        o.frequency.exponentialRampToValueAtTime(f*1.5,st+0.55);
+        const g=audioCtx.createGain();
+        g.gain.setValueAtTime(0.0001,st);
+        g.gain.exponentialRampToValueAtTime(0.05/(1+i*0.4),st+0.05);
+        g.gain.exponentialRampToValueAtTime(0.0001,st+0.7);
+        o.connect(g); g.connect(masterGain);
+        o.start(st); o.stop(st+0.75);
+      });
+    }catch(e){}
   },
   check(){
     if(!audioCtx||!soundOn) return;
@@ -894,43 +897,165 @@ let selected=-1;
 let currentLegal=[];
 let animating=false;
 let gameOver=false;
-let aiOn=false;
+let aiOn=true;            // challenge mode is on by default; you play White
+let selectedRec=null;
+let userZoomed=false;
 const HUMAN=1;
 
 const markerGroup=new THREE.Group();
 scene.add(markerGroup);
-const dotGeo=new THREE.CircleGeometry(0.13,20);
-const dotMat=new THREE.MeshBasicMaterial({color:0x9fe8ff,transparent:true,opacity:0.5,depthWrite:false});
-const ringGeo=new THREE.RingGeometry(0.38,0.46,32);
-const ringMat=new THREE.MeshBasicMaterial({color:0xff8a6a,transparent:true,opacity:0.62,depthWrite:false,side:THREE.DoubleSide});
-const selGeo=new THREE.RingGeometry(0.44,0.52,4);
-const selMat=new THREE.MeshBasicMaterial({color:0xffd479,transparent:true,opacity:0.78,depthWrite:false,side:THREE.DoubleSide});
-const markers=[];
+const HL_Y=BOARD_TOP+0.008;
+
+function makeRadialTex(inner,outer){
+  const c=document.createElement('canvas'); c.width=c.height=128;
+  const g=c.getContext('2d');
+  const gr=g.createRadialGradient(64,64,0,64,64,64);
+  gr.addColorStop(0,inner); gr.addColorStop(1,outer);
+  g.fillStyle=gr; g.fillRect(0,0,128,128);
+  const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace;
+  return t;
+}
+const glowTex=makeRadialTex('rgba(255,255,255,1)','rgba(255,255,255,0)');
+const checkTex=makeRadialTex('rgba(255,60,50,0.95)','rgba(255,60,50,0)');
+
+const hlGeo=new THREE.PlaneGeometry(1,1);
+const dotGeo=new THREE.CircleGeometry(0.15,28);
+const dotBackGeo=new THREE.CircleGeometry(0.2,28);
+const ringGeo=new THREE.RingGeometry(0.36,0.47,40);
+const flat=(color,op,map)=>new THREE.MeshBasicMaterial({
+  color,map:map||null,transparent:true,opacity:op,depthWrite:false,
+  polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2
+});
+const selSqMat=flat(0xf6e05a,0.62);      // the selected piece's square
+const lastSqMat=flat(0xf0b43c,0.38);     // from / to squares of the last move
+const capSqMat=flat(0xff4d3d,0.40);      // a square you can capture on
+const dotMat=flat(0x6bffa8,0.95);        // a square you can move to
+const dotBackMat=flat(0x06140c,0.45);    // dark halo so the dot reads on white squares too
+const ringMat=flat(0xff5a47,0.95);
+const checkGlowMat=flat(0xffffff,0.9,checkTex);
+
+const markers=[];       // everything shown for the selected piece
+const lastMarkers=[];   // last-move squares
+let checkMesh=null;
+
+function flatMesh(geo,mat,x,y,z,order){
+  const m=new THREE.Mesh(geo,mat);
+  m.rotation.x=-Math.PI/2;
+  m.position.set(x,y,z);
+  m.renderOrder=order;
+  markerGroup.add(m);
+  return m;
+}
 function clearMarkers(){
   for(const m of markers) markerGroup.remove(m);
   markers.length=0;
 }
 function addMarker(idx,type){
-  let m;
-  if(type==='dot') m=new THREE.Mesh(dotGeo,dotMat);
-  else if(type==='cap') m=new THREE.Mesh(ringGeo,ringMat);
-  else m=new THREE.Mesh(selGeo,selMat);
-  m.rotation.x=-Math.PI/2;
-  m.rotation.z=Math.PI/4;
   const p=squarePos(idx);
-  m.position.set(p.x, BOARD_TOP+0.006, p.z);
-  markerGroup.add(m);
-  markers.push(m);
+  if(type==='sel'){
+    markers.push(flatMesh(hlGeo,selSqMat,p.x,HL_Y+0.002,p.z,2));
+  }else if(type==='dot'){
+    markers.push(flatMesh(dotBackGeo,dotBackMat,p.x,HL_Y+0.003,p.z,3));
+    markers.push(flatMesh(dotGeo,dotMat,p.x,HL_Y+0.004,p.z,4));
+  }else{
+    markers.push(flatMesh(hlGeo,capSqMat,p.x,HL_Y+0.002,p.z,2));
+    markers.push(flatMesh(ringGeo,ringMat,p.x,HL_Y+0.004,p.z,4));
+  }
+}
+function setLastMove(m){
+  for(const x of lastMarkers) markerGroup.remove(x);
+  lastMarkers.length=0;
+  if(!m) return;
+  for(const idx of [m.from,m.to]){
+    const p=squarePos(idx);
+    lastMarkers.push(flatMesh(hlGeo,lastSqMat,p.x,HL_Y,p.z,1));
+  }
+}
+function refreshCheckGlow(){
+  const idx=inCheck(state,state.turn)?findKing(state.board,state.turn):-1;
+  if(idx<0){ if(checkMesh){ markerGroup.remove(checkMesh); checkMesh=null; } return; }
+  const p=squarePos(idx);
+  if(!checkMesh) checkMesh=flatMesh(hlGeo,checkGlowMat,p.x,HL_Y+0.001,p.z,2);
+  checkMesh.position.set(p.x,HL_Y+0.001,p.z);
+  checkMesh.scale.set(1.5,1.5,1);
 }
 let markerPhase=0;
+
+/* ---- sparkles that trail a floating piece ---- */
+const SPN=140;
+const spPos=new Float32Array(SPN*3), spCol=new Float32Array(SPN*3), spBase=new Float32Array(SPN*3),
+      spVel=new Float32Array(SPN*3), spLife=new Float32Array(SPN);
+const spGeo=new THREE.BufferGeometry();
+spGeo.setAttribute('position',new THREE.BufferAttribute(spPos,3).setUsage(THREE.DynamicDrawUsage));
+spGeo.setAttribute('color',new THREE.BufferAttribute(spCol,3).setUsage(THREE.DynamicDrawUsage));
+const spMat=new THREE.PointsMaterial({
+  size:0.3,map:glowTex,vertexColors:true,transparent:true,
+  blending:THREE.AdditiveBlending,depthWrite:false,sizeAttenuation:true
+});
+const sparkles=new THREE.Points(spGeo,spMat);
+sparkles.frustumCulled=false; sparkles.renderOrder=7;
+scene.add(sparkles);
+let spHead=0, sparkWasActive=false;
+function emitSpark(x,y,z,warm){
+  const i=spHead; spHead=(spHead+1)%SPN; const i3=i*3;
+  spPos[i3]=x; spPos[i3+1]=y; spPos[i3+2]=z;
+  spVel[i3]=(Math.random()-0.5)*0.5; spVel[i3+1]=0.1+Math.random()*0.5; spVel[i3+2]=(Math.random()-0.5)*0.5;
+  spLife[i]=1;
+  if(warm){ spBase[i3]=1; spBase[i3+1]=0.82; spBase[i3+2]=0.45; }
+  else    { spBase[i3]=0.55; spBase[i3+1]=0.8; spBase[i3+2]=1; }
+}
+function updateSparks(dt){
+  let any=false;
+  for(let i=0;i<SPN;i++){
+    const i3=i*3; let l=spLife[i];
+    if(l>0){
+      l-=dt*1.2; if(l<0) l=0; spLife[i]=l;
+      spPos[i3]+=spVel[i3]*dt; spPos[i3+1]+=spVel[i3+1]*dt; spPos[i3+2]+=spVel[i3+2]*dt;
+      const k=l*l;
+      spCol[i3]=spBase[i3]*k; spCol[i3+1]=spBase[i3+1]*k; spCol[i3+2]=spBase[i3+2]*k;
+      any=true;
+    }else{ spCol[i3]=spCol[i3+1]=spCol[i3+2]=0; }
+  }
+  if(any||sparkWasActive){
+    spGeo.attributes.position.needsUpdate=true;
+    spGeo.attributes.color.needsUpdate=true;
+  }
+  sparkWasActive=any;
+}
+
+/* ---- soft glow that follows a floating piece ---- */
+const halos=[];
+for(let i=0;i<3;i++){
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({
+    map:glowTex,color:0xbfe4ff,transparent:true,opacity:0,
+    blending:THREE.AdditiveBlending,depthWrite:false
+  }));
+  sp.visible=false; sp.renderOrder=6; scene.add(sp);
+  halos.push({sp,busy:false});
+}
+function takeHalo(){
+  for(const h of halos) if(!h.busy){ h.busy=true; h.sp.visible=true; return h; }
+  return null;
+}
+function freeHalo(h){
+  if(!h) return;
+  h.busy=false; h.sp.visible=false; h.sp.material.opacity=0;
+}
+function resetFloaters(){
+  for(const h of halos) freeHalo(h);
+  for(let i=0;i<SPN;i++){ spLife[i]=0; }
+}
 
 /* ============================================================
    BUILD INITIAL POSITION
    ============================================================ */
 function buildPosition(){
-  for(const p of pieces){ scene.remove(p.mesh); world.removeBody(p.body); }
+  for(const p of pieces) scene.remove(p.mesh);
   pieces.length=0;
   for(let i=0;i<64;i++) boardPieces[i]=null;
+  capCount.w=0; capCount.b=0;
+  selectedRec=null;
+  resetFloaters();
 
   for(let i=0;i<64;i++){
     const code=state.board[i];
@@ -940,6 +1065,17 @@ function buildPosition(){
     const rec=createPieceRecord(type,color,i);
     boardPieces[i]=rec;
   }
+  // Pieces already taken (after Undo) go straight back to their trays.
+  for(const h of history){
+    if(!h.cap) continue;
+    const pos=trayPos(h.cap.color,capCount[h.cap.color]++);
+    const rec=createPieceRecord(h.cap.type,h.cap.color,undefined,pos);
+    rec.captured=true;
+    rec.mesh.userData.sq=undefined;
+    rec.mesh.rotation.y=-Math.PI/2;
+    rec.mesh.scale.setScalar(TRAY_SCALE);
+  }
+  setLastMove(history.length?history[history.length-1].m:null);
 }
 
 /* ============================================================
@@ -947,6 +1083,14 @@ function buildPosition(){
    ============================================================ */
 const cam={ theta:0, phi:0.78, radius:14.2, target:new THREE.Vector3(0,0.55,0) };
 const camGoal={ theta:0, phi:0.78, radius:14.2, target:new THREE.Vector3(0,0.55,0) };
+/* On landscape screens the default 14.2 shows the board and both trays. On a
+   narrow (portrait) screen pull back so the board is not cropped. */
+function fitRadius(){
+  const a=window.innerWidth/window.innerHeight;
+  const need=6.9/(Math.tan(THREE.MathUtils.degToRad(camera.fov/2))*a);
+  return Math.max(14.2,Math.min(44,need));
+}
+cam.radius=camGoal.radius=fitRadius();
 
 function updateCamera(dt){
   const k=Math.min(1,dt*10);
@@ -1007,7 +1151,7 @@ canvas.addEventListener('pointermove',e=>{
     const [a,b]=[...ptrs.values()];
     const dist=Math.hypot(a.x-b.x,a.y-b.y);
     const mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
-    if(lastDist>0) camGoal.radius=Math.max(6,Math.min(28,camGoal.radius*(lastDist/dist)));
+    if(lastDist>0){ camGoal.radius=Math.max(6,Math.min(50,camGoal.radius*(lastDist/dist))); userZoomed=true; }
     if(lastMid) panBy(mid.x-lastMid.x, mid.y-lastMid.y);
     lastDist=dist; lastMid=mid;
   }
@@ -1027,7 +1171,7 @@ canvas.addEventListener('pointercancel',endPointer);
 
 canvas.addEventListener('wheel',e=>{
   e.preventDefault();
-  camGoal.radius=Math.max(6,Math.min(28,camGoal.radius*(1+e.deltaY*0.0011)));
+  camGoal.radius=Math.max(6,Math.min(50,camGoal.radius*(1+e.deltaY*0.0011))); userZoomed=true;
 },{passive:false});
 canvas.addEventListener('contextmenu',e=>e.preventDefault());
 
@@ -1075,6 +1219,7 @@ function select(idx){
   selected=idx;
   clearMarkers();
   addMarker(idx,'sel');
+  selectedRec=boardPieces[idx]||null;
   currentLegal=legalMoves(state,state.turn).filter(m=>m.from===idx);
   const seen=new Set();
   for(const m of currentLegal){
@@ -1086,7 +1231,7 @@ function select(idx){
   snd.pickup();
 }
 function deselect(){
-  selected=-1; currentLegal=[]; clearMarkers();
+  selected=-1; currentLegal=[]; selectedRec=null; clearMarkers();
 }
 function onSquareClick(idx){
   if(gameOver||animating) return;
@@ -1166,9 +1311,10 @@ function playMove(m){
   }
   if(capRec) capRec.mesh.userData.sq=undefined;
 
-  history.push({ snapshot, san });
+  history.push({ snapshot, san, m, cap: capRec?{type:capRec.type,color:capRec.color}:null });
   sanList.push(san);
   renderMoveList();
+  setLastMove(m);
   snd.pickup();
 
   const startP=moverRec.mesh.position.clone();
@@ -1186,13 +1332,15 @@ function playMove(m){
   dir.normalize();
   const tiltAxis=new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),dir).normalize();
 
-  moverRec.body.collisionResponse=false;
+  moverRec.moving=true; moverRec.lift=0;
 
+  /* The captured piece starts to levitate as the attacker closes in, so the
+     two never overlap on the square. */
   let captureFired=false;
   const fireCapture=()=>{
     if(captureFired||!capRec) return;
     captureFired=true;
-    launchCaptured(capRec, dir, m.to);
+    floatCaptured(capRec);
   };
 
   addTween({
@@ -1210,8 +1358,7 @@ function playMove(m){
       if(capRec && !captureFired){
         const hd=Math.hypot(moverRec.mesh.position.x-cp.x,
                             moverRec.mesh.position.z-cp.z);
-        const low=moverRec.mesh.position.y - BOARD_TOP < 0.45;
-        if(hd<0.7 && (isKnight ? p>0.55 : low)) fireCapture();
+        if(hd<1.5 && (!isKnight || p>0.45)) fireCapture();
       }
     },
     onDone(){
@@ -1219,11 +1366,7 @@ function playMove(m){
 
       moverRec.mesh.position.copy(endP);
       moverRec.mesh.quaternion.identity();
-
-      moverRec.body.collisionResponse=true;
-      moverRec.body.position.set(endP.x, endP.y + moverRec.comH, endP.z);
-      moverRec.body.quaternion.set(0,0,0,1);
-      moverRec.body.aabbNeedsUpdate=true;
+      moverRec.moving=false;
 
       snd.place();
 
@@ -1252,14 +1395,10 @@ function playMove(m){
           scene.remove(moverRec.mesh);
           const i=pieces.indexOf(moverRec);
           if(i>=0) pieces.splice(i,1);
-          world.removeBody(moverRec.body);
 
           promoteRec.mesh.visible=true;
           promoteRec.mesh.position.copy(endP);
           promoteRec.mesh.quaternion.identity();
-          promoteRec.body.position.set(endP.x, endP.y + promoteRec.comH, endP.z);
-          promoteRec.body.quaternion.set(0,0,0,1);
-          promoteRec.body.aabbNeedsUpdate=true;
         }
       }
 
@@ -1274,12 +1413,11 @@ function animateRook(from, to){
   boardPieces[from]=null;
   boardPieces[to]=rec;
   rec.mesh.userData.sq=to;
+  rec.moving=true; rec.lift=0;
 
   const s=rec.mesh.position.clone();
   const e=squarePos(to);
   const dur=0.42;
-
-  rec.body.collisionResponse=false;
 
   addTween({
     el:0,dur,
@@ -1294,62 +1432,82 @@ function animateRook(from, to){
     onDone(){
       rec.mesh.position.copy(e);
       rec.mesh.quaternion.identity();
-      rec.body.collisionResponse=true;
-      rec.body.position.set(e.x, e.y + rec.comH, e.z);
-      rec.body.quaternion.set(0,0,0,1);
-      rec.body.aabbNeedsUpdate=true;
+      rec.moving=false;
       snd.place();
     }
   });
 }
 
-function launchCaptured(rec, attackDir, toSq){
-  const body=rec.body;
+/* A captured piece lifts straight up, turns slowly, glides along a smooth arc
+   trailing sparkles, then lowers itself upright into the next free spot on its
+   tray. Nothing is thrown and nothing falls over. */
+function floatCaptured(rec){
+  const n=capCount[rec.color]++;
+  rec.captured=true; rec.moving=true; rec.lift=0;
   rec.mesh.userData.sq=undefined;
 
-  body.type=CANNON.Body.DYNAMIC;
-  body.mass=rec.mass;
-  body.updateMassProperties();
-  body.collisionResponse=true;
-  body.wakeUp();
-  rec.free=true;
+  const mesh=rec.mesh;
+  const A=mesh.position.clone();
+  const S=trayPos(rec.color,n);
+  const H=2.3;                                   // how high the arc's control points sit
+  const B=new THREE.Vector3(A.x,A.y+H,A.z);
+  const C=new THREE.Vector3(S.x,S.y+H,S.z);
+  const dist=Math.hypot(S.x-A.x,S.z-A.z);
+  const dur=1.35+dist*0.07;
+  const turns=1+Math.floor(dist/5);
+  const spin=-Math.PI/2-Math.PI*2*turns;         // ends facing the board
+  const warm=rec.color==='w';
+  const halo=takeHalo();
+  if(halo) halo.sp.material.color.setHex(warm?0xffe3a8:0xa9cfff);
+  let tick=0;
 
-  rec.mesh.updateMatrixWorld(true);
-  const q=rec.mesh.quaternion.clone();
-  const v=new THREE.Vector3(0, rec.comH, 0).applyQuaternion(q);
-  body.position.set(
-    rec.mesh.position.x + v.x,
-    rec.mesh.position.y + v.y,
-    rec.mesh.position.z + v.z
-  );
-  body.quaternion.set(q.x,q.y,q.z,q.w);
-  body.velocity.set(0,0,0);
-  body.angularVelocity.set(0,0,0);
-  body.aabbNeedsUpdate=true;
-
-  const d=attackDir.clone();
-  const fromCenter=squarePos(toSq).clone();
-  fromCenter.y=0;
-  if(fromCenter.lengthSq()>0.01){
-    fromCenter.normalize();
-    d.addScaledVector(fromCenter, 0.35);
-  }
-  const dev=(Math.random()-0.5)*1.4;
-  d.applyAxisAngle(new THREE.Vector3(0,1,0), dev);
-  d.normalize();
-
-  const speed = TUNE.captureSpeedMin + Math.random()*(TUNE.captureSpeedMax-TUNE.captureSpeedMin);
-  const up = TUNE.captureUpMin + Math.random()*(TUNE.captureUpMax-TUNE.captureUpMin);
-  body.velocity.set(d.x*speed, up, d.z*speed);
-
-  const spinMag = TUNE.spinMin + Math.random()*(TUNE.spinMax-TUNE.spinMin);
-  body.angularVelocity.set(
-    (Math.random()-0.5)*spinMag*2,
-    (Math.random()-0.5)*spinMag,
-    (Math.random()-0.5)*spinMag*2
-  );
-
-  snd.bigCapture();
+  snd.magic();
+  addTween({
+    el:0, dur,
+    onUpdate(p){
+      const u=easeInOutCubic(p), v=1-u;
+      const b0=v*v*v, b1=3*v*v*u, b2=3*v*u*u, b3=u*u*u;       // cubic Bezier A-B-C-S
+      const w=Math.sin(Math.PI*p);
+      const wob=Math.sin(p*Math.PI*7)*0.05*w;
+      mesh.position.set(
+        b0*A.x+b1*B.x+b2*C.x+b3*S.x+wob,
+        b0*A.y+b1*B.y+b2*C.y+b3*S.y+Math.sin(p*Math.PI*5)*0.04*w,
+        b0*A.z+b1*B.z+b2*C.z+b3*S.z+wob*0.7
+      );
+      mesh.rotation.set(Math.sin(p*Math.PI*3)*0.22*w, spin*u, Math.cos(p*Math.PI*2)*0.12*w);
+      const sc=1-(1-TRAY_SCALE)*u;
+      mesh.scale.setScalar(sc);
+      if(halo){
+        halo.sp.position.set(mesh.position.x,mesh.position.y+0.55*sc,mesh.position.z);
+        halo.sp.material.opacity=Math.pow(w,0.6)*0.75;
+        halo.sp.scale.setScalar(2.0+0.25*Math.sin(p*20));
+      }
+      if((++tick&1)===0 && p<0.96){
+        emitSpark(mesh.position.x+(Math.random()-0.5)*0.4,
+                  mesh.position.y+0.2+Math.random()*0.7*sc,
+                  mesh.position.z+(Math.random()-0.5)*0.4, warm);
+      }
+    },
+    onDone(){
+      mesh.position.copy(S);
+      mesh.rotation.set(0,-Math.PI/2,0);
+      mesh.scale.setScalar(TRAY_SCALE);
+      freeHalo(halo);
+      rec.moving=false;
+      snd.softPlace();
+      for(let i=0;i<10;i++){
+        emitSpark(S.x+(Math.random()-0.5)*0.5, S.y+0.05+Math.random()*0.25, S.z+(Math.random()-0.5)*0.5, warm);
+      }
+      addTween({
+        el:0, dur:0.2,
+        onUpdate(q){
+          const k=Math.sin(Math.PI*q);
+          mesh.scale.set(TRAY_SCALE*(1+0.05*k),TRAY_SCALE*(1-0.06*k),TRAY_SCALE*(1+0.05*k));
+        },
+        onDone(){ mesh.scale.setScalar(TRAY_SCALE); }
+      });
+    }
+  });
 }
 
 function finishMove(){
@@ -1390,26 +1548,25 @@ function finishMove(){
 }
 
 /* ============================================================
-   PHYSICS STEP
+   SELECTED-PIECE LIFT
    ============================================================ */
-let physAcc=0;
-const FIXED=1/90;
-function physicsUpdate(dt){
-  physAcc+=dt;
-  let steps=0;
-  while(physAcc>=FIXED && steps<6){
-    world.step(FIXED);
-    physAcc-=FIXED; steps++;
+function liftUpdate(dt){
+  const k=Math.min(1,dt*14);
+  for(const rec of pieces){
+    if(rec.moving||rec.captured) continue;
+    const tgt=rec===selectedRec?1:0;
+    if(tgt===0&&rec.lift===0) continue;
+    rec.lift+=(tgt-rec.lift)*k;
+    if(tgt===0&&rec.lift<0.003) rec.lift=0;
+    rec.mesh.position.y=BOARD_TOP+rec.lift*(0.17+0.03*Math.sin(markerPhase*1.5));
   }
-  if(steps>=6) physAcc=0;
-
-  for(const rec of pieces) if(rec.free) syncMeshFromBody(rec);
 }
 
 /* ============================================================
    STATUS / UI
    ============================================================ */
 function updateStatus(){
+  refreshCheckGlow();
   const dot=document.getElementById('dot');
   const txt=document.getElementById('status');
   if(gameOver) return;
@@ -1653,7 +1810,7 @@ function newGame(){
   posHistory=[posKey(state)];
   selected=-1; currentLegal=[];
   animating=false; gameOver=false;
-  tweens.length=0; physAcc=0;
+  tweens.length=0; resetFloaters();
   document.getElementById('gameover').classList.add('hidden');
   document.getElementById('promo').classList.add('hidden');
   clearMarkers();
@@ -1662,7 +1819,8 @@ function newGame(){
   renderMoveList();
   camGoal.theta=0; cam.theta=0;
   camGoal.phi=0.78; cam.phi=0.78;
-  camGoal.radius=14.2;
+  userZoomed=false;
+  camGoal.radius=fitRadius();
   camGoal.target.set(0,0.55,0);
 }
 
@@ -1725,14 +1883,17 @@ function loop(now){
   prevT=now;
 
   updateTweens(dt);
-  physicsUpdate(dt);
+  markerPhase+=dt*2.4;
+  liftUpdate(dt);
+  updateSparks(dt);
   updateCamera(dt);
 
-  markerPhase+=dt*2.4;
-  const pulse=0.75+Math.sin(markerPhase)*0.25;
-  dotMat.opacity=0.36*pulse+0.16;
-  ringMat.opacity=0.45*pulse+0.18;
-  selMat.opacity=0.5*pulse+0.25;
+  const pulse=0.5+Math.sin(markerPhase)*0.5;
+  selSqMat.opacity=0.50+0.16*pulse;
+  ringMat.opacity=0.78+0.2*pulse;
+  capSqMat.opacity=0.30+0.16*pulse;
+  dotMat.opacity=0.88+0.1*pulse;
+  checkGlowMat.opacity=0.65+0.3*pulse;
 
   renderer.render(scene,camera);
 }
@@ -1742,6 +1903,7 @@ window.addEventListener('resize',()=>{
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth,window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile?1.8:2));
+  if(!userZoomed) camGoal.radius=fitRadius();
 });
 
 buildPosition();

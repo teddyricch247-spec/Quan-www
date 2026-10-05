@@ -74,6 +74,8 @@ ROUTES = [
 
 # (slug, label above the title, title). Keep in step with src/data/posts.
 POSTS = [
+    ("the-thinking-behind-kael", "Blog  /  Research",
+     "Scratch Paper, Second Drafts and Many Students: The Thinking Behind Kael"),
     ("best-of-n-to-mind-evolution", "Blog  /  Research",
      "From Best-of-N to Mind Evolution: How AI Systems Spend Extra Compute"),
     ("ai-generated-code-security-review", "Blog  /  Engineering",
@@ -85,10 +87,12 @@ POSTS = [
 # (slug, label above the title, title, subtitle). One card per demo, written to
 # public/og/demo-<slug>.png. Keep in step with src/data/demos.ts (`ogImage`).
 DEMOS = [
+    ("blockscape", "Kael  /  Demo", "Blockscape.",
+     "A voxel sandbox with a day and night cycle, written in chat as one HTML file."),
     ("ouroboros", "Kael  /  Demo", "Ouroboros.",
      "A 3D survival snake game Kael wrote in chat, as one HTML file."),
     ("chess", "Kael  /  Demo", "3D Chess.",
-     "A full chess game with real physics, written in chat as one HTML file."),
+     "A full chess game against an AI, written in chat as one HTML file."),
 ]
 
 FONT_REGULAR = [

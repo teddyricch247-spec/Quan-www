@@ -6,6 +6,7 @@ export const post: BlogPost = {
   title: 'AI-Written Code Has a Security Problem. Here’s How to Review It.',
   seoTitle: 'AI-Generated Code Security: What the Research Says and How to Review It',
   date: '2026-10-02',
+  updated: '2026-10-05',
   tag: 'Engineering',
   author: 'response-mosese',
   excerpt:
@@ -93,6 +94,10 @@ export const post: BlogPost = {
     h3('1. Input glued into a query'),
     p(
       'This is SQL injection, one of the oldest bugs there is, still sitting near the top of the [OWASP Top 10](https://owasp.org/www-project-top-ten/) under the injection category. An assistant asked for “a function that finds a user by username” will often write the first version below, because it is the shortest thing that works.'
+    ),
+    figure(
+      'sql-injection-flow',
+      'Why the first version is unsafe and the second is not. In the first, the user’s text becomes part of the instruction. In the second, the instruction and the value travel separately.'
     ),
     code(
       'python',
@@ -185,6 +190,10 @@ app.get('/invoices/:id', requireLogin, async (req, res) => {
     h2('A pipeline you can set up this week'),
     p(
       'Layers beat heroics. No single step catches everything, but each catches things the others miss, and the combination is cheap to run on every change.'
+    ),
+    figure(
+      'swiss-cheese',
+      'The idea behind layered review, drawn as slices with holes. The bugs are illustrative: one is stopped by the second layer, and one gets through three layers and is caught by the last.'
     ),
     figure(
       'security-pipeline',

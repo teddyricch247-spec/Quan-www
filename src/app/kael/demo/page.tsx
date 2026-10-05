@@ -5,7 +5,7 @@ import { Provenance } from '../../../components/demos/Provenance';
 import { Section, Eyebrow, H2, Prose } from '../../../components/Section';
 import { JsonLd } from '../../../components/JsonLd';
 import { getAllDemos } from '../../../data/demos';
-import { EXTERNAL, ROUTES, demoPath } from '../../../lib/routes';
+import { EXTERNAL, ROUTES, demoFileUrl, demoPath } from '../../../lib/routes';
 import { ACCENT_GLASS_DARK_CLASS } from '../../../lib/accents';
 import { SITE_URL, breadcrumbJsonLd, pageMetadata } from '../../../lib/seo';
 import { getDemoFileStats } from '../../../lib/demoFiles';
@@ -145,7 +145,14 @@ function FileFacts({ file }: { file: string }) {
   if (!stats) return null;
   return (
     <p className="mb-0 mt-3 text-sm text-ink-3">
-      Single HTML file · {stats.lines} lines · {stats.kb} KB
+      Single HTML file · {stats.lines} lines · {stats.kb} KB ·{' '}
+      <a
+        href={demoFileUrl(file)}
+        download={file}
+        className="cursor-pointer font-medium text-ink-2 underline decoration-[#D5D5D1] underline-offset-4 transition-colors hover:text-ink hover:decoration-ink"
+      >
+        Download
+      </a>
     </p>
   );
 }

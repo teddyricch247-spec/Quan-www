@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ExternalLink, Maximize2, Play, Square } from 'lucide-react';
+import { Download, ExternalLink, Maximize2, Play, Square } from 'lucide-react';
 
 /**
  * The player on a demo's page. It shows the cover with a Play button, and only
@@ -12,7 +12,9 @@ import { ExternalLink, Maximize2, Play, Square } from 'lucide-react';
  * `children` is the cover, rendered on the server and passed in.
  * `fileHref` is the raw HTML file, also offered as "Open full screen", which is
  * the most reliable way to play on a phone (iPhone Safari cannot put an iframe
- * into fullscreen, and a touch game inside a scrolling page fights the scroll).
+ * into fullscreen, and a touch game inside a scrolling page fights the scroll),
+ * and as a download so the single file can be kept and opened offline (the
+ * three.js library it loads still needs a connection).
  */
 export const GameFrame: React.FC<{
   src: string;
@@ -103,6 +105,14 @@ export const GameFrame: React.FC<{
         >
           <ExternalLink className="h-4 w-4" strokeWidth={1.8} />
           Open full screen in a new tab
+        </a>
+        <a
+          href={fileHref}
+          download={fileHref.split('/').pop()}
+          className="inline-flex items-center gap-2 font-medium text-ink-2 transition-colors hover:text-ink cursor-pointer"
+        >
+          <Download className="h-4 w-4" strokeWidth={1.8} />
+          Download the HTML file
         </a>
         <span className="text-sm text-ink-3">Best on a phone: use the full-screen tab.</span>
       </div>

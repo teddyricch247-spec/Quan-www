@@ -453,3 +453,28 @@
     }
   }
 }
+
+
+/* ============================================================
+   Blog figures (src/components/blog/figures)
+   Only the decode-loop figure moves. Everything is switched off
+   for people who ask their device for reduced motion, and then
+   shows its finished state, so nothing is hidden.
+   ============================================================ */
+@keyframes fig-sweep {
+  0%, 100% { opacity: 0; }
+  6%, 14% { opacity: 1; }
+  24% { opacity: 0; }
+}
+@keyframes fig-append {
+  0%, 52% { opacity: 0; }
+  62%, 90% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.fig-sweep { opacity: 0; animation: fig-sweep 6s ease-in-out infinite; }
+.fig-append { opacity: 0; animation: fig-append 6s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fig-sweep { animation: none; opacity: 0; }
+  .fig-append { animation: none; opacity: 1; }
+}

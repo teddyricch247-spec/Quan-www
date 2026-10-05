@@ -28,7 +28,7 @@ export const PAGE_UPDATED: Record<string, string> = {
   '/examples': '2026-10-02',
   '/about': '2026-10-03',
   '/contact': '2026-10-02',
-  '/blog': '2026-10-02',
+  '/blog': '2026-10-05',
   '/legal': '2026-10-02',
 };
 

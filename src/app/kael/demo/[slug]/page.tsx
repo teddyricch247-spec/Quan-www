@@ -156,7 +156,11 @@ export default async function DemoPage({ params }: PageProps) {
           </GameFrame>
           <p className="mb-0 mt-5 max-w-[720px] text-sm leading-[1.65] text-ink-3">
             Playing loads its libraries from {demo.cdnHosts.join(' and ')}, a public CDN, so that host sees the
-            request like any other. Nothing you do in the game is sent to us.
+            request like any other
+            {demo.cdnFallbacks && demo.cdnFallbacks.length > 0
+              ? ` (and, only if that fails, ${demo.cdnFallbacks.join(' and ')})`
+              : ''}
+            . Nothing you do in the game is sent to us. The downloaded file does the same when you open it.
           </p>
         </div>
 

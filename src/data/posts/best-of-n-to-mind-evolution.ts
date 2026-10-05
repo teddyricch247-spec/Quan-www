@@ -6,6 +6,7 @@ export const post: BlogPost = {
   title: 'From Best-of-N to Mind Evolution: How AI Systems Spend Extra Compute',
   seoTitle: 'Best-of-N, Fusion-of-N and Mind Evolution Explained',
   date: '2026-10-02',
+  updated: '2026-10-05',
   tag: 'Research',
   author: 'response-mosese',
   excerpt:
@@ -21,7 +22,7 @@ export const post: BlogPost = {
     'Mixture-of-Agents',
   ],
   ogImage: '/og/best-of-n-to-mind-evolution.png',
-  related: ['ai-generated-code-security-review', 'introducing-kael'],
+  related: ['the-thinking-behind-kael', 'ai-generated-code-security-review'],
   body: [
     p(
       'Ask a language model a hard question and it gives you one answer. That answer is a single draw from an enormous space of answers the model could have written, and there is no guarantee it is the best of them. Sometimes the model would have solved the problem on its very next try. Sometimes the right plan was in one attempt and the right ending was in another.'
@@ -62,6 +63,11 @@ export const post: BlogPost = {
       'Even a learned scorer can hurt you if you lean on it too hard. [Gao, Schulman and Hilton](https://arxiv.org/abs/2210.10760) studied what happens when you optimize against an imperfect reward model, using either reinforcement learning or Best-of-N sampling. Past a point, a higher score from the proxy stopped meaning a better answer and started meaning a worse one. That is Goodhart’s law, measured. A bigger N against a flawed judge mostly buys you the flaws.'
     ),
 
+    figure(
+      'pool-and-picker',
+      'The same pool of attempts, two different pickers. The counts are an illustration, not data. The point is that the pool can hold a correct answer while the system still returns a wrong one.'
+    ),
+
     h2('Self-consistency: let the samples vote'),
     p(
       'If you have no verifier, agreement can stand in for one. [Self-consistency](https://arxiv.org/abs/2203.11171) samples a set of different reasoning paths for a question and returns the answer most of them agree on. The intuition is that a hard problem has many ways to go wrong and, usually, one way to come out right, so wrong paths scatter while right paths converge. On arithmetic and commonsense benchmarks it improved accuracy over standard chain-of-thought prompting by between 3.9 and 17.9 points, with the largest gain on GSM8K.'
@@ -90,6 +96,10 @@ export const post: BlogPost = {
     ),
     p(
       'It borrows from genetic algorithms, with a language model doing the genetic operations in plain language. The search starts with a population of complete candidate solutions. A program scores each one against the task’s constraints and, importantly, writes feedback in words about what is violated. Higher-scoring candidates are more likely to be picked as parents, and the model rewrites parents into children through a short conversation between two roles: a critic that reads the evaluation and proposes fixes, and an author that produces a revised solution. To stop the population collapsing into copies of one idea, candidates live on separate islands that evolve independently, trade their best members every so often, and have their weakest islands reset from the global leaders.'
+    ),
+    figure(
+      'mind-evolution-islands',
+      'The island idea, as a sketch. Candidates live on separate islands, the islands trade their best members now and then, and the weakest island is restarted from the leaders. An illustration of the mechanism, not a diagram from the paper.'
     ),
     p(
       'The results on planning tasks are large. TravelPlanner asks a model to build a trip plan that satisfies a tangle of budget and commonsense constraints written in ordinary language. Gemini 1.5 Flash solved 5.6% of the validation problems in a single pass. Best-of-N with up to 800 candidates reached 55.6%. Sequential revision, where ten candidates are each revised for many turns, reached 82.8%. Mind Evolution, with the same ceiling of 800 candidates, reached 95.6%, and it did so with fewer model calls on average than Best-of-N: about 174 against about 472. Handing the problems that remained to Gemini 1.5 Pro took validation success to 100%.'

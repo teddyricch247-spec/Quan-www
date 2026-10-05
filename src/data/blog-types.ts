@@ -17,7 +17,24 @@ export type FigureId =
   | 'kael-loop'
   | 'speed-ranges'
   | 'security-pipeline'
-  | 'veracode-failures';
+  | 'veracode-failures'
+  // Drawn figures (SVG), added 5 October 2026
+  | 'tokens-pipeline'
+  | 'prefill-kv'
+  | 'decode-loop'
+  | 'embedding-space'
+  | 'context-narrows'
+  | 'scratch-paper'
+  | 'second-student'
+  | 'many-students'
+  | 'idea-ladder'
+  | 'pool-and-picker'
+  | 'mind-evolution-islands'
+  | 'swiss-cheese'
+  | 'sql-injection-flow'
+  | 'kael-request-path'
+  | 'wait-at-the-front'
+  | 'thinking-stack';
 
 export type Block =
   | { type: 'p'; text: string }

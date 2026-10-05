@@ -5,6 +5,7 @@ import { post as introducingKael } from './posts/introducing-kael';
 import { post as whyKaelIsSlower } from './posts/why-kael-is-slower-on-purpose';
 import { post as bestOfNToMindEvolution } from './posts/best-of-n-to-mind-evolution';
 import { post as aiCodeSecurity } from './posts/ai-generated-code-security-review';
+import { post as thinkingBehindKael } from './posts/the-thinking-behind-kael';
 
 export type { BlogPost, BlogTag, BlogListItem } from './blog-types';
 
@@ -19,6 +20,7 @@ export type { BlogPost, BlogTag, BlogListItem } from './blog-types';
  * `date` and `updated`, and they should be true.
  */
 export const BLOG_POSTS: BlogPost[] = [
+  thinkingBehindKael,
   bestOfNToMindEvolution,
   aiCodeSecurity,
   introducingKael,

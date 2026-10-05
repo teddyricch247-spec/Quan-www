@@ -6,7 +6,7 @@ export const post: BlogPost = {
   title: 'Introducing Kael',
   seoTitle: 'Introducing Kael: A Composite Intelligence System in Public Beta',
   date: '2026-10-01',
-  updated: '2026-10-02',
+  updated: '2026-10-05',
   tag: 'Product',
   author: 'response-mosese',
   excerpt:
@@ -20,7 +20,7 @@ export const post: BlogPost = {
     'Quancis',
   ],
   ogImage: '/og/introducing-kael.png',
-  related: ['best-of-n-to-mind-evolution', 'why-kael-is-slower-on-purpose'],
+  related: ['the-thinking-behind-kael', 'best-of-n-to-mind-evolution'],
   body: [
     p(
       'Kael is not one model. It is a system, which we call the Composite Intelligence System, or CIS: fine-tuned language models, small language models, retrieval and other specialist models working together behind a single API call. From the outside it behaves like any other chat model. You send a request and you get a response.'
@@ -39,6 +39,10 @@ export const post: BlogPost = {
     ),
     p(
       'How much happens inside depends on the request. An easy one may be routed to the best single model, with skills, in a single internal call. A hard one can use up to about twenty calls, retrieval included. Because Kael is several models rather than one, other models can also take over a task that a component could not handle. Safety checks run on the way in and on the way out, so a harmful request or response can be stopped before it is delivered.'
+    ),
+    figure(
+      'kael-request-path',
+      'Where the work goes in one request. The figures are the ones in the text: as few as one internal call for an easy request, up to about twenty for a hard one. A simplified drawing, not a trace of a real request.'
     ),
     p(
       'This design sits in a family of ideas that researchers have been exploring under names like Best-of-N, Fusion-of-N and Mind Evolution. We wrote a longer piece on that research, [From Best-of-N to Mind Evolution](/blog/best-of-n-to-mind-evolution), including where Kael is and is not like those methods.'
