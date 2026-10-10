@@ -13,7 +13,8 @@
  */
 
 export type ExampleCategory = 'Coding' | 'Security' | 'Math' | 'Agentic';
-export type ExampleLevel = 'Off' | 'Low' | 'High' | 'Max';
+/** Kael Beta has Low, High and Max; Kael Pro Beta has z-low and z-high. There is no Off. */
+export type ExampleLevel = 'Low' | 'High' | 'Max' | 'z-low' | 'z-high';
 
 export interface KaelExample {
   id: string;
@@ -34,7 +35,8 @@ export interface KaelExample {
   placeholder: boolean;
 }
 
-/** The model ID every example was run against. Update if you add examples from a later model. */
+/** The model ID every example was run against. Placeholders assume Kael Beta; if a real example used
+ *  Kael Pro Beta (kael-pro-beta, z-low or z-high), say so in its summary. */
 export const EXAMPLE_MODEL_ID = 'kael-beta';
 
 const PROMPT_PLACEHOLDER =
@@ -94,11 +96,11 @@ export const EXAMPLES: KaelExample[] = [
     placeholder: true,
   },
   {
-    id: 'quick-answer-thinking-off',
-    title: 'A quick answer with thinking off',
+    id: 'quick-answer-low',
+    title: 'A quick answer at the Low level',
     category: 'Coding',
-    level: 'Off',
-    summary: 'The fastest Kael gets: a simple question answered with thinking switched off.',
+    level: 'Low',
+    summary: 'The quickest Kael gets: a simple question answered at the Low level.',
     prompt: PROMPT_PLACEHOLDER,
     output: OUTPUT_PLACEHOLDER,
     placeholder: true,

@@ -25,7 +25,7 @@ export const DemoCard: React.FC<{ demo: Demo }> = ({ demo }) => (
     <h3 className="mb-0 mt-3 text-[1.375rem] font-medium leading-[1.2] tracking-[-0.025em] text-ink">{demo.title}</h3>
     <p className="mb-0 mt-2 max-w-[520px] text-[0.9375rem] leading-[1.65] text-ink-2">{demo.summary}</p>
     <span className="mt-4 inline-flex items-center gap-1.5 text-[0.9375rem] font-medium text-ink">
-      Play it
+      {demo.kind === 'simulation' ? 'Try it' : 'Play it'}
       <ArrowRight
         className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
         strokeWidth={1.8}

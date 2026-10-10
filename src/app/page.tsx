@@ -9,9 +9,9 @@ import { Eyebrow, H2, Prose } from '../components/Section';
 import { ROUTES } from '../lib/routes';
 import { SITE_URL } from '../lib/seo';
 
-const HOME_TITLE = 'Quancis — Kael Composite Intelligence, Harness & Chat';
+const HOME_TITLE = 'Quancis — Kael, Quan Harness & Quan Chat';
 const HOME_DESCRIPTION =
-  'Kael drafts, checks and refines every answer. Use it through an OpenAI-compatible API, the Quan Harness coding agent, or Quan Chat.';
+  'Kael is built for accuracy: two models behind one API, plus the Quan Harness coding agent and Quan Chat. Works with the OpenAI and Anthropic SDKs.';
 
 // The home page keeps the root layout's full title (no "| Quancis" suffix) but
 // still gets its own canonical URL and og:url, like every other page.
@@ -35,8 +35,8 @@ export default function HomePage() {
       <Hero
         compact
         accent="red"
-        headline="One Model. Three Ways In."
-        subhead="Quancis builds Kael, a composite intelligence — and the products people actually use it through."
+        headline="One System. Three Ways In."
+        subhead="Quancis builds Kael, in two models, and the products people actually use it through."
       />
 
       <section className="px-[clamp(20px,5vw,48px)] pt-[clamp(48px,7vh,72px)] pb-[clamp(88px,14vh,150px)] scroll-mt-[100px]">
@@ -46,10 +46,11 @@ export default function HomePage() {
       <section className="px-[clamp(20px,5vw,48px)] pb-[clamp(88px,15vh,176px)] scroll-mt-[100px]">
         <div className="max-w-[1160px] mx-auto">
           <Eyebrow>Kael, in brief</Eyebrow>
-          <H2>The Model, At A Glance.</H2>
+          <H2>Kael, At A Glance.</H2>
           <Prose className="mb-10">
-            Kael is in beta. It is built for accuracy over speed, and it is strongest at coding, security,
-            software engineering, agentic work and math. These are the facts a developer asks for first.
+            Kael is in beta, in two models: Kael Beta and Kael Pro Beta. It is built for accuracy over speed, and it
+            is strongest at coding, security, software engineering, agentic work and math. These are the facts a
+            developer asks for first.
           </Prose>
           <SpecSheet only={['model-id', 'status', 'context', 'output', 'input', 'languages', 'formats', 'thinking']} />
           <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-3">
@@ -77,7 +78,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-[1160px]">
           <PlatformCta
             heading="Building with an API? Start with Kael."
-            body="Create an account on the Quancis Developer Platform, get a key, and point the SDK you already use at the Kael API. Sign-up is open to anyone while Kael is in beta."
+            body="Create an account on the Quancis Developer Platform, get a key, and point the SDK you already use at the Kael API, with Kael Beta or Kael Pro Beta. Sign-up is open to anyone while Kael is in beta."
           />
         </div>
       </section>

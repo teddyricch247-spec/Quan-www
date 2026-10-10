@@ -483,6 +483,63 @@ function GenericArt({ id, title }: { id: string; title: string }) {
   );
 }
 
+/* -------------------------------------------------------------- circuit */
+
+/** A circuit board seen from above: two AA cells, a three-position switch,
+ *  copper traces and a five-blade fan. */
+function CircuitArt({ id }: { id: string }) {
+  const copper = '#d9b24a';
+  return (
+    <>
+      <defs>
+        <radialGradient id={`${id}-glow`} cx="0.62" cy="0.45" r="0.6">
+          <stop offset="0" stopColor="#7fe0ff" stopOpacity="0.28" />
+          <stop offset="1" stopColor="#7fe0ff" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <rect width={W} height={H} fill={`url(#${id}-glow)`} />
+      {/* board */}
+      <rect x="40" y="52" width="560" height="296" rx="14" fill="#0b4f2c" opacity="0.92" />
+      <rect x="40" y="52" width="560" height="296" rx="14" fill="none" stroke="#e6f3ea" strokeOpacity="0.25" strokeWidth="2" />
+      {/* traces */}
+      <g fill="none" stroke={copper} strokeWidth="6" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M120 150 H78 V318 H430 V232" />
+        <path d="M232 112 H300 V176 H430" />
+        <path d="M232 112 V84 H360 V150 H430" />
+        <path d="M150 262 H190 V318" opacity="0.55" strokeWidth="4" />
+      </g>
+      {/* two AA cells */}
+      {[170, 222].map((y, i) => (
+        <g key={y}>
+          <rect x="70" y={y} width="150" height="36" rx="10" fill="#1d3f66" />
+          <rect x="70" y={y + 6} width="150" height="5" fill="#c9a63a" opacity="0.8" />
+          <rect x="220" y={y + 11} width="9" height="14" rx="2" fill="#d5dae0" />
+          <text x="145" y={y + 25} textAnchor="middle" fill="#ffde78" fontSize="13" fontWeight="600">
+            AA 1.5V
+          </text>
+          <circle cx="82" cy={y + 18} r="3" fill={i === 0 ? '#fff' : '#fff'} opacity="0.5" />
+        </g>
+      ))}
+      {/* three-position switch */}
+      <rect x="160" y="82" width="140" height="46" rx="8" fill="#232a33" />
+      <rect x="172" y="98" width="116" height="14" rx="3" fill="#0b0e12" />
+      <rect x="222" y="92" width="30" height="26" rx="4" fill="#cfd6df" />
+      <text x="190" y="144" textAnchor="middle" fill="#e6f3ea" fontSize="11" opacity="0.8">LOW</text>
+      <text x="230" y="144" textAnchor="middle" fill="#e6f3ea" fontSize="11" opacity="0.8">COM</text>
+      <text x="270" y="144" textAnchor="middle" fill="#e6f3ea" fontSize="11" opacity="0.8">HIGH</text>
+      {/* fan */}
+      <circle cx="450" cy="190" r="86" fill="none" stroke="#a9c1d6" strokeOpacity="0.35" strokeWidth="3" />
+      <g transform="translate(450 190)">
+        {[0, 72, 144, 216, 288].map((a) => (
+          <ellipse key={a} cx="38" cy="0" rx="40" ry="15" fill="#a9c1d6" opacity="0.9" transform={`rotate(${a + 12})`} />
+        ))}
+        <circle r="20" fill="#39424e" />
+        <circle r="9" fill="#8b95a1" />
+      </g>
+    </>
+  );
+}
+
 /* --------------------------------------------------------------- export */
 
 export const DemoCover: React.FC<{
@@ -511,6 +568,7 @@ export const DemoCover: React.FC<{
           {cover.art === 'snake' ? <SnakeArt id={id} /> : null}
           {cover.art === 'chess' ? <ChessArt id={id} /> : null}
           {cover.art === 'voxel' ? <VoxelArt id={id} /> : null}
+          {cover.art === 'circuit' ? <CircuitArt id={id} /> : null}
           {cover.art === 'generic' ? <GenericArt id={id} title={title} /> : null}
         </svg>
       )}

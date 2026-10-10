@@ -2,11 +2,11 @@
 
 import React, { useId, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { SPEED, STATUS_LABEL, THINKING_LEVELS } from '../../data/kael';
+import { MODELS, MODEL_BY_ID, SPEED, THINKING_LEVELS, type ThinkingLevel } from '../../data/kael';
 
 const AXIS_TICKS = [0, 100, 200, 300, 400];
 
-/** Five segments; the first `filled` are lit. Ordinal position, not a score. */
+/** Segments for one model's levels; the first `filled` are lit. Ordinal position, not a score. */
 const Meter: React.FC<{ filled: number; total: number }> = ({ filled, total }) => (
   <span className="flex items-center gap-1" aria-hidden="true">
     {Array.from({ length: total }, (_, i) => (
@@ -47,7 +47,11 @@ const RangeBar: React.FC<{
 );
 
 /**
- * Thinking-level picker plus the speed numbers.
+ * Model and thinking-level picker, plus the speed numbers.
+ *
+ * Each model owns its own levels (Kael Beta: Low, High, Max. Kael Pro Beta:
+ * z-low, z-high), so the picker is one radio group split under a heading per
+ * model. A level costs what its model costs; the detail panel says so.
  *
  * The picker is a native radio group (visually hidden inputs + styled
  * labels), so arrow keys, focus and screen-reader semantics are the
@@ -59,42 +63,51 @@ export const ThinkingLevels: React.FC = () => {
   const reduce = useReducedMotion() ?? false;
   const [activeId, setActiveId] = useState<string>(THINKING_LEVELS[0].id);
 
-  const activeIndex = Math.max(
-    0,
-    THINKING_LEVELS.findIndex((l) => l.id === activeId)
-  );
-  const active = THINKING_LEVELS[activeIndex];
+  const active: ThinkingLevel = THINKING_LEVELS.find((l) => l.id === activeId) ?? THINKING_LEVELS[0];
+  const activeModel = MODEL_BY_ID[active.model];
+  const isDefault = activeModel.defaultLevel === active.id;
 
   return (
     <div>
       <div className="grid gap-6 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
-        <fieldset className="m-0 flex min-w-0 flex-col gap-2 border-0 p-0">
-          <legend className="sr-only">Thinking level</legend>
-          {THINKING_LEVELS.map((level, i) => {
-            const inputId = `${groupId}-${level.id}`;
+        <fieldset className="m-0 flex min-w-0 flex-col gap-6 border-0 p-0">
+          <legend className="sr-only">Model and thinking level</legend>
+          {MODELS.map((model) => {
+            const levels = THINKING_LEVELS.filter((l) => l.model === model.id);
             return (
-              <div key={level.id}>
-                <input
-                  id={inputId}
-                  type="radio"
-                  name={groupId}
-                  value={level.id}
-                  checked={level.id === activeId}
-                  onChange={() => setActiveId(level.id)}
-                  className="peer sr-only"
-                />
-                <label
-                  htmlFor={inputId}
-                  className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-line bg-white px-5 py-4 transition-colors hover:border-[#D2D2CD] peer-checked:border-ink peer-checked:shadow-[0_0_0_1px_var(--color-ink)] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent-blue"
-                >
-                  <span className="flex flex-col">
-                    <span className="text-[1.0625rem] font-medium text-ink">{level.label}</span>
-                    <span className={`text-sm ${level.status === 'soon' ? 'text-ink-3' : 'text-ink-2'}`}>
-                      {STATUS_LABEL[level.status]}
-                    </span>
-                  </span>
-                  <Meter filled={i + 1} total={THINKING_LEVELS.length} />
-                </label>
+              <div key={model.id} className="flex flex-col gap-2">
+                <div className="mb-1 flex items-baseline justify-between gap-4 px-1">
+                  <span className="text-sm font-medium text-ink">{model.name}</span>
+                  <span className="font-mono text-xs text-ink-3">{model.id}</span>
+                </div>
+                {levels.map((level, i) => {
+                  const inputId = `${groupId}-${level.id}`;
+                  return (
+                    <div key={level.id}>
+                      <input
+                        id={inputId}
+                        type="radio"
+                        name={groupId}
+                        value={level.id}
+                        checked={level.id === activeId}
+                        onChange={() => setActiveId(level.id)}
+                        className="peer sr-only"
+                      />
+                      <label
+                        htmlFor={inputId}
+                        className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-line bg-white px-5 py-4 transition-colors hover:border-[#D2D2CD] peer-checked:border-ink peer-checked:shadow-[0_0_0_1px_var(--color-ink)] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent-blue"
+                      >
+                        <span className="flex flex-col">
+                          <span className="text-[1.0625rem] font-medium text-ink">{level.label}</span>
+                          <span className="text-sm text-ink-2">
+                            {model.defaultLevel === level.id ? 'Default' : 'Available'}
+                          </span>
+                        </span>
+                        <Meter filled={i + 1} total={levels.length} />
+                      </label>
+                    </div>
+                  );
+                })}
               </div>
             );
           })}
@@ -113,7 +126,8 @@ export const ThinkingLevels: React.FC = () => {
                 <h3 className="m-0 text-[1.75rem] font-medium leading-none tracking-[-0.03em] text-ink">
                   {active.label}
                 </h3>
-                <span className="badge-pill badge-pill-neutral">{STATUS_LABEL[active.status]}</span>
+                <span className="badge-pill badge-pill-neutral">{activeModel.name}</span>
+                {isDefault ? <span className="badge-pill badge-pill-neutral">Default</span> : null}
               </div>
 
               <p className="mb-0 mt-5 max-w-[520px] text-[1.0625rem] leading-[1.65] text-ink-2">{active.blurb}</p>
@@ -123,11 +137,10 @@ export const ThinkingLevels: React.FC = () => {
                   <dt className="text-sm text-ink-3">Input</dt>
                   <dd className="m-0 mt-1">
                     <span className="text-[2rem] font-medium leading-none tracking-[-0.03em] tabular-nums text-ink">
-                      {active.input}
+                      {activeModel.input}
                     </span>
                     <span className="mt-1.5 block text-sm leading-[1.5] text-ink-2">
-                      per 1M tokens
-                      {active.cachedInput ? `, or ${active.cachedInput} when cached` : ''}
+                      per 1M tokens, or {activeModel.cachedInput} when cached
                     </span>
                   </dd>
                 </div>
@@ -135,7 +148,7 @@ export const ThinkingLevels: React.FC = () => {
                   <dt className="text-sm text-ink-3">Output</dt>
                   <dd className="m-0 mt-1">
                     <span className="text-[2rem] font-medium leading-none tracking-[-0.03em] tabular-nums text-ink">
-                      {active.output}
+                      {activeModel.output}
                     </span>
                     <span className="mt-1.5 block text-sm leading-[1.5] text-ink-2">per 1M tokens</span>
                   </dd>
@@ -143,14 +156,12 @@ export const ThinkingLevels: React.FC = () => {
               </dl>
 
               <p className="mb-0 mt-6 text-sm leading-[1.65] text-ink-2">
-                {active.useFor ? (
-                  <>
-                    <span className="font-medium text-ink">Good for: </span>
-                    {active.useFor}
-                  </>
-                ) : (
-                  'Not released yet, and there is no launch date.'
-                )}
+                <span className="font-medium text-ink">Good for: </span>
+                {active.useFor}
+              </p>
+              <p className="mb-0 mt-3 text-sm leading-[1.65] text-ink-3">
+                Set it with <span className="font-mono text-ink-2">reasoning_effort</span>
+                {`: "${active.id}"`}, on {activeModel.name} only.
               </p>
             </motion.div>
           </AnimatePresence>
@@ -160,40 +171,29 @@ export const ThinkingLevels: React.FC = () => {
       <div className="card-panel mt-6 p-7 sm:p-9">
         <div className="grid gap-8 md:grid-cols-2">
           <div>
-            <h3 className="m-0 text-[1.0625rem] font-medium text-ink">Thinking on, at any level</h3>
+            <h3 className="m-0 text-[1.0625rem] font-medium text-ink">Every level thinks first</h3>
             <p className="mb-0 mt-2 text-sm leading-[1.65] text-ink-2">
-              Thinking takes about {SPEED.thinkingOn.thinkingTime} as long as an average AI model’s. Once it starts
-              writing, the answer streams out fast.
+              Thinking takes about {SPEED.thinkingTime} as long as an average AI model’s, at any level. There is
+              no Off setting. Higher levels wait longer before the first word.
             </p>
           </div>
           <div>
-            <h3 className="m-0 text-[1.0625rem] font-medium text-ink">Thinking off</h3>
+            <h3 className="m-0 text-[1.0625rem] font-medium text-ink">Then it writes fast</h3>
             <p className="mb-0 mt-2 text-sm leading-[1.65] text-ink-2">
-              With thinking off, the first word usually arrives in {SPEED.thinkingOff.firstWordLow} to{' '}
-              {SPEED.thinkingOff.firstWordHigh} seconds.
+              Once it starts writing, expect {SPEED.tpsLow} to {SPEED.tpsHigh} tokens per second, in every mode.
             </p>
           </div>
         </div>
 
-        <figure className="m-0 mt-8" aria-label="Output speed in tokens per second, thinking on versus off">
-          <div className="flex flex-col gap-5">
-            <RangeBar
-              label="Thinking on"
-              low={SPEED.thinkingOn.tpsLow}
-              high={SPEED.thinkingOn.tpsHigh}
-              max={SPEED.tpsAxisMax}
-              fillClass="bg-accent-red"
-              reduce={reduce}
-            />
-            <RangeBar
-              label="Thinking off"
-              low={SPEED.thinkingOff.tpsLow}
-              high={SPEED.thinkingOff.tpsHigh}
-              max={SPEED.tpsAxisMax}
-              fillClass="bg-ink"
-              reduce={reduce}
-            />
-          </div>
+        <figure className="m-0 mt-8" aria-label="Output speed in tokens per second, once Kael starts writing">
+          <RangeBar
+            label="Output speed, all levels"
+            low={SPEED.tpsLow}
+            high={SPEED.tpsHigh}
+            max={SPEED.tpsAxisMax}
+            fillClass="bg-accent-red"
+            reduce={reduce}
+          />
           <div className="mt-2 flex justify-between text-xs text-ink-3" aria-hidden="true">
             {AXIS_TICKS.map((t) => (
               <span key={t}>{t}</span>
