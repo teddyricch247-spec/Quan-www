@@ -7,7 +7,7 @@ import { breadcrumbJsonLd, collectionPageJsonLd, pageMetadata } from '../../lib/
 
 const TITLE = 'Blog — AI Systems Research and Engineering Notes';
 const DESCRIPTION =
-  'Long-form notes from Quancis: how AI systems spend extra compute, the security of AI-written code, and how Kael, our composite intelligence, is built and used.';
+  'Long-form notes from Quancis: how AI systems spend extra compute, the security of AI-written code, and the thinking behind Kael and how to use it.';
 
 export const metadata: Metadata = {
   ...pageMetadata({ title: TITLE, description: DESCRIPTION, path: '/blog' }),

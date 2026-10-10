@@ -29,10 +29,10 @@ const PRODUCTS: Product[] = [
     accent: 'red',
     scene: 'kael',
     name: 'Kael',
-    category: 'The model, as an API.',
-    headline: 'Many Models. One Answer.',
+    category: 'The models, as an API.',
+    headline: 'Two Models. One API.',
     body:
-      'Kael is a system, not a single model: a draft is produced, checked, and refined before anything comes back to you. You call one endpoint, in the request format you already send.',
+      'Kael comes in two models: Kael Beta for most work, and Kael Pro Beta for the hardest problems. You call one endpoint, in the request format you already send.',
     formats: ['Chat Completions', 'Responses', 'Anthropic Messages'],
     href: ROUTES.kael,
     cta: 'Explore Kael',
@@ -63,9 +63,9 @@ const PRODUCTS: Product[] = [
     scene: 'chat',
     name: 'Quan Chat',
     category: 'The assistant.',
-    headline: 'Just Ask. It Checks Before It Answers.',
+    headline: 'Just Ask. Get A Considered Answer.',
     body:
-      'The same system as the API and Harness, in a conversation. Every answer is checked before it reaches you.',
+      'The same Kael as the API and Harness, in a conversation. Built for accuracy over speed, so it thinks before it answers.',
     points: [
       'Deep reasoning for the hard questions',
       'Web access for when the answer is out there',

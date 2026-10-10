@@ -19,15 +19,15 @@ export const SOCIAL_PROFILES: readonly string[] = [];
  * `updated` in src/data/posts.)
  */
 export const PAGE_UPDATED: Record<string, string> = {
-  '/': '2026-10-04',
-  '/kael': '2026-10-04',
-  '/kael/demo': '2026-10-04',
-  '/harness': '2026-10-02',
-  '/chat': '2026-10-02',
-  '/pricing': '2026-10-03',
-  '/examples': '2026-10-02',
-  '/about': '2026-10-03',
-  '/contact': '2026-10-02',
+  '/': '2026-10-10',
+  '/kael': '2026-10-10',
+  '/kael/demo': '2026-10-10',
+  '/harness': '2026-10-10',
+  '/chat': '2026-10-10',
+  '/pricing': '2026-10-10',
+  '/examples': '2026-10-10',
+  '/about': '2026-10-10',
+  '/contact': '2026-10-10',
   '/blog': '2026-10-05',
   '/legal': '2026-10-02',
 };
@@ -103,7 +103,7 @@ export function organizationJsonLd(): JsonLdNode {
       height: 512,
     },
     description:
-      'Quancis builds Kael, a composite intelligence system, and the products people use it through: the Kael API, the Quan Harness coding agent and Quan Chat.',
+      'Quancis builds Kael, in two models, and the products people use it through: the Kael API, the Quan Harness coding agent and Quan Chat.',
     email: ORG.email.business,
     founder: { '@type': 'Person', name: ORG.owner },
     address: {

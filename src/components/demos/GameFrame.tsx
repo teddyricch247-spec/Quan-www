@@ -5,7 +5,7 @@ import { Download, ExternalLink, Maximize2, Play, Square } from 'lucide-react';
 
 /**
  * The player on a demo's page. It shows the cover with a Play button, and only
- * loads the demo (three.js, WebGL context, audio) once someone presses Play, so
+ * loads the demo (three.js, WebGL context, audio) once someone presses the button, so
  * the page is fast and nothing starts making noise or grabbing the keyboard on
  * its own. Stop unloads it again and frees the GPU context.
  *
@@ -20,8 +20,10 @@ export const GameFrame: React.FC<{
   src: string;
   title: string;
   fileHref: string;
+  /** 'Play' for a game, 'Try' for a simulation. */
+  verb?: 'Play' | 'Try';
   children: React.ReactNode;
-}> = ({ src, title, fileHref, children }) => {
+}> = ({ src, title, fileHref, verb = 'Play', children }) => {
   const [playing, setPlaying] = useState(false);
   const [canFullscreen, setCanFullscreen] = useState(false);
   const frameRef = useRef<HTMLIFrameElement>(null);
@@ -56,7 +58,7 @@ export const GameFrame: React.FC<{
           <button
             type="button"
             onClick={() => setPlaying(true)}
-            aria-label={`Play ${title}`}
+            aria-label={`${verb} ${title}`}
             className="group absolute inset-0 block h-full w-full cursor-pointer text-left"
           >
             <div className="absolute inset-0 transition-transform duration-700 ease-out group-hover:scale-[1.02]">
@@ -69,7 +71,7 @@ export const GameFrame: React.FC<{
             <span className="absolute inset-0 flex items-center justify-center">
               <span className="btn-pill btn-pill-glass">
                 <Play className="h-4 w-4" strokeWidth={2} fill="currentColor" />
-                Play {title}
+                {verb} {title}
               </span>
             </span>
           </button>

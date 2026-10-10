@@ -7,7 +7,7 @@ import { ROUTES } from '../../lib/routes';
 import { aboutPageJsonLd, breadcrumbJsonLd, pageMetadata } from '../../lib/seo';
 
 const ABOUT_DESCRIPTION =
-  'Quancis builds Kael, a composite intelligence, and the products people use it through. Where the name comes from, what we care about, what Kael is built on and what is not available yet.';
+  'Quancis builds Kael, in two models, and the products people use it through. Where the name comes from, what we care about, what we do not publish and what is not available yet.';
 
 export const metadata: Metadata = pageMetadata({
   title: 'About Quancis',
@@ -45,15 +45,15 @@ const BELIEFS: { title: string; body: string }[] = [
 // what does not exist today, so nobody has to guess.
 const NOT_YET: string[] = [
   'A model card or formal technical report',
-  'Published rate limits and uptime or SLA figures',
+  'Uptime or SLA figures (the rate limits are published, in the docs and on the Kael page)',
   'Published benchmark results',
-  'The Auto thinking level, and the z-low and z-high levels',
+  'An Auto thinking level, where Kael decides how much to think',
   'Support for PDFs, video and other file types',
   'Support for languages other than English',
 ];
 
 const PRODUCTS: { name: string; line: string; href: string }[] = [
-  { name: 'Kael', line: 'The model itself, behind an API.', href: ROUTES.kael },
+  { name: 'Kael', line: 'The system itself, behind an API.', href: ROUTES.kael },
   { name: 'Quan Harness', line: 'An agent that works on your codebase.', href: ROUTES.harness },
   { name: 'Quan Chat', line: 'Kael, in a conversation.', href: ROUTES.chat },
 ];
@@ -74,7 +74,7 @@ export default function AboutPage() {
         <span className="page-eyebrow">Quancis</span>
         <h1 className="page-title mt-3.5">About Quancis.</h1>
         <p className="page-lead mt-4">
-          We build Kael, a composite intelligence, and the products people use it through.
+          We build Kael, in two models, and the products people use it through.
         </p>
 
         {/* ================= THE NAME ================= */}
@@ -85,8 +85,8 @@ export default function AboutPage() {
           </h2>
           <p className="max-w-[680px] text-ink-2 leading-[1.7]" style={PROSE_STYLE}>
             Quancis comes from <em className="not-italic text-ink">quán</em>, the Chinese word for the whole.
-            Kael works the same way: many intelligences, one answer. Behind each reply, a draft is written,
-            checked against what you asked, and refined, and only the refined version reaches you.
+            Kael is that idea applied to answers: one Kael, in two models, built to be right rather than quick.
+            Kael Beta is for most work. Kael Pro Beta is the most thorough, for the hardest problems.
           </p>
         </section>
 
@@ -140,14 +140,14 @@ export default function AboutPage() {
 
         {/* ================= WHAT KAEL IS BUILT ON ================= */}
         <section id="built-on" className={SECTION_CLASS}>
-          <span className={EYEBROW_CLASS}>Under the hood</span>
+          <span className={EYEBROW_CLASS}>What we publish</span>
           <h2 className={H2_CLASS} style={H2_STYLE}>
-            What Kael Is Built On.
+            What We Do Not Publish.
           </h2>
           <p className="max-w-[680px] text-ink-2 leading-[1.7]" style={PROSE_STYLE}>
-            Kael is not trained from scratch. Its component models start from open-weight models and are
-            fine-tuned by Quancis so that each one understands the environment it runs in and works properly
-            inside the system. The weights are closed, and we do not publish the names of the component models.
+            Quancis does not publish how Kael is built or which components it uses, and Kael will not say. The
+            weights are closed. What we do publish is what each model is for, what it costs, its limits and what
+            we keep from your requests.
           </p>
         </section>
 

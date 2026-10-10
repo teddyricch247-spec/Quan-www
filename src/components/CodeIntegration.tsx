@@ -12,14 +12,14 @@ type Lang = 'python' | 'typescript' | 'curl' | 'langchain' | 'responses';
 const CODE_SNIPPETS: Record<Lang, string> = {
   python: `import openai
 
-# Quancis is 100% drop-in compatible with the OpenAI SDK.
+# Kael speaks the OpenAI Chat Completions format, so the OpenAI SDK works.
 client = openai.OpenAI(
     api_key="sk-quan-...",
     base_url="https://api.quancis.space/v1",
 )
 
 response = client.chat.completions.create(
-    model="kael-beta",
+    model="kael-beta",  # or "kael-pro-beta" for the hardest problems
     messages=[
         {"role": "system", "content": "You are a helpful coding assistant."},
         {"role": "user", "content": "Refactor our distributed cache..."},

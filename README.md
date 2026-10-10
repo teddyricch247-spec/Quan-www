@@ -50,7 +50,7 @@ src/app/error.tsx           friendly error page (same look as the 404)
 src/app/about, contact, pricing, examples/   company pages, the pricing overview, and the Kael examples gallery
 src/app/*/opengraph-image.png  the share image for that route (drawn by scripts/make-og.py, see "Share images")
 src/components/             Hero, AskAnything, ProductShowcase, SystemStory, Section, PlaceholderNote, PlatformCta, JsonLd, BrandMark, LowPolyScene, CodeIntegration
-src/components/kael/        the building blocks of the /kael page (spec sheet, pricing table, thinking levels, pipeline, FAQ)
+src/components/kael/        the building blocks of the /kael page (spec sheet, models overview, pricing table, thinking levels, FAQ). `PipelineSteps.tsx` is no longer used; delete it by hand
 src/components/blog/        PostBody (renders a post), Inline (links/bold/code), FlowFigure, BarFigure, RangeFigure, figures/index.tsx (every figure), figures/svg.tsx (drawing helpers), figures/theory.tsx and figures/more.tsx (the drawn SVG figures)
 src/components/examples/    ExamplesGallery (filterable cards)
 src/components/demos/       DemoCard, DemoCover (drawn SVG covers), GameFrame (the click-to-play player), Provenance ("made in chat")
@@ -66,7 +66,7 @@ src/data/posts/*.ts         one file per blog post — see "Writing a blog post"
 src/data/blog.ts            the list of posts + helpers (reading time, related posts, authors)
 src/data/blog-types.ts      the block types a post is made of
 src/data/examples.ts        the examples shown on /examples (all placeholders for now)
-src/data/kael.ts            every number and string on /kael (specs, pricing, speed, FAQ) — edit here, not in the page
+src/data/kael.ts            every number and string on /kael (the two models, levels, pricing, speed, limits, FAQ). Its source of truth is the Platform repo (backend/app/models/kael/config.py). Describe what a model is for, never how it works — edit here, not in the page
 scripts/make-og.py          draws the share images and the logo
 src/data/demos.ts           every demo (copy, controls, cover, origin story) — add a demo here
 src/lib/demoFiles.ts        reads a demo's HTML file at build time for its line count / size (server-only)
@@ -97,8 +97,8 @@ Nothing else in the app needs to change either way.
 
 | Route | Accent | Notes |
 |---|---|---|
-| `/` | red (no CTA) | hero, three product rows (each led by a 3D scene), "Kael, in brief" spec sheet (with links to Kael and to the demos), the "One Intelligence" story, a Developer Platform call-to-action |
-| `/kael` | red | full model page: spec sheet, thinking levels, pricing (input, cached input, output), data, integration, a Demos strip, FAQ. Benchmarks are deliberately number-free: independent results only, none self-reported |
+| `/` | red (no CTA) | hero, three product rows (each led by a 3D scene), "Kael, in brief" spec sheet (with links to Kael and to the demos), the "One Name. Built For Accuracy." story, a Developer Platform call-to-action |
+| `/kael` | red | full page for both models (Kael Beta, Kael Pro Beta): spec sheet, models overview, thinking levels per model, pricing per model (input, cached input, output), data, integration, a Demos strip, FAQ. Benchmarks are deliberately number-free: independent results only, none self-reported |
 | `/kael/demo` | red | the demo hub: cover cards, "how they were made", "a demo is not a benchmark". `/demo` and `/demo/<slug>` redirect here |
 | `/kael/demo/[slug]` | red | one page per demo: click-to-play player, about, controls, spec list, more demos |
 | `/harness` | harness (indigo) | harness-vs-agent positioning, the 3D "In Action" demo, the cloud environment |
@@ -177,9 +177,13 @@ Not in the code, and what actually moves rankings:
 ## Demos
 
 `/kael/demo` is the hub; each demo has its own page at `/kael/demo/<slug>` with
-the playable game on it. The demos, **Blockscape** (a voxel sandbox), **Ouroboros**
-(3D snake survival) and **3D Chess** (with an AI opponent), were written by Kael
-in a chat conversation as single HTML files, and the pages say so. Every demo
+the demo on it. The demos, **Fan Circuit** (a working 3D circuit, Kael Pro Beta),
+**Blockscape** (a voxel sandbox), **Ouroboros** (3D snake survival) and **3D Chess**
+(with an AI opponent), were each made with a single prompt inside a chat interface,
+with no tools: one take. The pages say so. A demo can record the request behind it
+(`madeWith`: model, level, exact prompt, tokens, time) and can carry an `editNote` when
+the published file differs from Kael's reply (3D Chess has one). `kind: 'simulation'`
+changes the labels from Play/How to play to Try/How to use it. Every demo
 page and the hub also offer the HTML file as a download (an `<a download>` link
 to the same file in `public/demo-files/`, so there is nothing extra to add). Every number
 (lines, KB) is read from the HTML file at build time; nothing is typed in twice.
@@ -222,8 +226,11 @@ different origin story (made in Harness, made through the API) add a key to
   true (Ouroboros keeps its best score in `localStorage`, Blockscape keeps its
   world in IndexedDB; nothing is sent anywhere), but you may want a line about
   the CDNs there.
-- The HTML files are exactly as pasted from the chat; nothing in them was changed
-  for this site, so they have no link back to Quancis. That is on purpose.
+- The HTML files are as pasted from the chat; nothing in them was changed for this
+  site, so they have no link back to Quancis. That is on purpose. One exception:
+  `chess.html` was fixed by hand after Kael's reply (see the 4 October entry in
+  CHANGES.md), and its page says so (`editNote`). If you have Kael's original
+  one-take file, swap it in and delete the note.
 - Covers are drawn SVG, not screenshots (there was no browser or GPU where this
   was written). Replace them with real screenshots when you have them.
 - Like the rest of this repo, **none of this was built or run** here (no network

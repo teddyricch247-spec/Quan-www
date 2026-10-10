@@ -37,15 +37,15 @@ SITE = "www.quancis.space"
 
 # (route folder under src/app, eyebrow, title, subtitle, alt text)
 ROUTES = [
-    ("", "Quancis", "One Model. Three Ways In.",
-     "Kael, Quan Harness and Quan Chat, built on a composite intelligence.",
-     "Quancis: one model, three ways in. Kael, Quan Harness and Quan Chat."),
-    ("kael", "Kael  /  API", "A Composite Intelligence, Built For Accuracy.",
-     "Draft, check, refine. Works with the SDKs you already use.",
-     "Kael: a composite intelligence built for accuracy."),
+    ("", "Quancis", "One System. Three Ways In.",
+     "Two models behind one API, plus Quan Harness and Quan Chat.",
+     "Quancis: one system, three ways in. Kael in two models, plus Quan Harness and Quan Chat."),
+    ("kael", "Kael  /  API", "Built To Be Right, Not Just Fast.",
+     "Kael Beta and Kael Pro Beta. Works with the SDKs you already use.",
+     "Kael: two models, built for accuracy."),
     ("kael/demo", "Kael  /  Demos", "Built In Chat.",
-     "Playable 3D games Kael wrote in a chat window, as single HTML files.",
-     "Kael demos: playable 3D games written in a chat window."),
+     "Games and simulations Kael wrote in one take, as single HTML files.",
+     "Kael demos: games and simulations written in one take in a chat window."),
     ("harness", "Quan Harness  /  Coding agent", "An Agent That Ships.",
      "Plans, writes and finishes the work. Built on Kael.",
      "Quan Harness: a coding agent that ships."),
@@ -62,7 +62,7 @@ ROUTES = [
      "Pay per token through the API, or one subscription for the apps.",
      "Quancis pricing."),
     ("about", "Company", "About Quancis.",
-     "Many parts, one answer.",
+     "Built for accuracy, not speed.",
      "About Quancis."),
     ("contact", "Company", "Contact Us.",
      "support@quancis.space  /  response@quancis.space",
@@ -87,6 +87,8 @@ POSTS = [
 # (slug, label above the title, title, subtitle). One card per demo, written to
 # public/og/demo-<slug>.png. Keep in step with src/data/demos.ts (`ogImage`).
 DEMOS = [
+    ("fan-circuit", "Kael  /  Demo", "Fan Circuit.",
+     "A working 3D circuit: a fan on two AA cells, written by Kael Pro Beta in one take."),
     ("blockscape", "Kael  /  Demo", "Blockscape.",
      "A voxel sandbox with a day and night cycle, written in chat as one HTML file."),
     ("ouroboros", "Kael  /  Demo", "Ouroboros.",

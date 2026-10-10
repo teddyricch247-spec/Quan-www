@@ -19,7 +19,7 @@ export const Footer: React.FC = () => {
             <span aria-hidden="true">uancis</span>
           </span>
           <p className="mt-4 max-w-[320px] text-sm leading-relaxed text-ink-2">
-            A composite intelligence — and the products people actually use it through.
+            Kael, built for accuracy — and the products people actually use it through.
           </p>
         </div>
 

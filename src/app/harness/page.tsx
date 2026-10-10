@@ -10,7 +10,7 @@ import { JsonLd } from '../../components/JsonLd';
 import { breadcrumbJsonLd, pageMetadata, softwareApplicationJsonLd } from '../../lib/seo';
 
 const HARNESS_DESCRIPTION =
-  'Built on Kael, the same composite intelligence behind the API. Point it at a codebase and it plans, writes, and finishes the work — not just suggests it.';
+  'Built on Kael, the same models behind the API. Point it at a codebase and it plans, writes, and finishes the work — not just suggests it.';
 
 export const metadata: Metadata = pageMetadata({
   title: 'Quan Harness — Cloud Coding Agent Built on Kael',
@@ -66,7 +66,7 @@ export default function HarnessPage() {
         accent="harness"
         eyebrow="Quan Harness"
         headline="An Agent That Ships."
-        subhead="Built on Kael, the same composite intelligence behind the API. Point it at a codebase and it plans, writes, and finishes the work — not just suggests it."
+        subhead="Built on Kael, the same models behind the API. Point it at a codebase and it plans, writes, and finishes the work — not just suggests it."
         cta={{ label: 'Start With Harness', href: EXTERNAL.appHarness, external: true }}
       />
 
@@ -82,8 +82,7 @@ export default function HarnessPage() {
           </h2>
           <p className="max-w-[720px] text-ink-2 leading-[1.7]" style={{ fontSize: 'clamp(1.0625rem, 1.4vw, 1.1875rem)' }}>
             Describe the change. Harness reads the codebase, plans the change, writes it, and checks its own work
-            before handing it back — the same draft-then-check discipline that makes Kael what it is, applied to
-            your repo.
+            before handing it back, built on Kael, which is made for accuracy over speed.
           </p>
         </div>
       </section>
@@ -256,7 +255,7 @@ export default function HarnessPage() {
           </h2>
           <p className="max-w-[720px] text-ink-2 leading-[1.7]" style={{ fontSize: 'clamp(1.0625rem, 1.4vw, 1.1875rem)' }}>
             Harness runs on Kael, so it shares Kael&apos;s character: accuracy over speed, strongest at code,
-            security and multi-step engineering work. If you want the model without the agent around it, the same
+            security and multi-step engineering work. If you want the system without the agent around it, the same
             system is available as an API.
           </p>
           <Link
@@ -290,7 +289,7 @@ export default function HarnessPage() {
               </a>
             </div>
             <p className="mx-auto mb-0 mt-7 max-w-[520px] text-sm leading-[1.6] text-ink-3">
-              Want the model without the agent? Harness runs on Kael, which you can call directly through the{' '}
+              Want the system without the agent? Harness runs on Kael, which you can call directly through the{' '}
               <a
                 href={EXTERNAL.platform}
                 className="border-b border-[#D5D5D1] font-medium text-ink-2 transition-colors hover:border-ink hover:text-ink"
