@@ -13,7 +13,7 @@ import { getDemoFileStats } from '../../../lib/demoFiles';
 export const metadata: Metadata = pageMetadata({
   title: 'Kael Demos',
   description:
-    'Playable 3D games that Kael wrote in a chat window, with no building tools, as single HTML files. Play them in your browser.',
+    'Games and simulations that Kael wrote in one take: a single prompt in a chat window, no tools, as single HTML files. Try them in your browser.',
   path: ROUTES.demo,
 });
 
@@ -53,8 +53,8 @@ export default function DemoHubPage() {
           <span className="page-eyebrow">Kael · Demos</span>
           <h1 className="page-title mt-3.5">Built In Chat.</h1>
           <p className="page-lead mt-4" style={{ maxWidth: 640 }}>
-            Playable 3D games that Kael wrote in a chat window, with no building tools, each as a single HTML
-            file. Play them here, in your browser.
+            Games and simulations that Kael wrote from a single prompt in a chat window, with no tools, each as a
+            single HTML file. Try them here, in your browser.
           </p>
           <p className="mb-0 mt-5 text-sm text-ink-3">
             <a
@@ -84,8 +84,11 @@ export default function DemoHubPage() {
         <Eyebrow>How they were made</Eyebrow>
         <H2>Just A Chat Window.</H2>
         <Prose className="mb-10">
-          Every demo here was made in a conversation with Kael. Kael had no building tools, and wrote each
-          one as a single HTML file, as text in the chat. What you play is that file.
+          Every demo here was made with a single prompt inside a chat interface, with no tools. That makes
+          each one a single take: Kael wrote the whole file as text in the chat, and nobody asked it to
+          re-check or fix anything afterwards. What you try is that file. Each demo’s page says which model
+          and thinking level made it, and gives the exact prompt where we recorded it. If a file was changed
+          after Kael’s reply, that page says so.
         </Prose>
         <Provenance origin="kael-chat" />
       </Section>

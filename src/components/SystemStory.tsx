@@ -2,24 +2,24 @@ import React from 'react';
 
 const STEPS: { title: string; body: string }[] = [
   {
-    title: 'Draft',
-    body: 'A first pass at the answer is produced, the way any single model would attempt it.',
+    title: 'Accuracy over speed',
+    body: 'Kael thinks before it answers, and takes longer than most models on purpose.',
   },
   {
-    title: 'Check',
-    body: 'That draft is reviewed against the request before it reaches you, catching what one pass tends to miss.',
+    title: 'Two models',
+    body: 'Kael Beta for most work. Kael Pro Beta, the most thorough, for the hardest problems.',
   },
   {
-    title: 'Refine',
-    body: 'The system corrects what the check found, and only the refined result comes back.',
+    title: 'Honest limits',
+    body: 'Text and images in, English only, and no benchmark numbers until independent results exist.',
   },
 ];
 
 /**
- * "One Intelligence. A Whole System Inside It." — the why behind the
- * three products above. The three steps are a genuine sequence (the same
- * draft, check, refine loop described on /kael), so they are drawn as one:
- * brand-mark squares on a hairline spine, the last one in the brand red.
+ * "One Name. Built For Accuracy." — the why behind the three products above.
+ * The three points say what Kael is for, never how it produces an answer. They
+ * are drawn as brand-mark squares on a hairline spine, the last one in the
+ * brand red.
  */
 export const SystemStory: React.FC = () => {
   return (
@@ -29,7 +29,7 @@ export const SystemStory: React.FC = () => {
           className="m-0 mb-6 font-medium text-ink leading-[1.14] tracking-[-0.032em]"
           style={{ fontSize: 'clamp(1.75rem, 3.3vw, 2.6rem)' }}
         >
-          One Intelligence. A Whole System Inside It.
+          One Name. Built For Accuracy.
         </h2>
 
         <p className="max-w-[540px] text-ink-2 leading-[1.7]" style={{ fontSize: 'clamp(1.0625rem, 1.4vw, 1.1875rem)' }}>
@@ -42,8 +42,8 @@ export const SystemStory: React.FC = () => {
           className="mt-[clamp(20px,3vh,28px)] max-w-[540px] text-ink-2 leading-[1.7]"
           style={{ fontSize: 'clamp(1.0625rem, 1.4vw, 1.1875rem)' }}
         >
-          Kael works the same way: many intelligences, one answer. The API, Harness, and Chat are three ways of
-          reaching the same system.
+          Kael is that idea applied to answers: one Kael, in two models, built to be right. The API, Harness, and
+          Chat are three ways of reaching it.
         </p>
       </div>
 

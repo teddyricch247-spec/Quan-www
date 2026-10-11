@@ -21,7 +21,7 @@ const PROSE_STYLE = { fontSize: '1.0625rem' } as const;
 // One line per product: who it is for, and where to go. Mirrors the "Where
 // to use it" section on the Kael page.
 const WHICH_ONE: { need: string; name: string; href: string }[] = [
-  { need: 'You are building with the model.', name: 'The Kael API', href: ROUTES.kael },
+  { need: 'You are building with Kael.', name: 'The Kael API', href: ROUTES.kael },
   { need: 'You want an agent working on your codebase.', name: 'Quan Harness', href: ROUTES.harness },
   { need: 'You want to ask it things.', name: 'Quan Chat', href: ROUTES.chat },
 ];
@@ -50,10 +50,9 @@ export default function PricingPage() {
             Pay For What You Use.
           </h2>
           <p className="mb-9 max-w-[720px] text-ink-2 leading-[1.7]" style={PROSE_STYLE}>
-            Pricing is usage-based, per million tokens. The three levels you can use today cost the same. The Z
-            levels, when they launch, cost more because they send requests through a different internal route.
-            You are billed for your own input tokens and the final output tokens only. The extra model calls Kael
-            makes inside the system are never billed to you.
+            Pricing is usage-based, per million tokens, and each model has its own price. Kael Beta costs the
+            same at Low, High and Max. Kael Pro Beta, the most thorough model, costs more per token at both of
+            its levels. You are billed once, for your input and the final answer, nothing else.
           </p>
           <PricingTable />
           <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-3">

@@ -20,9 +20,9 @@ const jetBrainsMono = JetBrains_Mono({
   display: 'swap',
 });
 
-const DEFAULT_TITLE = 'Quancis — Kael Composite Intelligence, Harness & Chat';
+const DEFAULT_TITLE = 'Quancis — Kael, Quan Harness & Quan Chat';
 const DEFAULT_DESCRIPTION =
-  'Kael drafts, checks and refines every answer. Use it through an OpenAI-compatible API, the Quan Harness coding agent, or Quan Chat.';
+  'Kael is built for accuracy: two models behind one API, plus the Quan Harness coding agent and Quan Chat. Works with the OpenAI and Anthropic SDKs.';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

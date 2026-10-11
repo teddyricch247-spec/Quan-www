@@ -8,10 +8,10 @@ import { ACCENT_GLASS_DARK_CLASS } from '../../lib/accents';
 import { JsonLd } from '../../components/JsonLd';
 import { breadcrumbJsonLd, pageMetadata, softwareApplicationJsonLd } from '../../lib/seo';
 
-const CHAT_DESCRIPTION = 'The same composite intelligence behind the API and behind Harness — here, just talk to it.';
+const CHAT_DESCRIPTION = 'The same Kael behind the API and behind Harness — here, just talk to it.';
 
 export const metadata: Metadata = pageMetadata({
-  title: 'Quan Chat — AI Assistant That Checks Its Answers',
+  title: 'Quan Chat — Kael In A Conversation',
   description: CHAT_DESCRIPTION,
   path: '/chat',
 });
@@ -43,7 +43,7 @@ export default function ChatPage() {
         accent="chat"
         eyebrow="Quan Chat"
         headline="Kael, In A Conversation."
-        subhead="The same composite intelligence behind the API and behind Harness — here, just talk to it."
+        subhead="The same Kael behind the API and behind Harness — here, just talk to it."
       />
 
       {/* ================= LIVE DEMO ================= */}
@@ -57,16 +57,16 @@ export default function ChatPage() {
           <div>
             <span className={EYEBROW}>What Makes It Different</span>
             <h2 className={H2_CLASS} style={H2_STYLE}>
-              Not One Model Guessing. A Whole System.
+              Built For Accuracy, Not Speed.
             </h2>
             <p className={`${PROSE_CLASS} mb-5`} style={PROSE_STYLE}>
-              Most chat products put one model in front of you and hope for the best. Chat sits in front of the
-              same draft-then-check system that powers Kael and Harness: behind each answer, a draft is written,
-              checked against what you asked, and refined, and only the refined version reaches you.
+              Most chat products are tuned to answer fast. Chat is Kael, the same Kael behind the API and Harness,
+              and Kael is built to be right: it thinks before it answers, and it takes longer than most assistants
+              because of it.
             </p>
             <p className={PROSE_CLASS} style={PROSE_STYLE}>
-              The system also looks at what comes in and what goes out, so a harmful request or response can be
-              stopped before it is delivered, not after.
+              Requests and answers can also be screened, so a harmful request or response can be stopped before it
+              is delivered, not after.
             </p>
           </div>
           <div className="h-[280px] sm:h-[340px] lg:h-[380px]">
@@ -123,7 +123,7 @@ export default function ChatPage() {
               </a>
             </div>
             <p className="mx-auto mb-0 mt-7 max-w-[520px] text-sm leading-[1.6] text-ink-3">
-              Building your own product? The model behind Chat is available through the{' '}
+              Building your own product? The system behind Chat is available through the{' '}
               <a
                 href={EXTERNAL.platform}
                 className="border-b border-[#D5D5D1] font-medium text-ink-2 transition-colors hover:border-ink hover:text-ink"

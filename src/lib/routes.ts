@@ -12,6 +12,8 @@ export const ROUTES = {
   contact: '/contact',
   legal: '/legal',
   blog: '/blog',
+  // Holding page for Quan Harness / Quan Chat while they are not public.
+  notAvailable: '/not-available',
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;
@@ -44,12 +46,16 @@ export const EXTERNAL = {
   platformDocs: 'https://platform.quancis.space/docs',
   platformTerms: 'https://platform.quancis.space/terms-of-service',
   platformPrivacy: 'https://platform.quancis.space/privacy-policy',
-  app: 'https://app.quancis.space',
-  appHarness: 'https://app.quancis.space/harness',
-  appChat: 'https://app.quancis.space/chat',
-  appPricing: 'https://app.quancis.space/pricing',
-  appTerms: 'https://app.quancis.space/terms-of-service',
-  appPrivacy: 'https://app.quancis.space/privacy-policy',
+  // Quan Harness and Quan Chat are not open to the public yet, so every
+  // link that used to go to app.quancis.space goes to the holding page.
+  // To launch: restore these to the https://app.quancis.space/... URLs
+  // (app, /harness, /chat, /pricing, /terms-of-service, /privacy-policy).
+  app: '/not-available',
+  appHarness: '/not-available',
+  appChat: '/not-available',
+  appPricing: '/not-available',
+  appTerms: '/not-available',
+  appPrivacy: '/not-available',
 } as const;
 
 /** Hosts that belong to Quancis. Links to these are plain, same-owner

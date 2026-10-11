@@ -6,30 +6,30 @@ import { CodeIntegration } from '../../components/CodeIntegration';
 import { LowPolyScene } from '../../components/LowPolyScene';
 import { Section, Eyebrow, H2, H3, Prose } from '../../components/Section';
 import { SpecSheet } from '../../components/kael/SpecSheet';
-import { PipelineSteps } from '../../components/kael/PipelineSteps';
+import { ModelsOverview } from '../../components/kael/ModelsOverview';
 import { ThinkingLevels } from '../../components/kael/ThinkingLevels';
 import { PricingTable } from '../../components/kael/PricingTable';
 import { Faq } from '../../components/kael/Faq';
 import { DemoCard } from '../../components/demos/DemoCard';
 import { JsonLd } from '../../components/JsonLd';
-import { FAQ } from '../../data/kael';
+import { FAQ, SPEED } from '../../data/kael';
 import { getAllDemos } from '../../data/demos';
 import { EXTERNAL, ROUTES } from '../../lib/routes';
 import { ACCENT_GLASS_DARK_CLASS } from '../../lib/accents';
 import { breadcrumbJsonLd, pageMetadata, softwareApplicationJsonLd } from '../../lib/seo';
 
 const KAEL_DESCRIPTION =
-  'Kael is a composite intelligence system built for accurate coding, security, math and agentic work, behind an API that works with the SDKs you already use.';
+  'Kael is built for accurate coding, security, math and agentic work, in two models, Kael Beta and Kael Pro Beta, behind an API that works with the SDKs you already use.';
 
 export const metadata: Metadata = pageMetadata({
-  title: 'Kael API: Composite Intelligence for Code and Agents',
+  title: 'Kael API: Kael Beta and Kael Pro Beta for Code and Agents',
   description: KAEL_DESCRIPTION,
   path: '/kael',
 });
 
 const ON_THIS_PAGE: { href: string; label: string }[] = [
   { href: '#overview', label: 'Overview' },
-  { href: '#how-it-works', label: 'How it works' },
+  { href: '#models', label: 'Models' },
   { href: '#strengths', label: 'Strengths' },
   { href: '#thinking', label: 'Thinking' },
   { href: '#pricing', label: 'Pricing' },
@@ -43,7 +43,7 @@ const ON_THIS_PAGE: { href: string; label: string }[] = [
 const STRENGTHS: { title: string; body: string }[] = [
   {
     title: 'Coding',
-    body: 'Kael is built to write code with fewer bugs, and to catch the bugs that are already there. The check step reads a draft against your request before you see it, so a mistake a single pass would have shipped is more likely to be caught first.',
+    body: 'Kael is built to write code with fewer bugs, and to catch the bugs that are already there. It takes longer than most models because it favours a correct answer over a fast one.',
   },
   {
     title: 'Security',
@@ -112,8 +112,8 @@ export default function KaelPage() {
       <Hero
         accent="red"
         eyebrow="Kael, in beta"
-        headline="Models That Check Each Other's Work."
-        subhead="Kael is a system of specialist models that drafts, checks and refines every answer before it reaches you. It is built to catch bugs, security holes and wrong answers early, behind an API you already know how to call."
+        headline="Built To Be Right, Not Just Fast."
+        subhead="Kael comes in two models, Kael Beta and Kael Pro Beta, built for accurate coding, security, math and agentic work. It thinks before it answers, behind an API you already know how to call."
         cta={{ label: 'Get API Access', href: EXTERNAL.platform, external: true }}
         secondaryCta={{ label: 'Read the docs', href: EXTERNAL.platformDocs, external: true }}
       />
@@ -144,22 +144,22 @@ export default function KaelPage() {
         <SpecSheet />
       </Section>
 
-      {/* ================= HOW IT WORKS ================= */}
-      <Section id="how-it-works">
+      {/* ================= MODELS ================= */}
+      <Section id="models">
         <div className="mb-[clamp(48px,7vh,72px)] grid grid-cols-1 items-center gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:gap-16">
           <div>
-            <Eyebrow>How It Works</Eyebrow>
-            <H2>Not One Model. A System Of Them.</H2>
+            <Eyebrow>Models</Eyebrow>
+            <H2>Two Models. One API.</H2>
             <Prose>
-              Most AI companies ship one model and call it a day. Kael is a system, and we call it the Composite
-              Intelligence System, or CIS. Behind a single API call, fine-tuned language models, small language
-              models, retrieval and other specialist models work together as one: a draft is produced, then
-              checked, then refined, the way a good engineering team works.
+              Kael comes as two models. <strong className="font-medium text-ink">Kael Beta</strong> is for most
+              work: everyday reasoning, coding, debugging and review. <strong className="font-medium text-ink">Kael
+              Pro Beta</strong> is the most thorough, for the hardest problems, and it costs more per token. Both
+              are called the same way, with the same key, and take the same request formats. Only the model name
+              changes.
             </Prose>
             <Prose className="mt-5">
-              You never see any of it. The request and the response look exactly like any other chat model’s: the
-              same endpoints, the same message format, the same SDKs. The system is the part you don’t have to
-              learn.
+              The request and the response look like any other chat model’s: the same endpoints, the same message
+              format, the same SDKs. Quancis does not publish how Kael is built, and Kael will not say.
             </Prose>
           </div>
           <div className="h-[280px] sm:h-[340px] lg:h-[380px]">
@@ -167,16 +167,15 @@ export default function KaelPage() {
           </div>
         </div>
 
-        <PipelineSteps />
+        <ModelsOverview />
 
         <div className="mt-[clamp(64px,9vh,104px)] grid grid-cols-1 gap-x-16 gap-y-12 md:grid-cols-2">
           <div>
-            <H3>Why a system, not a bigger model</H3>
+            <H3>Built for accuracy</H3>
             <p className="mb-0 mt-3 max-w-[560px] text-[0.9375rem] leading-[1.7] text-ink-2">
               Models keep getting smarter, but not more accurate. The gap between impressive and correct is where
-              bugs, vulnerabilities and confident wrong answers live. We believe the next gains come from systems
-              of models checking one another, not from one ever-larger model, and that this holds well beyond
-              coding. The research behind that idea is in{' '}
+              bugs, vulnerabilities and confident wrong answers live. Kael is built to close that gap, and to say
+              plainly where it does not. The research behind the idea is in{' '}
               <Link
                 href="/blog/best-of-n-to-mind-evolution"
                 className="border-b border-[#D5D5D1] font-medium text-ink transition-colors hover:border-ink"
@@ -187,36 +186,19 @@ export default function KaelPage() {
             </p>
           </div>
           <div>
-            <H3>Checked on the way in and the way out</H3>
+            <H3>Screened for misuse</H3>
             <p className="mb-0 mt-3 max-w-[560px] text-[0.9375rem] leading-[1.7] text-ink-2">
-              CIS sees your request and the response before the response is sent. If something harmful is in
-              either one, the system can stop it before it goes anywhere, instead of cleaning up after the fact.
-            </p>
-          </div>
-          <div>
-            <H3>Built on open-weight models, tuned for the system</H3>
-            <p className="mb-0 mt-3 max-w-[560px] text-[0.9375rem] leading-[1.7] text-ink-2">
-              Kael is not trained from scratch. Its models start from open-weight models and are fine-tuned so each
-              one understands the environment it runs in and works properly inside CIS. The tuning data came from
-              an earlier internal version of Kael and was not meant to add knowledge. It is the same idea as tuning
-              a model to call tools more reliably. The weights are not released.
-            </p>
-          </div>
-          <div>
-            <H3>Your system prompt stays yours</H3>
-            <p className="mb-0 mt-3 max-w-[560px] text-[0.9375rem] leading-[1.7] text-ink-2">
-              A system with its own internal instructions and skills has a problem a single model doesn’t: your
-              system prompt and ours can compete for authority. It was the hardest problem we solved, and the
-              reason we tuned the models themselves instead of only wrapping them. You write your system prompt
-              the way you would for any other model.
+              Requests and answers can be screened against the acceptable-use terms. If something harmful is in
+              either one, it can be stopped before it goes anywhere, and a flagged request can be held for review.
+              What is kept, and for how long, is in Your data below.
             </p>
           </div>
           <div className="md:col-span-2">
-            <H3>Efficient inside</H3>
+            <H3>Your system prompt stays yours</H3>
             <p className="mb-0 mt-3 max-w-[720px] text-[0.9375rem] leading-[1.7] text-ink-2">
-              Running a whole system costs more tokens inside than running one model, and a lot of them are spent
-              before an answer comes out. We put real effort into optimising CIS to keep output quality as high as
-              possible while keeping that internal cost down.
+              Write your system prompt the way you would for any other model. It defines the persona and the task:
+              if it gives Kael a name, Kael uses it. Kael’s own rules rank above it, so a system prompt cannot make
+              Kael claim to be a different AI product.
             </p>
           </div>
         </div>
@@ -283,15 +265,15 @@ export default function KaelPage() {
         <Eyebrow>Thinking</Eyebrow>
         <H2>Accuracy Takes Time. Here Is How Much.</H2>
         <Prose>
-          Kael is slower than most models on purpose. You choose how much thinking a request gets: Low, High or
-          Max today, or off entirely. Pick a level to see what it costs and where it fits. The Z levels are not
-          released yet, and an Auto level, where Kael decides for you, is not available yet.
+          Kael is slower than most models on purpose. Every request thinks before it answers: there is no setting
+          that turns thinking off. You choose how much. Kael Beta has Low (the default), High and Max. Kael Pro
+          Beta has z-low (the default) and z-high. A model accepts only its own levels. Pick a level to see what
+          it costs and where it fits. There is no Auto level, where Kael decides for you.
         </Prose>
         <Prose className="mb-10 mt-5">
-          With thinking on, at any level, Kael takes about 2.2 times as long to think as an average AI model.
-          Once it starts writing, the answer streams out between 220 and 340 tokens per second. With thinking
-          switched off, the first word usually arrives within 0.7 to 3 seconds, at roughly 90 to 140 tokens per
-          second. The longer story, with a chart, is in{' '}
+          At any level, Kael takes about 2.2 times as long to think as an average AI model. Once it starts
+          writing, expect {SPEED.tpsLow} to {SPEED.tpsHigh} tokens per second, in every mode. The longer story,
+          with a chart, is in{' '}
           <Link
             href="/blog/why-kael-is-slower-on-purpose"
             className="border-b border-[#D5D5D1] font-medium text-ink transition-colors hover:border-ink"
@@ -308,10 +290,9 @@ export default function KaelPage() {
         <Eyebrow>Pricing</Eyebrow>
         <H2>Pay For What You Use.</H2>
         <Prose className="mb-10">
-          Pricing is usage-based, per million tokens. The three levels you can use today cost the same. The Z
-          levels, when they launch, cost more because they send requests through a different internal route.
-          You are billed for your own input tokens and the final output tokens only. The extra model calls Kael
-          makes inside the system are never billed to you.
+          Pricing is usage-based, per million tokens, and each model has its own price. Kael Beta costs the same at
+          Low, High and Max. Kael Pro Beta costs more per token, at both of its levels. You are billed once, for
+          your input and the final answer, nothing else.
         </Prose>
         <PricingTable />
         <div className="mt-8">
@@ -373,7 +354,7 @@ export default function KaelPage() {
             },
             {
               term: 'Training',
-              body: 'Your requests are not used to train Kael. Its models start from open-weight models and are tuned on data generated by an earlier internal version of Kael.',
+              body: 'Your requests are not used to train Kael.',
             },
           ].map((row) => (
             <div
@@ -414,8 +395,8 @@ export default function KaelPage() {
         <Eyebrow>Demos</Eyebrow>
         <H2>See What Kael Writes.</H2>
         <Prose className="mb-10">
-          Playable programs that Kael wrote in a chat window, with no building tools, each as a single HTML
-          file. Play them in your browser. They show something Kael wrote, not how often it gets things right,
+          Games and simulations that Kael wrote from a single prompt in a chat window, with no tools, each as
+          a single HTML file. Try them in your browser. They show something Kael wrote, not how often it gets things right,
           so they sit apart from the benchmarks above.
         </Prose>
         <ul className="m-0 grid list-none grid-cols-1 gap-x-10 gap-y-14 p-0 md:grid-cols-2">

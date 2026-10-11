@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>3 V Fan — AA Powered, OFF / LOW / HIGH Switch</title>
+<style>
+  :root{
+    --panel: rgba(13,18,26,.84);
+    --line: rgba(120,180,255,.20);
+    --txt:#c9d8ea; --dim:#6b7f96; --acc:#58c7ff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;background:#0d1117}
+  canvas{display:block}
+  body{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;color:var(--txt)}
+
+  #hud{
+    position:fixed;top:16px;left:16px;width:252px;
+    background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:0;backdrop-filter:blur(10px);
+    font-size:12px;user-select:none;z-index:5;
+  }
+  #hud #hud-toggle{
+    display:flex;align-items:center;gap:10px;width:100%;
+    margin:0;padding:12px 14px;background:none;border:0;border-radius:10px;
+    font:inherit;font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--dim);text-align:left;cursor:pointer;transition:color .15s;
+  }
+  #hud #hud-toggle:hover{background:none;color:var(--txt)}
+  #hud #hud-toggle:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+  #hud .mini{
+    margin-left:auto;font-size:10.5px;letter-spacing:.04em;text-transform:none;
+    color:var(--acc);font-variant-numeric:tabular-nums;white-space:nowrap;
+    opacity:0;transition:opacity .2s;
+  }
+  #hud.collapsed .mini{opacity:1}
+  #hud .chev{width:12px;height:12px;flex:none;transition:transform .25s ease}
+  #hud.collapsed .chev{transform:rotate(-90deg)}
+
+  #hud-body{
+    display:grid;grid-template-rows:1fr;
+    transition:grid-template-rows .28s ease,visibility 0s 0s;
+  }
+  #hud.collapsed #hud-body{
+    grid-template-rows:0fr;visibility:hidden;
+    transition:grid-template-rows .28s ease,visibility 0s .28s;
+  }
+  .hud-clip{overflow:hidden;min-height:0}
+  .hud-inner{padding:0 14px 14px}
+  @media (prefers-reduced-motion:reduce){
+    #hud-body,#hud.collapsed #hud-body,#hud .chev,#hud .mini{transition:none}
+  }
+  .row{display:flex;justify-content:space-between;padding:3px 0;line-height:1.5}
+  .k{color:var(--dim)}
+  .v{color:var(--txt);font-variant-numeric:tabular-nums}
+  .v.hot{color:#ffd166}
+  .v.on{color:#6ee7a8}
+  hr{border:0;border-top:1px solid var(--line);margin:10px 0}
+  .btns{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:12px}
+  button{
+    font:inherit;font-size:11px;padding:6px 0;border-radius:6px;cursor:pointer;
+    background:rgba(88,199,255,.08);border:1px solid var(--line);color:var(--txt);
+    transition:background .15s,border-color .15s;
+  }
+  button:hover{background:rgba(88,199,255,.18)}
+  button.on{background:rgba(88,199,255,.30);border-color:rgba(88,199,255,.65);color:#eaf6ff}
+  #path{
+    margin:10px 0 0;font-size:10.5px;line-height:1.5;color:#9fb4c8;
+    border-left:2px solid rgba(88,199,255,.45);padding:2px 0 2px 8px;min-height:32px;
+  }
+  #path b{color:#d8e8f8}
+  #hint{
+    position:fixed;bottom:16px;left:16px;font-size:11px;color:var(--dim);
+    line-height:1.7;user-select:none;
+  }
+  #title{position:fixed;top:16px;right:16px;text-align:right;user-select:none}
+  #title b{display:block;font-size:12px;letter-spacing:.10em;color:var(--txt)}
+  #title span{font-size:10.5px;color:var(--dim);letter-spacing:.06em}
+  @media (max-width:560px){
+    #hud{width:calc(100vw - 32px)}
+    #title{display:none}
+  }
+</style>
+</head>
+<body>
+
+<div id="title">
+  <b>FAN-CTRL REV.A</b>
+  <span>2 × AA &nbsp;·&nbsp; 3.0 V &nbsp;·&nbsp; 3-position slide switch</span>
+</div>
+
+<div id="hud">
+  <button id="hud-toggle" type="button" aria-expanded="true" aria-controls="hud-body" title="Collapse panel (H)">
+    <span>Instrumentation</span>
+    <span class="mini" id="v-mini">OFF</span>
+    <svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <div id="hud-body"><div class="hud-clip"><div class="hud-inner">
+  <div class="row"><span class="k">Switch</span><span class="v" id="v-sw">OFF</span></div>
+  <div class="row"><span class="k">Circuit</span><span class="v" id="v-cir">OPEN</span></div>
+  <hr>
+  <div class="row"><span class="k">Supply</span><span class="v" id="v-sup">3.00 V</span></div>
+  <div class="row"><span class="k">Motor V</span><span class="v" id="v-mv">0.00 V</span></div>
+  <div class="row"><span class="k">Current</span><span class="v" id="v-i">0.0 mA</span></div>
+  <div class="row"><span class="k">Power</span><span class="v" id="v-p">0 mW</span></div>
+  <div class="row"><span class="k">Shaft</span><span class="v" id="v-rpm">0 RPM</span></div>
+  <div id="path">Open circuit — no current path. The rotor coasts down on drag alone.</div>
+  <div class="btns">
+    <button data-mode="OFF">OFF</button>
+    <button data-mode="LOW">LOW</button>
+    <button data-mode="HIGH">HIGH</button>
+  </div>
+  </div></div></div>
+</div>
+
+<div id="hint">
+  click the switch lever to cycle OFF → LOW → HIGH<br>
+  drag to orbit &nbsp;·&nbsp; scroll to zoom &nbsp;·&nbsp; keys 1 / 2 / 3 &nbsp;·&nbsp; H hides the panel
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* ═══════════════════════════════════════════════════════════════════
+   PHYSICAL MODEL  (SI units — these are the real design values)
+
+   Supply     2 × AA alkaline in series   → 3.00 V (ideal source)
+   Motor      small 3 V brushed fan motor
+                Rm   = 6.0 Ω          armature resistance
+                Ke   = 0.020 V·s/rad  back-EMF constant (= Kt, N·m/A)
+                b    = 4.0e-5 N·m·s   viscous drag (bearings, eddy loss)
+                c    = 8.33e-7 N·m·s² aerodynamic drag (∝ ω²)
+                J    = 2.0e-5 kg·m²   rotor inertia
+   LOW path   R1 = 22 Ω in series (red-red-black-gold)
+   LED branch D1 red LED, Vf ≈ 1.8 V, R2 = 220 Ω (red-red-brown-gold),
+              wired directly across the motor terminals
+
+   Steady state of  Ke·(V − Ke·ω)/R  =  b·ω + c·ω²
+     HIGH   R = 6 Ω   →  ω = 62.9 rad/s = 600 RPM,  290 mA, motor sees 3.00 V
+     LOW    R = 28 Ω  →  ω = 27.7 rad/s = 264 RPM,   87 mA, motor sees 1.08 V
+   Stall / inrush on switch-on: 3.0 / 6 = 500 mA
+   Ke·ω_max = 1.26 V, below the 3 V rail — the motor never generates back into
+   the pack, so no current reversal (and no regeneration) ever occurs.
+   ═══════════════════════════════════════════════════════════════════ */
+const P = {
+  SUPPLY_V : 3.00,
+  R_MOTOR  : 6.0,
+  R_LOW    : 22.0,
+  KE       : 0.020,
+  DRAG_V   : 4.0e-5,
+  DRAG_V2  : 8.33e-7,
+  J        : 2.0e-5,
+  LED_VF   : 1.80,
+  LED_R    : 220.0
+};
+const LED_FULL = (P.SUPPLY_V - P.LED_VF) / P.LED_R;   // 5.45 mA — full-brightness reference
+
+// The rotor mesh is time-dilated relative to true ω. A real 600 RPM fan turns
+// 10 rev/s which strobes badly at 60 fps; the numbers on the HUD stay honest.
+const VISUAL_SPIN = 0.32;
+
+let mode     = 'OFF';   // 'OFF' | 'LOW' | 'HIGH'
+let omega    = 0;       // rad/s
+let motorV   = 0;       // V across the motor terminals
+let motorI   = 0;       // A through the motor
+let ledI     = 0;       // A through the indicator LED
+let supplyI  = 0;       // A drawn from the pack
+
+/* ─────────────────────────── RENDERER ─────────────────────────── */
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.02;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0d1117);
+scene.fog = new THREE.Fog(0x0d1117, 38, 82);
+
+const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 250);
+camera.position.set(13, 15, 21);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 2.0, 0);
+controls.enableDamping = true;
+controls.dampingFactor = 0.065;
+controls.maxPolarAngle = Math.PI * 0.495;
+controls.minDistance = 7;
+controls.maxDistance = 62;
+
+/* ─────────────────────────── LIGHTING ─────────────────────────── */
+scene.add(new THREE.HemisphereLight(0x8fc0ff, 0x151a22, 1.15));
+
+const key = new THREE.DirectionalLight(0xffffff, 2.3);
+key.position.set(13, 24, 15);
+key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+key.shadow.camera.left = -22;
+key.shadow.camera.right = 22;
+key.shadow.camera.top = 22;
+key.shadow.camera.bottom = -22;
+key.shadow.camera.near = 1;
+key.shadow.camera.far = 70;
+key.shadow.bias = -0.0008;
+scene.add(key);
+
+const rim = new THREE.DirectionalLight(0x5aa8ff, 1.35);
+rim.position.set(-16, 9, -14);
+scene.add(rim);
+
+const fill = new THREE.PointLight(0xffd9a0, 18, 40, 2);
+fill.position.set(-6, 6, 8);
+scene.add(fill);
+
+const ground = new THREE.Mesh(
+  new THREE.CircleGeometry(80, 72),
+  new THREE.MeshStandardMaterial({ color: 0x11151c, roughness: 1.0, metalness: 0.0 })
+);
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = -0.52;
+ground.receiveShadow = true;
+scene.add(ground);
+
+/* Everything for the board lives in `roots`, lifted so the feet read.
+   Local y = 0 is the PCB top surface. */
+const roots = new THREE.Group();
+roots.position.y = 0.55;
+scene.add(roots);
+
+/* ─────────────────────────── MATERIALS ─────────────────────────── */
+const M = {
+  pcbTop  : null, // built after the texture exists
+  pcbEdge : new THREE.MeshStandardMaterial({ color: 0x0a4a28, roughness: 0.62, metalness: 0.10 }),
+  pcbBack : new THREE.MeshStandardMaterial({ color: 0x073018, roughness: 0.80, metalness: 0.05 }),
+  plastic : new THREE.MeshStandardMaterial({ color: 0x232a33, roughness: 0.62, metalness: 0.05 }),
+  plasticL: new THREE.MeshStandardMaterial({ color: 0x39424e, roughness: 0.55, metalness: 0.08 }),
+  metal   : new THREE.MeshStandardMaterial({ color: 0xc9d2dc, roughness: 0.28, metalness: 0.95 }),
+  metalD  : new THREE.MeshStandardMaterial({ color: 0x8b95a1, roughness: 0.42, metalness: 0.90 }),
+  copper  : new THREE.MeshStandardMaterial({ color: 0xd9a53c, roughness: 0.35, metalness: 0.85 }),
+  blade   : new THREE.MeshStandardMaterial({ color: 0xa9c1d6, roughness: 0.42, metalness: 0.18, side: THREE.DoubleSide }),
+  motor   : new THREE.MeshStandardMaterial({ color: 0x6f7885, roughness: 0.36, metalness: 0.88 }),
+  bodyRes : new THREE.MeshStandardMaterial({ color: 0xd8cba6, roughness: 0.62, metalness: 0.05 }),
+  rubber  : new THREE.MeshStandardMaterial({ color: 0x14171c, roughness: 0.95, metalness: 0.0 }),
+  led     : new THREE.MeshStandardMaterial({
+              color: 0x8b1a12, roughness: 0.18, metalness: 0.10,
+              emissive: 0xff2a10, emissiveIntensity: 0, transparent: true, opacity: 0.94
+            })
+};
+
+/* ═══════════════════ PCB TOP-SURFACE TEXTURE ═══════════════════
+   The canvas maps 1:1 onto the board:  x ∈ [-10,10] → 0..W,
+   z ∈ [-6,6] → 0..H.  (BoxGeometry's +Y face puts u along +x and
+   v along −z, which is exactly this orientation once flipY is on.) */
+function makePCBTexture() {
+  const W = 2048, H = 1229;
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const g = c.getContext('2d');
+
+  const X = x => (x + 10) / 20 * W;
+  const Y = z => (z + 6) / 12 * H;
+
+  // --- solder mask ---
+  g.fillStyle = '#0a4d2a';
+  g.fillRect(0, 0, W, H);
+  for (let i = 0; i < 2600; i++) {                    // mottling, so it isn't a flat slab
+    const r = 12 + Math.random() * 46;
+    g.fillStyle = `rgba(${20 + Math.random() * 26 | 0},${80 + Math.random() * 46 | 0},${46 + Math.random() * 30 | 0},0.055)`;
+    g.beginPath();
+    g.arc(Math.random() * W, Math.random() * H, r, 0, Math.PI * 2);
+    g.fill();
+  }
+
+  // --- copper ---
+  const TRACE = '#c9a227';
+  function trace(pts, w = 11, col = TRACE) {
+    g.strokeStyle = col;
+    g.lineWidth = w;
+    g.lineCap = 'round';
+    g.lineJoin = 'round';
+    g.beginPath();
+    g.moveTo(X(pts[0][0]), Y(pts[0][1]));
+    for (let i = 1; i < pts.length; i++) g.lineTo(X(pts[i][0]), Y(pts[i][1]));
+    g.stroke();
+  }
+  function pad(x, z, r, col = '#e0b93f') {
+    g.fillStyle = col;
+    g.beginPath(); g.arc(X(x), Y(z), r, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#101418';
+    g.beginPath(); g.arc(X(x), Y(z), r * 0.42, 0, Math.PI * 2); g.fill();
+  }
+
+  // B+ : pack (+) → switch COM
+  trace([[-7.62, -2.20], [-8.60, -2.20], [-8.60, 5.35], [-5.00, 5.35], [-5.00, 5.02]]);
+  // B− : motor − → pack (−)
+  trace([[5.62, 0.40], [8.10, 0.40], [8.10, -5.35], [-9.30, -5.35], [-9.30, -4.00], [-7.62, -4.00]]);
+  // switch HIGH → motor +
+  trace([[-4.00, 5.02], [-4.00, 5.35], [2.20, 5.35], [2.20, 3.05], [5.62, 3.05], [5.62, 1.62]]);
+  // switch LOW → R1
+  trace([[-6.00, 5.02], [-6.00, 3.42], [-1.35, 3.42], [-1.35, 4.00], [-1.25, 4.00]]);
+  // R1 → motor +
+  trace([[1.25, 4.00], [1.35, 4.00], [1.35, 2.20], [4.70, 2.20], [4.70, 1.62], [5.62, 1.62]]);
+  // cell-to-cell series link
+  trace([[-2.35, -4.00], [-2.35, -2.20]], 14);
+  // LED branch: motor (+) → R2  (indicator is wired directly across the motor)
+  trace([[5.62, 1.62], [5.62, 2.75], [1.60, 2.75], [-6.20, 2.75], [-7.35, 2.00], [-7.35, 1.20]]);
+  trace([[-5.85, 1.20], [-4.55, 1.20]]);
+  // LED cathode → pack (−)  (runs back under the battery pack)
+  trace([[-3.85, 1.20], [-4.20, -0.40], [-4.20, -5.00], [-7.62, -4.00]]);
+
+  // decorative routing — no electrical role, just plausible board
+  trace([[2.60, -3.20], [2.60, -1.40], [4.20, -1.40]], 7, '#8f7520');
+  trace([[7.40, -3.00], [7.40, -1.60], [9.10, -1.60]], 7, '#8f7520');
+  trace([[-2.00, -1.00], [-2.00, 1.20]], 7, '#8f7520');
+
+  // --- pads ---
+  pad(-7.62, -2.20, 40);  pad(-7.62, -4.00, 40);          // pack + / −
+  pad(-2.35, -4.00, 38);  pad(-2.35, -2.20, 38);          // cell link
+  pad(-5.00, 5.02, 34);   pad(-6.00, 5.02, 34);  pad(-4.00, 5.02, 34);   // SW pins
+  pad(-1.25, 4.00, 30);   pad( 1.25, 4.00, 30);           // R1
+  pad(-7.35, 1.20, 30);   pad(-5.85, 1.20, 30);           // R2
+  pad(-4.55, 1.20, 26);   pad(-3.85, 1.20, 26);           // LED
+  pad( 5.62, 0.40, 36);   pad( 5.62, 1.62, 36);           // motor
+  for (let i = 0; i < 16; i++) {                           // vias / test points
+    g.fillStyle = 'rgba(200,170,60,.55)';
+    g.beginPath();
+    g.arc(X(-9.4 + i * 1.25), Y(-5.85 + (i % 2) * 0.6), 11, 0, Math.PI * 2);
+    g.fill();
+  }
+
+  // --- silkscreen ---
+  g.strokeStyle = 'rgba(226,240,255,.72)';
+  g.lineWidth = 4;
+  const box = (x0, z0, x1, z1) => {
+    g.strokeRect(X(x0), Y(z0), X(x1) - X(x0), Y(z1) - Y(z0));
+  };
+  box(-8.05, -5.10, -1.95, -3.05);      // BT1
+  box(-8.05, -3.30, -1.95, -1.25);      // BT2
+  box(-6.90, 3.05, -3.10, 4.95);        // SW1
+  box(-1.55, 3.45,  1.55, 4.55);        // R1
+  box(-7.55, 0.70, -5.65, 1.70);        // R2
+  g.beginPath(); g.arc(X(6.5), Y(1.0), 170, 0, Math.PI * 2); g.stroke();
+
+  g.textAlign = 'center';
+  g.fillStyle = 'rgba(226,240,255,.78)';
+  g.font = 'bold 40px ui-monospace, monospace';
+  g.fillText('BT1  AA', X(-5.0), Y(-5.35));
+  g.fillText('BT2  AA', X(-5.0), Y(-3.55));
+  g.fillText('R1  22\u03A9', X(0.0), Y(3.10));
+  g.fillText('M1', X(6.5), Y(4.35));
+
+  g.font = 'bold 30px ui-monospace, monospace';
+  g.fillText('SW1', X(-7.80), Y(4.35));
+  g.fillText('LOW', X(-6.00), Y(5.78));
+  g.fillText('COM', X(-5.00), Y(5.78));
+  g.fillText('HIGH', X(-4.00), Y(5.78));
+  g.fillText('R2  220\u03A9', X(-6.60), Y(0.42));
+  g.fillText('D1', X(-4.20), Y(0.42));
+
+  g.fillStyle = 'rgba(200,220,240,.62)';
+  g.textAlign = 'left';
+  g.fillText('FAN-CTRL  REV.A', X(-9.4), Y(0.38));
+  g.fillText('+3V \u2014 2\u00D7AA', X(-9.4), Y(1.13));
+
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  return t;
+}
+
+/* ─────────────────────────── PCB ─────────────────────────── */
+M.pcbTop = new THREE.MeshStandardMaterial({ map: makePCBTexture(), roughness: 0.52, metalness: 0.16 });
+
+const board = new THREE.Mesh(
+  new THREE.BoxGeometry(20, 0.4, 12),
+  [M.pcbEdge, M.pcbEdge, M.pcbTop, M.pcbBack, M.pcbEdge, M.pcbEdge]
+);
+board.position.y = -0.20;
+board.castShadow = true;
+board.receiveShadow = true;
+roots.add(board);
+
+for (const fx of [-8.6, 8.6]) {                   // component-side feet
+  for (const fz of [-4.8, 4.8]) {
+    const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.38, 0.62, 14), M.rubber);
+    foot.position.set(fx, -0.72, fz);
+    foot.castShadow = true;
+    roots.add(foot);
+  }
+}
+
+/* ═══════════════════ BATTERY CELLS + HOLDERS ═══════════════════ */
+const cellTex = (() => {
+  const W = 512, H = 256;
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const g = c.getContext('2d');
+
+  const grad = g.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0.00, '#12233a');
+  grad.addColorStop(0.14, '#16304f');
+  grad.addColorStop(0.16, '#c9a63a');
+  grad.addColorStop(0.19, '#16304f');
+  grad.addColorStop(0.46, '#1d3f66');
+  grad.addColorStop(0.48, '#c9a63a');
+  grad.addColorStop(0.52, '#1d3f66');
+  grad.addColorStop(0.78, '#16304f');
+  grad.addColorStop(0.82, '#c9a63a');
+  grad.addColorStop(0.86, '#0e1e33');
+  grad.addColorStop(1.00, '#0a1626');
+  g.fillStyle = grad;
+  g.fillRect(0, 0, W, H);
+
+  g.save();
+  g.translate(W * 0.5, H * 0.5);
+  g.rotate(-Math.PI / 2);
+  g.textAlign = 'center';
+  g.textBaseline = 'middle';
+  g.fillStyle = 'rgba(255,222,120,.92)';
+  g.font = 'bold 44px ui-monospace, monospace';
+  g.fillText('AA  1.5V', 0, 0);
+  g.fillStyle = 'rgba(190,215,240,.55)';
+  g.font = 'bold 24px ui-monospace, monospace';
+  g.fillText('LR6  ALKALINE', 0, -78);
+  g.restore();
+
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  return t;
+})();
+
+function buildBattery(z, plusRight) {
+  const g = new THREE.Group();
+  g.position.set(-5.0, 0, z);
+
+  const base = new THREE.Mesh(new THREE.BoxGeometry(5.9, 0.28, 1.95), M.plastic);
+  base.position.y = 0.14;
+  base.castShadow = true;
+  base.receiveShadow = true;
+  g.add(base);
+
+  for (const sx of [-1, 1]) {
+    const wall = new THREE.Mesh(new THREE.BoxGeometry(0.34, 1.55, 1.95), M.plastic);
+    wall.position.set(sx * 2.94, 0.86, 0);
+    wall.castShadow = true;
+    g.add(wall);
+
+    const plate = new THREE.Mesh(new THREE.BoxGeometry(0.10, 1.00, 1.35), M.metal);
+    plate.position.set(sx * 2.72, 1.00, 0);
+    plate.castShadow = true;
+    g.add(plate);
+  }
+
+  const cellMat = new THREE.MeshStandardMaterial({ map: cellTex, roughness: 0.44, metalness: 0.42 });
+  const cell = new THREE.Mesh(new THREE.CylinderGeometry(0.72, 0.72, 5.0, 40, 1), cellMat);
+  cell.rotation.z = Math.PI / 2;
+  cell.position.y = 1.00;
+  cell.castShadow = true;
+  g.add(cell);
+
+  const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.60, 0.60, 0.10, 32), M.metalD);
+  cap.rotation.z = Math.PI / 2;
+  cap.position.set(plusRight ? -2.52 : 2.52, 1.00, 0);
+  g.add(cap);
+
+  const nub = new THREE.Mesh(new THREE.CylinderGeometry(0.27, 0.27, 0.26, 20), M.metal);
+  nub.rotation.z = Math.PI / 2;
+  nub.position.set(plusRight ? 2.62 : -2.62, 1.00, 0);
+  nub.castShadow = true;
+  g.add(nub);
+
+  roots.add(g);
+  return g;
+}
+
+buildBattery(-4.0, true);    // BT1 — (+) faces +x
+buildBattery(-2.2, false);   // BT2 — reversed in the pack, (+) faces −x
+
+{ // series link BT1(+) → BT2(−)
+  const strap = new THREE.Mesh(new THREE.TorusGeometry(0.90, 0.10, 10, 26, Math.PI), M.metal);
+  strap.rotation.y = Math.PI / 2;
+  strap.rotation.z = Math.PI / 2;
+  strap.position.set(-2.62, 1.00, -3.10);
+  strap.castShadow = true;
+  roots.add(strap);
+}
+
+/* ═══════════════════════ SLIDE SWITCH ═══════════════════════ */
+const SW = { x: -5.0, z: 4.0 };
+const LEVER_POS = { OFF: -0.95, LOW: 0.0, HIGH: 0.95 };
+
+const switchGroup = new THREE.Group();
+switchGroup.position.set(SW.x, 0, SW.z);
+roots.add(switchGroup);
+
+const swBody = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.92, 1.60), M.plastic);
+swBody.position.y = 0.46;
+swBody.castShadow = true;
+swBody.receiveShadow = true;
+switchGroup.add(swBody);
+
+const swTop = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.10, 1.20), M.plasticL);
+swTop.position.y = 0.94;
+switchGroup.add(swTop);
+
+const lever = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.56, 0.62), M.plasticL);
+lever.position.set(LEVER_POS.OFF, 1.24, 0);
+lever.castShadow = true;
+switchGroup.add(lever);
+
+const leverGrip = new THREE.Mesh(new THREE.BoxGeometry(0.86, 0.14, 0.70), M.metalD);
+leverGrip.position.y = 0.30;
+leverGrip.castShadow = true;
+lever.add(leverGrip);
+
+const TABS = { LOW: -1.0, COM: 0.0, HIGH: 1.0 };          // solder tabs, board z = 5.02
+for (const k in TABS) {
+  const tab = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.10, 0.55), M.metal);
+  tab.position.set(TABS[k], 0.24, 1.02);
+  tab.castShadow = true;
+  switchGroup.add(tab);
+}
+
+/* ═══════════════ RESISTORS (shared builder) ═══════════════ */
+function buildResistor(cx, cz, bands) {
+  const R_POS = new THREE.Vector3(cx, 0.42, cz);
+
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.23, 0.23, 1.10, 22), M.bodyRes);
+  body.rotation.z = Math.PI / 2;
+  body.position.copy(R_POS);
+  body.castShadow = true;
+  roots.add(body);
+
+  const OFFSETS = [-0.36, -0.20, -0.04, 0.30];
+  bands.forEach((col, i) => {
+    const band = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.238, 0.238, 0.11, 22),
+      new THREE.MeshStandardMaterial({ color: col, roughness: 0.55, metalness: 0.05 })
+    );
+    band.rotation.z = Math.PI / 2;
+    band.position.set(cx + OFFSETS[i], R_POS.y, cz);
+    roots.add(band);
+  });
+
+  for (const sx of [-1, 1]) {
+    const lead = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.42, 10), M.metal);
+    lead.rotation.z = Math.PI / 2;
+    lead.position.set(cx + sx * 0.76, R_POS.y, cz);
+    roots.add(lead);
+  }
+}
+
+// 22 Ω  = red · red · black · gold
+buildResistor(0.0, 4.0, [0xcc2222, 0xcc2222, 0x161616, 0xd4af37]);
+// 220 Ω = red · red · brown · gold
+buildResistor(-6.6, 1.2, [0xcc2222, 0xcc2222, 0x5a3a1e, 0xd4af37]);
+
+/* ═══════════════════ INDICATOR LED (D1) ═══════════════════ */
+const LED = { x: -4.25, z: 1.2, y: 0.28 };
+{
+  const g = new THREE.Group();
+  g.position.set(LED.x, LED.y, LED.z);
+
+  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.20, 0.20, 0.60, 20), M.led);
+  barrel.rotation.z = Math.PI / 2;
+  barrel.position.x = -0.30;
+  barrel.castShadow = true;
+  g.add(barrel);
+
+  const dome = new THREE.Mesh(
+    new THREE.SphereGeometry(0.20, 20, 14, 0, Math.PI * 2, 0, Math.PI / 2), M.led
+  );
+  dome.rotation.z = -Math.PI / 2;      // hemisphere now points +x
+  dome.position.x = 0.00;
+  dome.castShadow = true;
+  g.add(dome);
+
+  for (const [lx, lz] of [[-0.30, 0], [0.40, 0]]) {
+    const lead = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.042, 0.30, 10), M.metal);
+    lead.position.set(lx, -0.14, lz);
+    g.add(lead);
+  }
+  roots.add(g);
+}
+// LED anode pad (−4.55, 1.20)  ·  cathode pad (−3.85, 1.20)
+
+const ledLight = new THREE.PointLight(0xff3a1e, 0, 4.5, 2);
+ledLight.position.set(LED.x, LED.y + 0.35, LED.z);
+roots.add(ledLight);
+
+/* ═══════════════════ FAN MOTOR + ROTOR ═══════════════════ */
+const FAN = { x: 6.5, z: 1.0, rotorY: 2.25 };
+
+const fanGroup = new THREE.Group();
+fanGroup.position.set(FAN.x, 0, FAN.z);
+roots.add(fanGroup);
+
+const bracket = new THREE.Mesh(new THREE.BoxGeometry(1.85, 0.30, 1.85), M.plastic);
+bracket.position.y = 0.15;
+bracket.castShadow = true;
+bracket.receiveShadow = true;
+fanGroup.add(bracket);
+
+const can = new THREE.Mesh(new THREE.CylinderGeometry(0.66, 0.66, 1.60, 30), M.motor);
+can.position.y = 1.08;
+can.castShadow = true;
+fanGroup.add(can);
+
+const canTop = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 0.15, 30), M.plastic);
+canTop.position.y = 1.955;
+canTop.castShadow = true;
+fanGroup.add(canTop);
+
+const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.42, 14), M.metal);
+shaft.position.y = 2.20;
+fanGroup.add(shaft);
+
+// motor terminals — world (5.58, 0.30, 0.40) = "−", (5.58, 0.30, 1.62) = "+"
+for (const tz of [0.40, 1.62]) {
+  const t = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.09, 0.18), M.metal);
+  t.position.set(-0.92, 0.30, tz - FAN.z);
+  t.castShadow = true;
+  fanGroup.add(t);
+}
+
+{
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(2.56, 0.085, 12, 72), M.plasticL);
+  ring.rotation.x = -Math.PI / 2;
+  ring.position.y = FAN.rotorY;
+  ring.castShadow = true;
+  fanGroup.add(ring);
+
+  for (let i = 0; i < 4; i++) {
+    const a = Math.PI / 4 + i * Math.PI / 2;
+    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.095, FAN.rotorY, 10), M.plasticL);
+    post.position.set(Math.cos(a) * 2.56, FAN.rotorY / 2, Math.sin(a) * 2.56);
+    post.castShadow = true;
+    fanGroup.add(post);
+  }
+}
+
+// ── rotor: hub + 5 pitched blades ──
+const rotor = new THREE.Group();
+rotor.position.y = FAN.rotorY;
+fanGroup.add(rotor);
+
+const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.82, 0.78, 0.50, 30), M.plasticL);
+hub.castShadow = true;
+rotor.add(hub);
+
+const hubCap = new THREE.Mesh(new THREE.CylinderGeometry(0.40, 0.55, 0.20, 24), M.metalD);
+hubCap.position.y = 0.33;
+hubCap.castShadow = true;
+rotor.add(hubCap);
+
+// index mark so slow rotation is unmistakable
+const indexMark = new THREE.Mesh(
+  new THREE.BoxGeometry(0.62, 0.055, 0.14),
+  new THREE.MeshStandardMaterial({ color: 0xff8a3d, roughness: 0.45, metalness: 0.1 })
+);
+indexMark.position.set(0, 0.27, 0.42);
+rotor.add(indexMark);
+
+const BLADES = 5;
+const bladeGeo = new THREE.BoxGeometry(1.72, 0.055, 0.64);
+for (let i = 0; i < BLADES; i++) {
+  const pivot = new THREE.Object3D();
+  pivot.rotation.y = (i / BLADES) * Math.PI * 2;
+
+  const blade = new THREE.Mesh(bladeGeo, M.blade);
+  blade.position.set(1.62, 0, 0);
+  blade.rotation.x = THREE.MathUtils.degToRad(28);
+  blade.castShadow = true;
+  pivot.add(blade);
+
+  rotor.add(pivot);
+}
+
+// blurred-disc overlay — fades in with speed to kill strobe aliasing
+const blurMat = new THREE.MeshBasicMaterial({
+  transparent: true,
+  opacity: 0,
+  depthWrite: false,
+  side: THREE.DoubleSide,
+  blending: THREE.AdditiveBlending,
+  map: (() => {
+    const c = document.createElement('canvas');
+    c.width = c.height = 256;
+    const g = c.getContext('2d');
+    const grd = g.createRadialGradient(128, 128, 20, 128, 128, 126);
+    grd.addColorStop(0.00, 'rgba(190,225,255,0.00)');
+    grd.addColorStop(0.45, 'rgba(190,225,255,0.10)');
+    grd.addColorStop(0.82, 'rgba(190,225,255,0.30)');
+    grd.addColorStop(1.00, 'rgba(190,225,255,0.00)');
+    g.fillStyle = grd;
+    g.fillRect(0, 0, 256, 256);
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace;
+    return t;
+  })()
+});
+const blurDisc = new THREE.Mesh(new THREE.CircleGeometry(2.56, 64), blurMat);
+blurDisc.rotation.x = -Math.PI / 2;
+blurDisc.position.y = FAN.rotorY - 0.02;
+fanGroup.add(blurDisc);
+
+/* ═══════════════════════ WIRING HARNESS ═══════════════════════ */
+const ALL_WIRES = [];
+
+function makeWire(points, color, radius = 0.085) {
+  const curve = new THREE.CatmullRomCurve3(
+    points.map(p => new THREE.Vector3(p[0], p[1], p[2])),
+    false, 'centripetal'
+  );
+  const len = curve.getLength();
+  const geo = new THREE.TubeGeometry(curve, Math.max(40, Math.round(len * 7)), radius, 10, false);
+  const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.58, metalness: 0.06 });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.castShadow = true;
+  roots.add(mesh);
+
+  for (const u of [0, 1]) {                       // cap the open tube ends
+    const cap = new THREE.Mesh(new THREE.SphereGeometry(radius, 10, 8), mat);
+    curve.getPointAt(u, cap.position);
+    roots.add(cap);
+  }
+
+  const dotGeo = new THREE.SphereGeometry(0.105, 8, 8);
+  const dotMat = new THREE.MeshBasicMaterial({ color: 0x8ce6ff });
+  const dots = [];
+  const n = Math.max(3, Math.round(len / 1.5));
+  for (let i = 0; i < n; i++) {
+    const d = new THREE.Mesh(dotGeo, dotMat);
+    d.visible = false;
+    roots.add(d);
+    dots.push(d);
+  }
+
+  return { curve, mesh, dots, phase: Math.random(), reverse: false, len, energized: () => false };
+}
+
+// B+ : pack (+) → SW1 COM
+const w1 = makeWire([
+  [-7.62, 1.00, -2.20],
+  [-8.55, 1.62, -1.60],
+  [-8.55, 1.62,  2.60],
+  [-6.55, 1.05,  4.65],
+  [-5.20, 0.42,  5.06],
+  [-5.00, 0.28,  5.00]
+], 0xd23b3b);
+
+// B− : pack (−) → motor −   (conventional current runs motor− → pack−, hence reverse)
+const w2 = makeWire([
+  [-7.62, 1.00, -4.00],
+  [-9.05, 1.60, -4.65],
+  [-9.05, 1.60, -5.25],
+  [ 0.00, 1.72, -5.42],
+  [ 7.80, 1.60, -4.45],
+  [ 7.80, 1.00,  0.20],
+  [ 5.60, 0.40,  0.40]
+], 0x1b1f26, 0.095);
+w2.reverse = true;
+
+// SW1 HIGH → motor +
+const wHi = makeWire([
+  [-4.00, 0.28, 5.00],
+  [-3.60, 1.05, 5.48],
+  [ 1.00, 1.42, 5.20],
+  [ 4.60, 1.00, 3.05],
+  [ 5.60, 0.40, 1.62]
+], 0xd23b3b);
+
+// SW1 LOW → R1 → motor +
+const wLo = makeWire([
+  [-6.00, 0.28, 5.00],
+  [-4.60, 0.92, 4.62],
+  [-2.20, 0.62, 4.02],
+  [-1.25, 0.42, 4.00],
+  [ 1.25, 0.42, 4.00],
+  [ 2.60, 0.72, 3.62],
+  [ 4.40, 1.02, 2.62],
+  [ 5.60, 0.40, 1.62]
+], 0xe08a2a);
+
+// LED branch, leg 1 — motor (+) node → R2 left lead
+// (the indicator LED sits directly across the motor terminals, so it only
+//  lights once the motor terminal voltage clears the LED forward drop)
+const wLedA = makeWire([
+  [ 5.60, 0.45, 1.62],
+  [ 3.60, 1.80, 0.90],
+  [-1.20, 2.35, 1.00],
+  [-6.20, 2.15, 0.95],
+  [-7.35, 1.20, 1.20]
+], 0xd23b3b, 0.070);
+
+// LED branch, leg 2 — R2 right lead → LED anode
+const wLedB = makeWire([
+  [-5.85, 0.42, 1.20],
+  [-5.20, 0.36, 1.20],
+  [-4.55, 0.28, 1.20]
+], 0xd23b3b, 0.070);
+
+// LED branch, leg 3 — LED cathode → pack (−), arcing over the battery pack
+const wLedC = makeWire([
+  [-3.85, 0.28, 1.20],
+  [-4.20, 1.00, 0.40],
+  [-4.60, 2.10, -1.00],
+  [-7.65, 2.10, -3.80],
+  [-7.65, 1.00, -4.00]
+], 0x1b1f26, 0.070);
+
+w1.energized     = () => mode !== 'OFF';
+w2.energized     = () => mode !== 'OFF';
+wHi.energized    = () => mode === 'HIGH';
+wLo.energized    = () => mode === 'LOW';
+// The LED branch only carries current when the motor terminals are above Vf —
+// in practice that means HIGH mode only.
+wLedA.energized  = () => ledI > 1e-4;
+wLedB.energized  = () => ledI > 1e-4;
+wLedC.energized  = () => ledI > 1e-4;
+
+ALL_WIRES.push(w1, w2, wHi, wLo, wLedA, wLedB, wLedC);
+
+/* ═══════════════════════ AIRFLOW PARTICLES ═══════════════════════ */
+const AIR_N = 240;
+const airPos = new Float32Array(AIR_N * 3);
+const airState = [];
+
+const airMat = new THREE.PointsMaterial({
+  size: 0.20,
+  transparent: true,
+  opacity: 0,
+  depthWrite: false,
+  blending: THREE.AdditiveBlending,
+  color: 0x9fd4ff,
+  sizeAttenuation: true,
+  map: (() => {
+    const c = document.createElement('canvas');
+    c.width = c.height = 64;
+    const g = c.getContext('2d');
+    const grd = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    grd.addColorStop(0.0, 'rgba(190,230,255,0.95)');
+    grd.addColorStop(0.4, 'rgba(140,200,255,0.45)');
+    grd.addColorStop(1.0, 'rgba(120,180,255,0.0)');
+    g.fillStyle = grd;
+    g.fillRect(0, 0, 64, 64);
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace;
+    return t;
+  })()
+});
+
+function respawnAir(i, initial = false) {
+  airState[i] = {
+    a: Math.random() * Math.PI * 2,
+    r: 0.35 + Math.random() * 2.15,
+    y: initial ? Math.random() * 7.5 : Math.random() * 0.35
+  };
+}
+for (let i = 0; i < AIR_N; i++) respawnAir(i, true);
+
+const airGeo = new THREE.BufferGeometry();
+airGeo.setAttribute('position', new THREE.BufferAttribute(airPos, 3));
+const airPoints = new THREE.Points(airGeo, airMat);
+airPoints.frustumCulled = false;
+roots.add(airPoints);
+
+/* ═══════════════════════ PHYSICS STEP ═══════════════════════ */
+function stepPhysics(dt) {
+  const SUB = Math.max(1, Math.min(64, Math.ceil(dt / 0.001)));
+  const h = dt / SUB;
+
+  for (let s = 0; s < SUB; s++) {
+    let V = 0, Rtot = Infinity;
+
+    if (mode === 'HIGH')      { V = P.SUPPLY_V; Rtot = P.R_MOTOR; }
+    else if (mode === 'LOW')  { V = P.SUPPLY_V; Rtot = P.R_MOTOR + P.R_LOW; }
+
+    let i = 0;
+    if (Rtot !== Infinity) {
+      i = (V - P.KE * omega) / Rtot;
+      // Guard only — with Ke·ω_max ≈ 1.26 V < 3 V the motor never generates
+      // back into the pack, so this never actually fires on this hardware.
+      if (i < 0) i = 0;
+    }
+
+    const torque = P.KE * i - P.DRAG_V * omega - P.DRAG_V2 * omega * omega;
+    omega += (torque / P.J) * h;
+    if (omega < 0) omega = 0;
+
+    motorI = i;
+    motorV = P.KE * omega + i * P.R_MOTOR;
+  }
+
+  // Indicator LED sits across the motor terminals; it stays dark below Vf.
+  ledI = Math.max(0, (motorV - P.LED_VF) / P.LED_R);
+  supplyI = motorI + ledI;
+}
+
+/* ═══════════════════════ VISUAL UPDATE ═══════════════════════ */
+const _v = new THREE.Vector3();
+
+function updateVisuals(dt) {
+  const targetX = LEVER_POS[mode];
+  lever.position.x += (targetX - lever.position.x) * Math.min(1, dt * 14);
+
+  rotor.rotation.y += omega * VISUAL_SPIN * dt;
+  blurMat.opacity = THREE.MathUtils.clamp(omega / 63, 0, 1) * 0.55;
+
+  // current-flow markers
+  for (const w of ALL_WIRES) {
+    const on = w.energized();
+    for (const d of w.dots) d.visible = on;
+    if (!on) continue;
+
+    const unitsPerSec = 1.4 + supplyI * 6;
+    w.phase = (w.phase + (unitsPerSec / Math.max(0.5, w.len)) * dt) % 1;
+
+    const n = w.dots.length;
+    for (let k = 0; k < n; k++) {
+      let u = (k / n + w.phase) % 1;
+      if (u < 0) u += 1;
+      if (w.reverse) u = 1 - u;
+      w.curve.getPointAt(u, _v);
+      w.dots[k].position.copy(_v);
+    }
+  }
+
+  // LED glow tracks its actual branch current
+  const duty = THREE.MathUtils.clamp(ledI / LED_FULL, 0, 1.4);
+  M.led.emissiveIntensity = duty * 1.6;
+  ledLight.intensity = duty * 1.1;
+
+  // airflow
+  const speed = omega * 0.06;
+  airMat.opacity = THREE.MathUtils.clamp(omega / 50, 0, 1) * 0.85;
+
+  for (let k = 0; k < AIR_N; k++) {
+    const s = airState[k];
+    s.y += speed * dt;
+    s.r *= (1 + 0.16 * dt);
+    if (s.y > 7.6 || s.r > 3.6) respawnAir(k);
+
+    airPos[k * 3 + 0] = FAN.x + Math.cos(s.a) * s.r;
+    airPos[k * 3 + 1] = FAN.rotorY + s.y;
+    airPos[k * 3 + 2] = FAN.z + Math.sin(s.a) * s.r;
+  }
+  airGeo.attributes.position.needsUpdate = true;
+}
+
+/* ═══════════════════════ HUD ═══════════════════════ */
+const el = {
+  sw:  document.getElementById('v-sw'),
+  cir: document.getElementById('v-cir'),
+  sup: document.getElementById('v-sup'),
+  mv:  document.getElementById('v-mv'),
+  i:   document.getElementById('v-i'),
+  p:   document.getElementById('v-p'),
+  rpm: document.getElementById('v-rpm'),
+  mini: document.getElementById('v-mini'),
+  path: document.getElementById('path')
+};
+const btns = [...document.querySelectorAll('#hud .btns button')];
+
+const PATH_TEXT = {
+  OFF : 'Open circuit — no current path. The rotor coasts down on drag alone.',
+  LOW : '<b>3.0 V → SW1 COM → LOW pin → R1 (22 Ω) → motor.</b> The resistor drops ≈1.9 V, so the motor only sees ≈1.1 V — below the indicator LED\'s forward drop, so it stays dark.',
+  HIGH: '<b>3.0 V → SW1 COM → HIGH pin → motor.</b> The armature gets the full pack voltage; the indicator LED, wired across the motor, lights at ≈5.5 mA.'
+};
+
+let hudAcc = 0;
+function updateHUD() {
+  const rpm = omega * 60 / (2 * Math.PI);
+  const power = P.SUPPLY_V * supplyI;
+
+  el.sw.textContent  = mode;
+  el.cir.textContent = mode === 'OFF' ? 'OPEN' : 'CLOSED';
+  el.cir.classList.toggle('on', mode !== 'OFF');
+  el.sup.textContent = P.SUPPLY_V.toFixed(2) + ' V';
+  el.mv.textContent  = motorV.toFixed(2) + ' V';
+  el.i.textContent   = (supplyI * 1000).toFixed(1) + ' mA';
+  el.p.textContent   = Math.round(power * 1000) + ' mW';
+  el.rpm.textContent = Math.round(rpm) + ' RPM';
+  el.mini.textContent = mode;
+  el.i.classList.toggle('hot', motorI > 0.35);      // inrush highlight
+  el.path.innerHTML  = PATH_TEXT[mode];
+
+  btns.forEach(b => b.classList.toggle('on', b.dataset.mode === mode));
+}
+
+function setMode(m) {
+  if (m === mode) return;
+  mode = m;
+  updateHUD();
+}
+
+btns.forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+
+/* ── collapsible panel ── */
+const hud     = document.getElementById('hud');
+const hudBody = document.getElementById('hud-body');
+const hudTog  = document.getElementById('hud-toggle');
+const HUD_KEY = 'fanctrl.hudCollapsed';
+
+function setCollapsed(c, save = true) {
+  hud.classList.toggle('collapsed', c);
+  hudTog.setAttribute('aria-expanded', String(!c));
+  hudTog.title = c ? 'Expand panel (H)' : 'Collapse panel (H)';
+  hudBody.inert = c;                       // keep hidden buttons out of tab order
+  if (save) { try { localStorage.setItem(HUD_KEY, c ? '1' : '0'); } catch (_) {} }
+}
+hudTog.addEventListener('click', () => setCollapsed(!hud.classList.contains('collapsed')));
+window.addEventListener('keydown', e => {
+  if (e.key === 'h' || e.key === 'H') setCollapsed(!hud.classList.contains('collapsed'));
+});
+try { if (localStorage.getItem(HUD_KEY) === '1') setCollapsed(true, false); } catch (_) {}
+
+window.addEventListener('keydown', e => {
+  if (e.key === '1') setMode('OFF');
+  if (e.key === '2') setMode('LOW');
+  if (e.key === '3') setMode('HIGH');
+});
+
+/* ═══════════════════════ SWITCH PICKING ═══════════════════════ */
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+const pickTargets = [lever, leverGrip, swBody, swTop];
+let downAt = null;
+
+function hitsSwitch(clientX, clientY) {
+  pointer.x = (clientX / window.innerWidth) * 2 - 1;
+  pointer.y = -(clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(pointer, camera);
+  return raycaster.intersectObjects(pickTargets, true).length > 0;
+}
+
+renderer.domElement.addEventListener('pointerdown', e => {
+  downAt = { x: e.clientX, y: e.clientY };
+});
+
+renderer.domElement.addEventListener('pointerup', e => {
+  if (!downAt) return;
+  const moved = Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y);
+  downAt = null;
+  if (moved > 6) return;                       // that was an orbit drag
+  if (hitsSwitch(e.clientX, e.clientY)) {
+    setMode(mode === 'OFF' ? 'LOW' : mode === 'LOW' ? 'HIGH' : 'OFF');
+  }
+});
+
+let hovering = false;
+renderer.domElement.addEventListener('pointermove', e => {
+  const hit = hitsSwitch(e.clientX, e.clientY);
+  if (hit !== hovering) {
+    hovering = hit;
+    renderer.domElement.style.cursor = hit ? 'pointer' : 'grab';
+  }
+});
+renderer.domElement.style.cursor = 'grab';
+
+/* ═══════════════════════ LOOP ═══════════════════════ */
+const clock = new THREE.Clock();
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  const dt = Math.min(clock.getDelta(), 0.05);
+  stepPhysics(dt);
+  updateVisuals(dt);
+  controls.update();
+
+  hudAcc += dt;
+  if (hudAcc > 0.07) { hudAcc = 0; updateHUD(); }
+
+  renderer.render(scene, camera);
+}
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+updateHUD();
+animate();
+</script>
+</body>
+</html>

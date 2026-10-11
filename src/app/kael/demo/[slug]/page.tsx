@@ -7,7 +7,7 @@ import { DemoCover } from '../../../../components/demos/DemoCover';
 import { GameFrame } from '../../../../components/demos/GameFrame';
 import { Provenance } from '../../../../components/demos/Provenance';
 import { JsonLd } from '../../../../components/JsonLd';
-import { ORIGINS, getAllDemos, getDemoBySlug, type DemoControl } from '../../../../data/demos';
+import { ORIGINS, getAllDemos, getDemoBySlug, type DemoControl, type MadeWith } from '../../../../data/demos';
 import { ROUTES, demoFileUrl, demoPath } from '../../../../lib/routes';
 import { SITE_NAME, SITE_URL, absoluteUrl, breadcrumbJsonLd } from '../../../../lib/seo';
 import { getDemoFileStats } from '../../../../lib/demoFiles';
@@ -62,6 +62,42 @@ function formatDate(iso: string): string {
   return new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).format(d);
 }
 
+function formatDuration(ms: number): string {
+  const total = Math.round(ms / 1000);
+  const m = Math.floor(total / 60);
+  const sec = total % 60;
+  return m > 0 ? `${m} min ${sec} s` : `${sec} s`;
+}
+
+/** The request behind a demo, stated plainly: model, level, tokens, time, the exact prompt. */
+function MadeWithPanel({ made }: { made: MadeWith }) {
+  const rows: { term: string; body: string }[] = [
+    { term: 'Model', body: `${made.model}, ${made.level}` },
+    { term: 'Tokens', body: made.tokens.toLocaleString('en-US') },
+    { term: 'Time to finish', body: `${formatDuration(made.durationMs)} (${made.durationMs.toLocaleString('en-US')} ms)` },
+  ];
+  return (
+    <div className="card-panel mt-6 p-7 sm:p-8">
+      <h3 className="m-0 text-[1.0625rem] font-medium text-ink">The one prompt</h3>
+      <blockquote className="m-0 mt-4 border-l-2 border-line pl-5 font-mono text-[0.875rem] leading-[1.7] text-ink">
+        {made.prompt}
+      </blockquote>
+      <dl className="m-0 mt-6 border-t border-line">
+        {rows.map((row) => (
+          <div key={row.term} className="grid grid-cols-[0.45fr_1fr] gap-x-6 border-b border-line py-3.5">
+            <dt className="text-sm font-medium text-ink">{row.term}</dt>
+            <dd className="m-0 text-sm leading-[1.6] text-ink-2">{row.body}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="mb-0 mt-5 text-sm leading-[1.65] text-ink-3">
+        One take: a single prompt in a chat window, no tools, and no follow-up asking Kael to check or fix
+        anything. What you see here is the file it wrote.
+      </p>
+    </div>
+  );
+}
+
 const LINK_CLASS =
   'inline-block border-b border-[#D5D5D1] pb-0.5 text-[0.9375rem] font-medium text-ink transition-colors hover:border-ink cursor-pointer';
 
@@ -96,14 +132,15 @@ export default async function DemoPage({ params }: PageProps) {
   const fileHref = demoFileUrl(demo.file);
   const url = `${SITE_URL}${demoPath(demo.slug)}`;
 
+  const isSim = demo.kind === 'simulation';
   const gameJsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'VideoGame',
+    '@type': isSim ? 'WebApplication' : 'VideoGame',
     name: demo.title,
     description: demo.summary,
     url,
     datePublished: demo.date,
-    gamePlatform: 'Web browser',
+    ...(isSim ? { applicationCategory: 'EducationalApplication', operatingSystem: 'Any (web browser)' } : { gamePlatform: 'Web browser' }),
     publisher: { '@id': `${SITE_URL}/#organization` },
   };
 
@@ -151,16 +188,16 @@ export default async function DemoPage({ params }: PageProps) {
 
         {/* ================= PLAYER ================= */}
         <div className="mt-10">
-          <GameFrame src={fileHref} fileHref={fileHref} title={demo.title}>
+          <GameFrame src={fileHref} fileHref={fileHref} title={demo.title} verb={isSim ? 'Try' : 'Play'}>
             <DemoCover demo={demo} className="h-full" />
           </GameFrame>
           <p className="mb-0 mt-5 max-w-[720px] text-sm leading-[1.65] text-ink-3">
-            Playing loads its libraries from {demo.cdnHosts.join(' and ')}, a public CDN, so that host sees the
+            {isSim ? 'Trying it' : 'Playing'} loads its libraries from {demo.cdnHosts.join(' and ')}, a public CDN, so that host sees the
             request like any other
             {demo.cdnFallbacks && demo.cdnFallbacks.length > 0
               ? ` (and, only if that fails, ${demo.cdnFallbacks.join(' and ')})`
               : ''}
-            . Nothing you do in the game is sent to us. The downloaded file does the same when you open it.
+            . {isSim ? 'Nothing you do in it is sent to us.' : 'Nothing you do in the game is sent to us.'} The downloaded file does the same when you open it.
           </p>
         </div>
 
@@ -172,7 +209,7 @@ export default async function DemoPage({ params }: PageProps) {
               className="mb-6 mt-3.5 font-medium leading-[1.14] tracking-[-0.032em] text-ink"
               style={{ fontSize: 'clamp(1.5rem, 2.8vw, 2.1rem)' }}
             >
-              What You’re Playing.
+              {isSim ? 'What You’re Looking At.' : 'What You’re Playing.'}
             </h2>
             <div className="flex max-w-[680px] flex-col gap-5">
               {demo.description.map((paragraph, i) => (
@@ -212,7 +249,7 @@ export default async function DemoPage({ params }: PageProps) {
             className="mb-6 mt-3.5 font-medium leading-[1.14] tracking-[-0.032em] text-ink"
             style={{ fontSize: 'clamp(1.5rem, 2.8vw, 2.1rem)' }}
           >
-            How To Play.
+            {isSim ? 'How To Use It.' : 'How To Play.'}
           </h2>
           <div className="card-panel overflow-hidden">
             <div className="grid grid-cols-1 md:grid-cols-2">
@@ -227,6 +264,13 @@ export default async function DemoPage({ params }: PageProps) {
         {/* ================= HOW IT WAS MADE ================= */}
         <section id="how" className="mt-[clamp(56px,9vh,96px)] scroll-mt-[100px]">
           <Provenance origin={demo.origin} variant="compact" />
+          {demo.madeWith ? <MadeWithPanel made={demo.madeWith} /> : null}
+          {demo.editNote ? (
+            <div className="mt-6 rounded-[20px] border border-line bg-surface px-6 py-5 sm:px-7">
+              <h3 className="m-0 text-[1.0625rem] font-medium text-ink">One difference from the others</h3>
+              <p className="mb-0 mt-2 max-w-[680px] text-[0.9375rem] leading-[1.65] text-ink-2">{demo.editNote}</p>
+            </div>
+          ) : null}
         </section>
 
         {/* ================= MORE DEMOS ================= */}

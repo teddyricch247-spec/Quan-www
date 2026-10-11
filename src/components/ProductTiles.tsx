@@ -18,7 +18,7 @@ const TILES: Tile[] = [
     accent: 'red',
     icon: Cpu,
     name: 'Kael',
-    category: 'The model, as an API.',
+    category: 'The system, as an API.',
     tagline: 'Drop it into anything that already speaks OpenAI.',
     href: ROUTES.kael,
   },

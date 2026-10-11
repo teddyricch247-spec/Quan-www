@@ -28,7 +28,24 @@
  *  future demo (made in Quan Harness, made through the API, and so on). */
 export type DemoOrigin = 'kael-chat';
 
-export type CoverArt = 'snake' | 'chess' | 'voxel' | 'generic';
+export type CoverArt = 'snake' | 'chess' | 'voxel' | 'circuit' | 'generic';
+
+/** A game, or an interactive simulation. Changes a few labels (Play it / Try it, How to play / How to use it). */
+export type DemoKind = 'game' | 'simulation';
+
+/** The facts about the one request that produced a demo. Shown on the demo's page. */
+export interface MadeWith {
+  /** Display name, e.g. 'Kael Pro Beta'. */
+  model: string;
+  /** Thinking level, e.g. 'z-low'. */
+  level: string;
+  /** The exact prompt, verbatim. */
+  prompt: string;
+  /** Tokens the request used, as reported. */
+  tokens: number;
+  /** Time to finish, in milliseconds, as measured. */
+  durationMs: number;
+}
 
 export interface DemoControl {
   /** The key, gesture or button. Shown in a mono pill. */
@@ -57,6 +74,12 @@ export interface Demo {
    *  site's default card. */
   ogImage?: string;
   origin: DemoOrigin;
+  /** Defaults to 'game'. */
+  kind?: DemoKind;
+  /** The request behind this demo, when it was recorded. */
+  madeWith?: MadeWith;
+  /** Shown in the "how it was made" section when the published file is not exactly what Kael wrote. */
+  editNote?: string;
   cover: {
     art: CoverArt;
     /** Gradient behind the art, also the card's colour while it loads. */
@@ -89,13 +112,17 @@ export interface OriginStory {
 
 export const ORIGINS: Record<DemoOrigin, OriginStory> = {
   'kael-chat': {
-    label: 'Made in chat with Kael',
+    label: 'One take, in chat, with Kael',
     short:
-      'Kael wrote this in a chat conversation, with no building tools, as a single HTML file.',
+      'Kael wrote this from a single prompt in a chat interface, with no tools and no follow-up, as one HTML file.',
     facts: [
       {
-        title: 'Just a chat',
-        body: 'Kael had no building tools. The code was written as text in a conversation, nothing more.',
+        title: 'One prompt, one take',
+        body: 'Each demo is Kael’s first and only reply to a single prompt. Nobody asked it to re-check, fix or improve anything afterwards, and the file is the reply as it came back, except where a demo’s own page says it was changed afterwards.',
+      },
+      {
+        title: 'A chat interface, no tools',
+        body: 'Kael had no building tools, no way to run or test its own code, and no browser. The code was written as text in a chat conversation, nothing more.',
       },
       {
         title: 'One file each',
@@ -103,13 +130,70 @@ export const ORIGINS: Record<DemoOrigin, OriginStory> = {
       },
       {
         title: 'Drawn and synthesised in code',
-        body: 'There are no image, model or audio files. Textures are drawn on a canvas and sounds are synthesised. The only things fetched are the libraries, loaded from a public CDN.',
+        body: 'There are no image, model or audio files. Textures are drawn on a canvas and any sound is synthesised. The only things fetched are the libraries, loaded from a public CDN.',
       },
     ],
   },
 };
 
 export const DEMOS: Demo[] = [
+  {
+    slug: 'fan-circuit',
+    title: 'Fan Circuit',
+    tagline: 'A circuit board that actually works, in one HTML file.',
+    summary:
+      'Two AA cells, a three-position switch and a small fan on a 3D circuit board, with the current, voltage and speed worked out from the real electrical equations. Written by Kael Pro Beta in one take.',
+    description: [
+      'Fan Circuit is a 3D circuit board that behaves like the real thing. Two AA cells in series feed a small brushed fan motor through a three-position slide switch: OFF, LOW and HIGH. In HIGH the motor is wired straight across the 3 V pack. In LOW the current goes through a 22 ohm resistor first, so the motor sees about a third of the voltage and turns slower. A red indicator LED sits across the motor and only lights when the motor terminals rise above its forward voltage, which in practice means HIGH.',
+      'Nothing about it is animated by a timer. The motor is simulated as a real DC motor with armature resistance, a back-EMF constant, bearing drag and air drag, stepped many times per frame. Switch it on and the current spikes to about 500 mA while the rotor is still, then falls as the fan spins up and its back-EMF builds. Settled, HIGH draws about 290 mA at roughly 600 RPM and LOW about 87 mA at roughly 264 RPM. Switch it off and the rotor coasts down on drag alone. The panel shows the supply, the voltage across the motor, the current, the power and the shaft speed, and says in words which path the current is taking.',
+      'The board is drawn in code: the copper traces, pads, labels and silkscreen are painted on a canvas and wrapped onto the board, and the cells, switch, resistors, LED and motor are built from simple shapes. Glowing dots travel along each wire that is carrying current, faster when more current flows. Airflow particles rise from the fan with its speed. The on-screen spin is slowed down so it does not strobe, and the readings stay true to the real speed.',
+    ],
+    date: '2026-10-10',
+    file: 'fan-circuit.html',
+    tags: ['Simulation', '3D', 'Electronics', 'Kael Pro Beta'],
+    ogImage: '/og/demo-fan-circuit.png',
+    origin: 'kael-chat',
+    kind: 'simulation',
+    madeWith: {
+      model: 'Kael Pro Beta',
+      level: 'z-low',
+      prompt:
+        'Make electrical circuit board in 3js that actually "works". It should be a small fan that is controlled by a switch that has low, high and off. It is connected to a AA batteries. In html',
+      tokens: 57613,
+      durationMs: 463640,
+    },
+    cover: { art: 'circuit', from: '#0a2b1a', to: '#123d4a' },
+    highlights: [
+      'Two AA cells in series, a three-position switch (OFF, LOW, HIGH) and a fan motor',
+      'A real DC-motor model: back-EMF, drag, inrush current when it starts, coast-down when it stops',
+      'LOW runs the motor through a 22 ohm resistor; HIGH wires it straight to the pack',
+      'Live readings for voltage, current, power and shaft speed',
+      'Glowing dots follow the current along each wire that carries it',
+      'An indicator LED that lights only when the motor voltage is high enough',
+      'Orbit and zoom the board, click the switch lever or use the keys 1, 2 and 3',
+      'Copper traces, labels and textures drawn in code, no asset files',
+    ],
+    controls: {
+      desktop: [
+        { input: 'Click the switch lever', action: 'Cycle OFF, LOW, HIGH' },
+        { input: '1 / 2 / 3', action: 'OFF / LOW / HIGH' },
+        { input: 'OFF, LOW, HIGH buttons', action: 'Set the switch from the panel' },
+        { input: 'Drag', action: 'Orbit the board' },
+        { input: 'Scroll', action: 'Zoom' },
+        { input: 'H', action: 'Hide or show the readings panel' },
+      ],
+      touch: [
+        { input: 'Tap the switch lever', action: 'Cycle OFF, LOW, HIGH' },
+        { input: 'OFF, LOW, HIGH buttons', action: 'Set the switch from the panel' },
+        { input: 'Drag', action: 'Orbit the board' },
+        { input: 'Pinch', action: 'Zoom' },
+        { input: 'Tap the panel title', action: 'Collapse or expand the readings' },
+      ],
+    },
+    tech: ['three.js 0.160', 'WebGL', 'Canvas textures', 'A fixed-step motor simulation'],
+    cdnHosts: ['unpkg.com'],
+    storage: 'Whether the readings panel is collapsed is saved in your browser only. Nothing is sent to us.',
+  },
   {
     slug: 'blockscape',
     title: 'Blockscape',
@@ -222,6 +306,8 @@ export const DEMOS: Demo[] = [
     tags: ['Game', '3D', 'AI opponent'],
     ogImage: '/og/demo-chess.png',
     origin: 'kael-chat',
+    editNote:
+      'The playable version on this site is not exactly Kael’s first reply. After the reply, the board colours, the move highlights, the capture animation, the default AI setting and a bug that wrote the wrong letter for each piece in the move list were fixed outside the chat. The other demos are untouched.',
     cover: { art: 'chess', from: '#0d0b09', to: '#3a2a1c' },
     highlights: [
       'Full rules: castling, en passant, promotion and every kind of draw',

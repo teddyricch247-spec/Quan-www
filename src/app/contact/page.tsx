@@ -130,8 +130,8 @@ export default function ContactPage() {
               first and tell us what you intend to run.
             </p>
             <p className="m-0">
-              Three things to know up front. Kael is a system of several models, not a single model. It accepts
-              sampling settings such as temperature but does not use them, so output is not deterministic and runs
+              Three things to know up front. Kael comes as two models, Kael Beta and Kael Pro Beta, so say which one
+              you used. It accepts sampling settings such as temperature but does not use them, so output is not deterministic and runs
               can vary. And the safety system can flag requests; flagged requests are held for review. The{' '}
               <Link href="/kael" className={LINK}>
                 Kael page

@@ -1,3 +1,34 @@
+# Changes — 10 October 2026 (Kael is two models; Platform is the source of truth)
+
+Checked against the Platform repo (`backend/app/models/kael/config.py`, `frontend/src/components/docs/facts.ts`). Blog posts and their figures were **not** touched, as asked.
+
+## Changed
+
+- **Two models, not one.** Kael Beta (`kael-beta`; levels Low default, High, Max; $3.00 input / $0.60 cached / $10.00 output per 1M tokens) and Kael Pro Beta (`kael-pro-beta`; levels z-low default, z-high; $8.00 / $1.60 / $25.00). `src/data/kael.ts` is rewritten around `MODELS`; the thinking-level picker, pricing table and spec sheet read from it. New `ModelsOverview` component replaces the "how it works" rail on `/kael`.
+- **Speed.** Every level thinks first (about 2.2x an average AI model's time, unchanged), then writes at 270 to 340 tokens per second in every mode. The "Off" level, "Auto" and the 1-second / first-word figures are gone. Published limits added: 150 requests a minute, 30 concurrent, 8 minutes per request.
+- **No mechanism claims.** Draft/check/refine, "composite intelligence", fine-tuned small models, retrieval and "up to ~20 calls" are removed from the pages; the copy says what Kael is for. About says plainly that Quancis does not publish how Kael is built. Pages touched: home, `/kael`, `/pricing`, `/about`, `/chat`, `/harness`, `/contact`, `/examples`, footer, product showcase, "system story", site metadata and structured data.
+- `/examples`: no Off level; levels are Low / High / Max / z-low / z-high.
+- Share cards redrawn for `/`, `/kael`, `/kael/demo`, `/about` and the default (`scripts/make-og.py`); `PAGE_UPDATED` bumped for the changed pages.
+
+## Added
+
+- **Demo: Fan Circuit** (`public/demo-files/fan-circuit.html`, byte-identical to the file supplied). A working 3D circuit: two AA cells, an OFF / LOW / HIGH switch and a fan motor. Made by Kael Pro Beta at z-low from one prompt, 57,613 tokens, 463,640 ms. Its page shows the exact prompt, model, level, tokens and time. New drawn cover (`CircuitArt`), share card, `kind: 'simulation'` labels and `WebApplication` structured data.
+- **One-take wording on every demo** (hub, demo pages, Kael page, card text): a single prompt in a chat interface, no tools, no follow-up. Fields `madeWith`, `editNote` and `kind` added to `src/data/demos.ts`.
+
+## To check
+
+- **3D Chess is not a pure one-take file.** The 4 October entry below records hand fixes made after Kael's reply. Its page now carries an `editNote` saying so. If `chess.html` is Kael's original, delete `editNote` in `demos.ts`.
+- **`src/components/kael/PipelineSteps.tsx` is unused.** Delete it by hand (files were not deleted in this delivery).
+- **Blog posts and figures still contain old facts** (old single-model price table, Off/Auto levels, 220-340 tok/s and 0.7-3 s figures, "supports JSON mode", draft-check-refine and fine-tuned-model descriptions). Left alone on request.
+- "Knowledge cutoff: July 2026" on `/kael` is carried over; not in Platform's config, so unverified.
+
+# Changes — 5 October 2026 (Harness/Chat links, "system" wording)
+
+## Changed
+
+- **Every link to Quan Harness / Quan Chat on app.quancis.space now goes to a new holding page, `/not-available`** (`src/app/not-available/page.tsx`). It says the two products are built but not open for public use. The pages, copy and buttons for Harness and Chat are unchanged; only where the links lead. The `app*` entries in `EXTERNAL` (`src/lib/routes.ts`) all point to `/not-available`, with a comment on how to restore them at launch. The page is `noindex` and not in the sitemap.
+- **"Model" became "system" where Kael is described as the product**: home headline ("One System. Three Ways In."), "The System, At A Glance", the product-row category, About, Pricing "which one", the Harness and Chat cross-links, and the share-image alt text. Technical uses ("model ID", `kael-beta` as the model name, "extra model calls") are unchanged.
+
 # Changes — 5 October 2026 (new research post and drawn figures)
 
 ## Added

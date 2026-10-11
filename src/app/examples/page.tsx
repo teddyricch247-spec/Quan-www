@@ -26,7 +26,7 @@ const READING_GUIDE = [
   },
   {
     heading: 'Settings',
-    body: `The model ID (${EXAMPLE_MODEL_ID}) and the thinking level the request used: Off, Low, High or Max.`,
+    body: `The model ID (${EXAMPLE_MODEL_ID}) and the thinking level the request used: Low, High or Max on Kael Beta, or z-low or z-high on Kael Pro Beta.`,
   },
   {
     heading: 'Output',

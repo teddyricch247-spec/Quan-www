@@ -1,1 +1,1 @@
-Kael demos: playable 3D games written in a chat window.
+Kael demos: games and simulations written in one take in a chat window.
