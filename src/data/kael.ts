@@ -139,7 +139,9 @@ export const SPEED = {
 export const LIMITS = {
   requestsPerMinute: 150,
   concurrentRequests: 30,
-  timeoutMinutes: 8,
+  // The client timeout to recommend, not a limit on a request. The Platform's 480 s ceiling applies to each
+  // stage of a request, and a request has several, so one can run for about 24 minutes. Never publish 8 minutes.
+  clientTimeoutMinutes: 30,
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -196,7 +198,7 @@ export const SPECS: Spec[] = [
     id: 'limits',
     label: 'Rate limits',
     value: `${LIMITS.requestsPerMinute} requests a minute, ${LIMITS.concurrentRequests} at once`,
-    note: `Per account, across both models. A request can run for up to ${LIMITS.timeoutMinutes} minutes.`,
+    note: `Per account, across both models. Hard requests can run for many minutes, so stream them.`,
   },
   {
     id: 'speed',
@@ -269,7 +271,7 @@ export const FAQ: FaqItem[] = [
     q: 'What are the rate limits?',
     a: [
       `${LIMITS.requestsPerMinute} requests per minute and ${LIMITS.concurrentRequests} requests at once, per account, counted across both models together.`,
-      `A request can run for up to ${LIMITS.timeoutMinutes} minutes, so set your client’s timeout above that, or stream the response.`,
+      `Hard requests can run for many minutes, so stream the response, or set your client’s timeout to ${LIMITS.clientTimeoutMinutes} minutes or more.`,
     ],
   },
   {
