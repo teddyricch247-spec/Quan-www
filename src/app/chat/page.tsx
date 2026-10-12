@@ -3,12 +3,13 @@ import Link from 'next/link';
 import { Hero } from '../../components/Hero';
 import { AskAnything } from '../../components/AskAnything';
 import { LowPolyScene } from '../../components/LowPolyScene';
-import { EXTERNAL, ROUTES } from '../../lib/routes';
-import { ACCENT_GLASS_DARK_CLASS } from '../../lib/accents';
+import { ROUTES } from '../../lib/routes';
 import { JsonLd } from '../../components/JsonLd';
-import { breadcrumbJsonLd, pageMetadata, softwareApplicationJsonLd } from '../../lib/seo';
+import { NotOpenYet } from '../../components/NotOpenYet';
+import { breadcrumbJsonLd, pageMetadata } from '../../lib/seo';
 
-const CHAT_DESCRIPTION = 'The same Kael behind the API and behind Harness — here, just talk to it.';
+const CHAT_DESCRIPTION =
+  'The same Kael behind the API and behind Harness, in a conversation. Quan Chat is built but not open to the public yet.';
 
 export const metadata: Metadata = pageMetadata({
   title: 'Quan Chat — Kael In A Conversation',
@@ -25,14 +26,9 @@ const PROSE_STYLE = { fontSize: 'clamp(1.0625rem, 1.4vw, 1.1875rem)' } as const;
 export default function ChatPage() {
   return (
     <div className="w-full bg-white">
+      {/* No SoftwareApplication structured data on purpose: Chat is not open yet. Add it back at launch. */}
       <JsonLd
         data={[
-          softwareApplicationJsonLd({
-            name: 'Quan Chat',
-            path: '/chat',
-            description: CHAT_DESCRIPTION,
-            category: 'UtilitiesApplication',
-          }),
           breadcrumbJsonLd([
             { name: 'Home', path: '/' },
             { name: 'Quan Chat', path: '/chat' },
@@ -41,12 +37,12 @@ export default function ChatPage() {
       />
       <Hero
         accent="chat"
-        eyebrow="Quan Chat"
+        eyebrow="Quan Chat · Not open to the public yet"
         headline="Kael, In A Conversation."
-        subhead="The same Kael behind the API and behind Harness — here, just talk to it."
+        subhead="The same Kael behind the API and behind Harness,, in a conversation."
       />
 
-      {/* ================= LIVE DEMO ================= */}
+      {/* ================= COMPOSER PREVIEW ================= */}
       <section className="px-[clamp(20px,5vw,48px)] pt-[clamp(64px,10vh,110px)] pb-[clamp(88px,15vh,176px)] scroll-mt-[100px]">
         <AskAnything />
       </section>
@@ -84,8 +80,8 @@ export default function ChatPage() {
           </h2>
           <p className={PROSE_CLASS} style={PROSE_STYLE}>
             Chat is built for getting the answer right, not for getting it first. That means it can take longer to
-            reply than the quickest assistants you have used. The deep-reasoning toggle in the composer above lets
-            you ask for more thinking on a hard question, and the web toggle lets it look things up.
+            reply than the quickest assistants you have used. The composer above is a preview of how it will look: a
+            deep-reasoning toggle for more thinking on a hard question, and a web toggle so it can look things up.
           </p>
           <p className={`${PROSE_CLASS} mt-5`} style={PROSE_STYLE}>
             Because Chat runs on Kael, it is strongest at the same things Kael is: coding, security, software
@@ -104,42 +100,21 @@ export default function ChatPage() {
       {/* ================= CLOSING CTA BAND ================= */}
       <section className="px-[clamp(20px,5vw,48px)] pb-[clamp(88px,14vh,150px)] scroll-mt-[100px]">
         <div className="max-w-[1160px] mx-auto">
-          <div className="rounded-[28px] bg-surface px-[clamp(28px,6vw,64px)] py-[clamp(48px,8vh,76px)] text-center">
-            <p
-              className="mx-auto max-w-[560px] text-ink-2 leading-[1.6]"
-              style={{ fontSize: 'clamp(1.0625rem, 1.3vw, 1.1875rem)' }}
-            >
-              One subscription, unlimited conversations. See exact pricing on the app.
-            </p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-5">
-              <a href={EXTERNAL.appChat} className={`btn-pill btn-pill-glass-dark ${ACCENT_GLASS_DARK_CLASS.chat}`}>
-                Start Chatting
-              </a>
-              <a
-                href={EXTERNAL.appPricing}
-                className="text-[0.9375rem] font-medium text-ink-2 hover:text-ink transition-colors cursor-pointer"
-              >
-                See pricing →
-              </a>
-            </div>
-            <p className="mx-auto mb-0 mt-7 max-w-[520px] text-sm leading-[1.6] text-ink-3">
-              Building your own product? The system behind Chat is available through the{' '}
-              <a
-                href={EXTERNAL.platform}
-                className="border-b border-[#D5D5D1] font-medium text-ink-2 transition-colors hover:border-ink hover:text-ink"
-              >
-                Kael API
-              </a>
-              , and the{' '}
-              <Link
-                href={ROUTES.examples}
-                className="border-b border-[#D5D5D1] font-medium text-ink-2 transition-colors hover:border-ink hover:text-ink"
-              >
-                examples page
-              </Link>{' '}
-              shows what it produces.
-            </p>
-          </div>
+          <NotOpenYet
+            product="Quan Chat"
+            instead={
+              <>
+                Chat runs on Kael, which you can call directly today through the Kael API, and the{' '}
+                <Link
+                  href={ROUTES.demo}
+                  className="border-b border-[#D5D5D1] font-medium text-ink transition-colors hover:border-ink"
+                >
+                  demos
+                </Link>{' '}
+                show what it produces.
+              </>
+            }
+          />
         </div>
       </section>
     </div>

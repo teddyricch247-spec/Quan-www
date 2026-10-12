@@ -1,5 +1,4 @@
 import type { MetadataRoute } from 'next';
-import { EXAMPLES_ARE_LIVE } from '../data/examples';
 import { getAllPosts, getModifiedDate } from '../data/blog';
 import { getAllDemos } from '../data/demos';
 import { ROUTES, demoPath } from '../lib/routes';
@@ -21,9 +20,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ROUTES.contact,
     ROUTES.blog,
     ROUTES.legal,
-    // /examples joins the sitemap automatically once it holds at least one
-    // real (non-placeholder) example. Until then the page is noindex.
-    ...(EXAMPLES_ARE_LIVE ? [ROUTES.examples] : []),
+    ROUTES.privacy,
+    ROUTES.security,
   ];
 
   const staticEntries: MetadataRoute.Sitemap = pages.map((path) => ({

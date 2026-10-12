@@ -14,7 +14,6 @@ export type FigureId =
   | 'repeated-sampling'
   | 'travelplanner'
   | 'mind-evolution-ablation'
-  | 'kael-loop'
   | 'speed-ranges'
   | 'security-pipeline'
   | 'veracode-failures'
@@ -32,7 +31,6 @@ export type FigureId =
   | 'mind-evolution-islands'
   | 'swiss-cheese'
   | 'sql-injection-flow'
-  | 'kael-request-path'
   | 'wait-at-the-front'
   | 'thinking-stack';
 

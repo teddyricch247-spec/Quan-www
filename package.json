@@ -10,7 +10,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "check": "node scripts/check-content.mjs",
+    "lint": "npm run typecheck && npm run check"
   },
   "dependencies": {
     "lucide-react": "^0.546.0",

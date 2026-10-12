@@ -322,14 +322,14 @@ export default function KaelPage() {
           >
             Create a Kael API account
           </a>
-          , or browse the{' '}
+          , or try the{' '}
           <Link
-            href={ROUTES.examples}
+            href={ROUTES.demo}
             className="border-b border-[#D5D5D1] font-medium text-ink transition-colors hover:border-ink"
           >
-            examples page
+            demos
           </Link>{' '}
-          as we fill it with real outputs.
+          Kael wrote from a single prompt.
         </Prose>
       </Section>
 
@@ -419,7 +419,7 @@ export default function KaelPage() {
         <Eyebrow>Where to use it</Eyebrow>
         <H2>One System, Three Ways In.</H2>
         <Prose className="mb-10">
-          The same Kael is behind all three. Pick the one that matches how you work.
+          The same Kael is behind all three. The API is open today; Quan Harness and Quan Chat are built but not open to the public yet.
         </Prose>
         <dl className="m-0 border-t border-line">
           {[

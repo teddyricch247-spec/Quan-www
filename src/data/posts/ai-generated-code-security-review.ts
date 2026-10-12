@@ -6,7 +6,7 @@ export const post: BlogPost = {
   title: 'AI-Written Code Has a Security Problem. Here’s How to Review It.',
   seoTitle: 'AI-Generated Code Security: What the Research Says and How to Review It',
   date: '2026-10-02',
-  updated: '2026-10-05',
+  updated: '2026-10-11',
   tag: 'Engineering',
   author: 'response-mosese',
   excerpt:
@@ -184,7 +184,7 @@ app.get('/invoices/:id', requireLogin, async (req, res) => {
       'We covered the general version of this in [From Best-of-N to Mind Evolution](/blog/best-of-n-to-mind-evolution): in every method that spends extra compute to improve an answer, the quality of the improvement is bounded by the quality of the signal that says what is wrong. For security, good signals are static analysis findings, failing abuse-case tests, and a reviewer, human or model, given a specific brief rather than a vague one. “Is this code good?” gets a shrug. “Find every place untrusted input reaches a query, a path or a template, and say whether it is handled safely” gets an answer you can act on.'
     ),
     p(
-      'This is the job of the check step in Kael’s draft, check and refine loop: reading a draft against what you asked for and catching what a single pass tends to miss, which for code means bugs and security issues. We want to be plain about how far that claim goes. It is a design goal, not a measured result: we have not published benchmark numbers for Kael and we are waiting on independent evaluation. A model check lowers the odds that an obvious flaw reaches you. It does not replace the other layers below.'
+      'This is the kind of check we care about for code: reading an answer against what you asked for and catching what a single pass tends to miss, which for code means bugs and security issues. We want to be plain about how far that goes. It is a design goal, not a measured result: we do not publish how Kael is built, we have not published benchmark numbers for Kael and we are waiting on independent evaluation. A model check lowers the odds that an obvious flaw reaches you. It does not replace the other layers below.'
     ),
 
     h2('A pipeline you can set up this week'),

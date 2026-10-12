@@ -19,7 +19,7 @@ const nextConfig: NextConfig = {
 
   // Addresses people commonly type or search for that would otherwise 404.
   //
-  // The /docs, /privacy and /terms ones are temporary (307) on purpose, so
+  // The /docs, /privacy-policy and /terms ones are temporary (307) on purpose, so
   // they can be pointed somewhere else later without browsers or search
   // engines remembering the old destination. There is deliberately no
   // /pricing redirect: /pricing is a real page (it covers both the API and
@@ -35,13 +35,19 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       { source: '/docs', destination: 'https://platform.quancis.space/docs', permanent: false },
-      { source: '/privacy', destination: '/legal', permanent: false },
+      { source: '/privacy-policy', destination: '/privacy', permanent: false },
+      { source: '/cookies', destination: '/privacy', permanent: false },
+      { source: '/cookie-policy', destination: '/privacy', permanent: false },
       { source: '/terms', destination: '/legal', permanent: false },
-      { source: '/privacy-policy', destination: '/legal', permanent: false },
       { source: '/terms-of-service', destination: '/legal', permanent: false },
       { source: '/demo', destination: '/kael/demo', permanent: true },
       { source: '/demos', destination: '/kael/demo', permanent: true },
       { source: '/demo/:slug', destination: '/kael/demo/:slug', permanent: true },
+      // /examples was a gallery of placeholder cards with no real outputs in it.
+      // The demos are the real examples (exact prompt, model, level, tokens and
+      // time), so the old address, and the blog posts that still link to it,
+      // land there. Temporary (307) in case a real examples page comes back.
+      { source: '/examples', destination: '/kael/demo', permanent: false },
     ];
   },
 

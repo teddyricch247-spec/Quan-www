@@ -1,0 +1,22 @@
+name: CI
+
+# Runs on every push and pull request: the type check, the content check
+# (links, anchors, retired claims, the privacy-page guard) and the real build.
+# The build is the check the README says has never been run; this runs it.
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      # There is no package-lock.json yet. Commit the one `npm install` creates,
+      # then change this to `npm ci`.
+      - run: npm install
+      - run: npm run lint
+      - run: npm run build

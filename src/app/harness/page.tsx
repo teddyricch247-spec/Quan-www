@@ -5,9 +5,9 @@ import { Hero } from '../../components/Hero';
 import { LowPolyScene } from '../../components/LowPolyScene';
 import { SceneStage } from '../../components/three/SceneStage';
 import { EXTERNAL, ROUTES } from '../../lib/routes';
-import { ACCENT_GLASS_DARK_CLASS } from '../../lib/accents';
 import { JsonLd } from '../../components/JsonLd';
-import { breadcrumbJsonLd, pageMetadata, softwareApplicationJsonLd } from '../../lib/seo';
+import { NotOpenYet } from '../../components/NotOpenYet';
+import { breadcrumbJsonLd, pageMetadata } from '../../lib/seo';
 
 const HARNESS_DESCRIPTION =
   'Built on Kael, the same models behind the API. Point it at a codebase and it plans, writes, and finishes the work — not just suggests it.';
@@ -48,14 +48,10 @@ const FEATURE_ROWS: { label: string; detail: string }[] = [
 export default function HarnessPage() {
   return (
     <div className="w-full bg-white">
+      {/* No SoftwareApplication structured data on purpose: it tells search engines
+          there is an app to use, and Harness is not open yet. Add it back at launch. */}
       <JsonLd
         data={[
-          softwareApplicationJsonLd({
-            name: 'Quan Harness',
-            path: '/harness',
-            description: HARNESS_DESCRIPTION,
-            category: 'DeveloperApplication',
-          }),
           breadcrumbJsonLd([
             { name: 'Home', path: '/' },
             { name: 'Quan Harness', path: '/harness' },
@@ -64,10 +60,11 @@ export default function HarnessPage() {
       />
       <Hero
         accent="harness"
-        eyebrow="Quan Harness"
+        eyebrow="Quan Harness · Not open to the public yet"
         headline="An Agent That Ships."
         subhead="Built on Kael, the same models behind the API. Point it at a codebase and it plans, writes, and finishes the work — not just suggests it."
-        cta={{ label: 'Start With Harness', href: EXTERNAL.appHarness, external: true }}
+        cta={{ label: 'Use Kael Through The API', href: EXTERNAL.platform, external: true }}
+        secondaryCta={{ label: 'Where Harness stands', href: ROUTES.notAvailable }}
       />
 
       {/* ================= WHAT IT DOES ================= */}
@@ -262,7 +259,7 @@ export default function HarnessPage() {
             href={ROUTES.kael}
             className="inline-block mt-8 text-[0.9375rem] font-medium text-ink border-b border-[#D5D5D1] hover:border-ink transition-colors cursor-pointer pb-0.5"
           >
-            How Kael works →
+            More about Kael →
           </Link>
         </div>
       </section>
@@ -270,42 +267,21 @@ export default function HarnessPage() {
       {/* ================= CLOSING CTA BAND ================= */}
       <section className="px-[clamp(20px,5vw,48px)] pb-[clamp(88px,14vh,150px)] scroll-mt-[100px]">
         <div className="max-w-[1160px] mx-auto">
-          <div className="rounded-[28px] bg-surface px-[clamp(28px,6vw,64px)] py-[clamp(48px,8vh,76px)] text-center">
-            <p
-              className="mx-auto max-w-[560px] text-ink-2 leading-[1.6]"
-              style={{ fontSize: 'clamp(1.0625rem, 1.3vw, 1.1875rem)' }}
-            >
-              One subscription, unlimited use. See exact pricing on the app.
-            </p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-5">
-              <a href={EXTERNAL.appHarness} className={`btn-pill btn-pill-glass-dark ${ACCENT_GLASS_DARK_CLASS.harness}`}>
-                Start With Harness
-              </a>
-              <a
-                href={EXTERNAL.appPricing}
-                className="text-[0.9375rem] font-medium text-ink-2 hover:text-ink transition-colors cursor-pointer"
-              >
-                See pricing →
-              </a>
-            </div>
-            <p className="mx-auto mb-0 mt-7 max-w-[520px] text-sm leading-[1.6] text-ink-3">
-              Want the system without the agent? Harness runs on Kael, which you can call directly through the{' '}
-              <a
-                href={EXTERNAL.platform}
-                className="border-b border-[#D5D5D1] font-medium text-ink-2 transition-colors hover:border-ink hover:text-ink"
-              >
-                Kael API
-              </a>
-              , or read how it works on the{' '}
-              <Link
-                href={ROUTES.kael}
-                className="border-b border-[#D5D5D1] font-medium text-ink-2 transition-colors hover:border-ink hover:text-ink"
-              >
-                Kael page
-              </Link>
-              .
-            </p>
-          </div>
+          <NotOpenYet
+            product="Quan Harness"
+            instead={
+              <>
+                Harness runs on Kael, which you can call directly today through the Kael API, or read about on the{' '}
+                <Link
+                  href={ROUTES.kael}
+                  className="border-b border-[#D5D5D1] font-medium text-ink transition-colors hover:border-ink"
+                >
+                  Kael page
+                </Link>
+                .
+              </>
+            }
+          />
         </div>
       </section>
     </div>

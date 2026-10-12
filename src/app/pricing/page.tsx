@@ -8,7 +8,7 @@ import { breadcrumbJsonLd, pageMetadata } from '../../lib/seo';
 export const metadata: Metadata = pageMetadata({
   title: 'Pricing',
   description:
-    'Kael is billed per million tokens through the API. Quan Harness and Quan Chat share one subscription. How each is priced, and where to find the exact numbers.',
+    'Kael is billed per million tokens through the API. Quan Harness and Quan Chat are planned as one subscription and are not open to the public yet, so no app price is published.',
   path: '/pricing',
 });
 
@@ -39,8 +39,8 @@ export default function PricingPage() {
         <span className="page-eyebrow">Quancis</span>
         <h1 className="page-title mt-3.5">Pricing.</h1>
         <p className="page-lead mt-4">
-          Two ways to pay, one for each way of using Kael: by usage through the API, or by subscription through
-          the app.
+          Kael is priced by usage, through the API, today. Quan Harness and Quan Chat are planned as one
+          subscription and are not open to the public yet.
         </p>
 
         {/* ================= KAEL API ================= */}
@@ -74,15 +74,16 @@ export default function PricingPage() {
             Quan Harness &amp; Quan Chat
           </span>
           <h2 className="mt-3.5 mb-5 font-medium text-ink leading-[1.14] tracking-[-0.032em]" style={H2_STYLE}>
-            One Subscription.
+            Not Open Yet.
           </h2>
           <p className="mb-9 max-w-[720px] text-ink-2 leading-[1.7]" style={PROSE_STYLE}>
-            Harness, the coding agent, and Chat, the conversation, are covered by a single subscription. Exact
-            pricing lives on the app.
+            Harness, the coding agent, and Chat, the conversation, are built but not open to the public, so there is
+            no app pricing to show. The plan is a single subscription covering both. We will publish the price here
+            when they open, and not before.
           </p>
-          <a href={EXTERNAL.appPricing} className="btn-pill btn-pill-dark inline-flex">
-            See app pricing
-          </a>
+          <Link href={ROUTES.notAvailable} className="btn-pill btn-pill-dark inline-flex">
+            Where Harness and Chat stand
+          </Link>
         </section>
 
         {/* ================= WHICH ONE ================= */}

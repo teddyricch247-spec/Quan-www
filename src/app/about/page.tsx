@@ -170,9 +170,6 @@ export default function AboutPage() {
             <Link href={ROUTES.blog} className={LINK_CLASS}>
               Read the blog →
             </Link>
-            <a href="/feed.xml" className={LINK_CLASS}>
-              RSS feed →
-            </a>
           </div>
         </section>
 

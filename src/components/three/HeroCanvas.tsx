@@ -402,7 +402,7 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({ accentColor = ACCENT_RED
     fogScene.add(fogMesh);
 
     function layout() {
-      if (!heroElem) return;
+      if (!heroElem || disposed) return;
       const w = heroElem.clientWidth;
       const h = heroElem.clientHeight;
       if (!w || !h) return;
@@ -430,8 +430,27 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({ accentColor = ACCENT_RED
 
     layout();
     window.addEventListener('resize', layout);
-    const onOrientation = () => setTimeout(layout, 120);
+    let orientationTimer: ReturnType<typeof setTimeout>;
+    const onOrientation = () => {
+      clearTimeout(orientationTimer);
+      orientationTimer = setTimeout(layout, 120);
+    };
     window.addEventListener('orientationchange', onOrientation);
+    // The window's resize event only fires when the window changes. The hero
+    // can change size without it (the web font arriving and re-wrapping the
+    // headline, a phone's address bar sliding away, the page settling after
+    // load), and then the scene was still drawn for the old size, stretched
+    // until the next resize. Watching the hero itself keeps the canvas and
+    // camera matched to what is actually on screen.
+    let resizeFrame = 0;
+    let heroObserver: ResizeObserver | null = null;
+    if ('ResizeObserver' in window) {
+      heroObserver = new ResizeObserver(() => {
+        cancelAnimationFrame(resizeFrame);
+        resizeFrame = requestAnimationFrame(layout);
+      });
+      heroObserver.observe(heroElem);
+    }
 
     const raycaster = new THREE.Raycaster();
     const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
@@ -585,6 +604,9 @@ export const HeroCanvas: React.FC<HeroCanvasProps> = ({ accentColor = ACCENT_RED
       clearTimeout(touchTimer);
       window.removeEventListener('resize', layout);
       window.removeEventListener('orientationchange', onOrientation);
+      clearTimeout(orientationTimer);
+      cancelAnimationFrame(resizeFrame);
+      heroObserver?.disconnect();
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('pointerdown', onPointerDown);
       window.removeEventListener('pointerup', onPointerUp);

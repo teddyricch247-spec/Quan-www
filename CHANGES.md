@@ -1,3 +1,74 @@
+# Changes — 11 October 2026 (dev review fixes: Harness/Chat, legal, blog, hero, checks)
+
+Everything from the Dev's read-through that was not "wait for more content". **Not run:** `npm install` / `npm run build` (no network here), and nothing was seen on a screen or a phone. What *was* run: `npm run check` (new, passes; it fails on the original files for the anchor and the stale claims), a syntax pass over every `.ts`/`.tsx` file, a type check of the data layer and of the changed components against stand-in types, and a render of the redrawn blog figures.
+
+## Fixed
+
+- **Harness and Chat no longer lead nowhere.** No button or link on the site goes to a holding page as if it were a product. `/harness` and `/chat` say "Not open to the public yet" in the hero; their closing band (`components/NotOpenYet.tsx`) says it plainly and offers what works today (Get Kael API Access, and a link to the status page). The "Start With…" buttons and "See pricing" links are gone, and so are the `app*` entries in `EXTERNAL` (`lib/routes.ts`), so nothing can point at them by accident. No waitlist, as asked.
+- **"Ask Anything" keeps what you typed.** Sending no longer navigates or clears the box. It shows a note under it (not open yet, nothing was sent anywhere) with links to the API and the demos. The send control is now a real button.
+- **`/not-available`** is now a status page: what is not open, what to use today, what happens when they open. Still noindex, linked from the footer ("Harness & Chat status") and the product pages.
+- **Legal.** `/legal` has three rows: Kael / Developer API, This website, and Quan Harness & Quan Chat (no terms or privacy policy yet, and the page says they will be published before anyone is asked to accept them). Footer "App pricing" / "Harness & Chat App" removed; Contact and Pricing no longer link to app pricing.
+- **Broken anchor** `/kael#how-it-works` removed (the paragraph that used it was rewritten).
+- **Structured data:** `SoftwareApplication` removed from `/harness` and `/chat` while they are not open.
+- **Hero / three.js:** `HeroBackdrop` loads `HeroCanvas` (and three.js with it) as its own chunk when the browser is idle, fades it in, and skips it on Save-Data and 2G. Phones still get it. Not measured; run Lighthouse before and after.
+- **"Available through our apps"** removed from the Kael spec sheet, FAQ, security page and the Introducing Kael table (the apps are not open); the home page tags Harness and Chat "Not open yet"; the Kael page's "Three Ways In" intro says the API is the only one open today.
+- **Dead code removed:** `/examples` (page, gallery, data and share image; the URL still redirects to `/kael/demo`) and the unused `PipelineSteps.tsx`.
+
+## Blog: decision taken
+
+The Platform rule is "say what Kael is for, never how it produces an answer", and About says Quancis does not publish how Kael is built. The posts now follow it. The research stays; claims about Kael's inside do not.
+
+- **Why Kael Is Slower, On Purpose**: rewritten with 270 to 340 tokens/s in every mode, no Off and no Auto, the two models, and a price table built from `src/data/kael.ts` (`SPEED`, `LIMITS`, `MODELS`), so it cannot drift from `/kael` again. Figures redrawn: speed range, the wait (Kael vs an average model, only the 2.2x thinking time drawn to scale), and the Kael Beta levels without "Off".
+- **Introducing Kael**: no "Composite Intelligence System", no draft/check/refine, no "up to about twenty calls", no "JSON mode" claim, two models. Describes what Kael is for, how to call it, what the beta does and does not do.
+- **From Best-of-N to Mind Evolution** and **AI-Written Code Has a Security Problem**: the paragraphs that described Kael's loop now say the research informs the thinking and that how Kael is built is not published. **The Thinking Behind Kael**: dropped the retired keyword and made one sentence read as an idea, not a mechanism. (It was already labelled "Theory, not a spec".)
+- Figures `kael-loop` and `kael-request-path` deleted. All five posts got `updated: 2026-10-11`; links to `/examples` now point at `/kael/demo`.
+
+## Added
+
+- **`/security`** (Security and data handling) and **`/privacy`** (Privacy and cookies), both in the footer, `/legal` and the sitemap, each with a share image. `public/.well-known/security.txt`.
+- **The cookie answer**: the site sets no cookies and has no analytics. Three of the four demos (Ouroboros, Fan Circuit, Blockscape) save small things in the visitor's own browser (local storage, and IndexedDB for Blockscape), and the demos load three.js from unpkg, jsDelivr or cdnjs after Play is pressed. `/privacy` says exactly that.
+- **`npm run check`** (`scripts/check-content.mjs`, no dependencies): internal links and `#anchors`, one `<h1>` per page, share images and sitemap, blog figures/dates/related posts, retired claims, and a guard that fails if the site's code starts using cookies, storage or an analytics package, or a demo changes what it stores, without `/privacy` being updated. `npm run lint` now runs the type check and this. `.github/workflows/ci.yml` runs lint and `next build` on every push.
+
+## Please check before shipping
+
+- **`/privacy` and `/security` are plain-language descriptions of the code, not legal advice.** Confirm three statements only you can: the site is hosted on Vercel (inferred from `vercel.json`), there is no bug-bounty programme, and nothing is promised about how long emails are kept (the page says only that they are used to answer you). Have the policy text reviewed if you need it to be binding.
+- ESLint was **not** added: it cannot be installed or tested here, and a config that has never run is worse than none. `lint` is the type check plus the content check.
+- Not built, on purpose: a status page (it would have to show real uptime), a changelog and a press kit (they need facts and dates only you have), and no waitlist.
+- Share images were redrawn only for the pages whose wording changed (harness, chat, pricing, legal) and drawn for the two new pages. Blog and demo images were not regenerated.
+
+# Merge — 11 October 2026 (fixed-8 + the two-models/Fan Circuit push)
+
+Two lines of work from the same base (`89a2cde`) were merged:
+
+- **fixed-8** (demo fixes, new covers, hero, footer, `/examples` removed), and
+- **the Dev's push** (Kael is two models, Fan Circuit demo, `/not-available`).
+
+Auto-merged cleanly: about, chat, kael, demo covers, game frame, footer, routes, SEO, make-og. Hand-resolved:
+
+- `/examples` stays **removed** (it redirects to `/kael/demo`). The Dev's wording edits to that page and to `src/data/examples.ts` were dropped with it, and its `PAGE_UPDATED` entry too.
+- `src/data/kael.ts`: took the Dev's limits wording. It replaces the wrong "up to 8 minutes per request" with "stream, or set a client timeout of 30 minutes or more" (`LIMITS.clientTimeoutMinutes`).
+- `README.md`: kept the shorter fixed-8 README (the examples/SEO/earlier-changes sections stay gone).
+- `CHANGES.md`: both entries kept, newest first.
+
+# Changes — 11 October 2026 (demo fixes, new covers, hero, footer, /examples)
+
+## Fixed
+
+- **Hero on a phone.** Every hero height is now in `svh` (with a plain-`vh` fallback for browsers that do not know it) instead of mixing `svh` with `vh` padding, and the canvas follows the hero itself with a `ResizeObserver` instead of only the window's resize event, so it can no longer be drawn for a stale size. A pending orientation timer is also cleared on unmount. **Not reproduced on a real phone** (the site cannot be built or run in the sandbox this was done in, so this is a fix for the likely causes, not a confirmed one); if the jump is still there on your phone, tell me which phone and browser.
+- **Footer RSS link** removed, and the one on About. The feed itself (`/feed.xml`) still works and is still advertised to feed readers; there is just no visible link, because a browser shows raw XML or downloads it.
+- **`/examples`** removed. Every card was a placeholder ("none of it was produced by Kael"). The demos are the real examples. `/examples` now redirects to `/kael/demo`; the footer link, sitemap entry, share-image script entry and README section are gone; the links on `/kael` and `/chat` point at the demos.
+- **Demo player.** The cover now stays up under a "Loading" label until the demo has loaded (it used to cut to a black box for the seconds three.js takes to arrive), with a hint and a link after 12 seconds if it has not. On a phone, "Open full screen" is a real button under the player instead of a grey line.
+- **Covers cropped on phones.** On a phone the player is taller than wide (350 by 460), so `slice` cropped the sides off every cover (the snake's head, half the fan). The new covers keep their subject in the middle 300px.
+
+## Changed
+
+- **Demo covers** redrawn (`DemoCover.tsx`): perspective and lighting, glow, soft shadows, light grain and vignette, in place of flat clip-art. Still SVG, still no asset files; still replaced by `cover.image` if you set one.
+
+## Not touched, on purpose
+
+- `public/demo-files/*.html`. The site says these are the exact files Kael wrote (Chess with one disclosed edit), so patching them would make that page untrue. Anything wrong in them is Kael's output to report, not to quietly fix.
+- Blog posts. Three still link to `/examples`; the redirect covers them.
+
 # Changes — 10 October 2026 (Kael is two models; Platform is the source of truth)
 
 Checked against the Platform repo (`backend/app/models/kael/config.py`, `frontend/src/components/docs/facts.ts`). Blog posts and their figures were **not** touched, as asked.
@@ -5,9 +76,9 @@ Checked against the Platform repo (`backend/app/models/kael/config.py`, `fronten
 ## Changed
 
 - **Two models, not one.** Kael Beta (`kael-beta`; levels Low default, High, Max; $3.00 input / $0.60 cached / $10.00 output per 1M tokens) and Kael Pro Beta (`kael-pro-beta`; levels z-low default, z-high; $8.00 / $1.60 / $25.00). `src/data/kael.ts` is rewritten around `MODELS`; the thinking-level picker, pricing table and spec sheet read from it. New `ModelsOverview` component replaces the "how it works" rail on `/kael`.
-- **Speed.** Every level thinks first (about 2.2x an average AI model's time, unchanged), then writes at 270 to 340 tokens per second in every mode. The "Off" level, "Auto" and the 1-second / first-word figures are gone. Published limits added: 150 requests a minute, 30 concurrent, 8 minutes per request.
+- **Speed.** Every level thinks first (about 2.2x an average AI model's time, unchanged), then writes at 270 to 340 tokens per second in every mode. The "Off" level, "Auto" and the 1-second / first-word figures are gone. Published limits added: 150 requests a minute, 30 concurrent. (The first draft said 8 minutes per request; that was wrong. The Platform's 480 s ceiling applies to each stage of a request, so one can run for about 24 minutes. The site now says to stream, or set a client timeout of 30 minutes or more.)
 - **No mechanism claims.** Draft/check/refine, "composite intelligence", fine-tuned small models, retrieval and "up to ~20 calls" are removed from the pages; the copy says what Kael is for. About says plainly that Quancis does not publish how Kael is built. Pages touched: home, `/kael`, `/pricing`, `/about`, `/chat`, `/harness`, `/contact`, `/examples`, footer, product showcase, "system story", site metadata and structured data.
-- `/examples`: no Off level; levels are Low / High / Max / z-low / z-high.
+- `/examples`: levels changed to Low / High / Max / z-low / z-high (no Off). Superseded: the page was removed on 11 October, see above.
 - Share cards redrawn for `/`, `/kael`, `/kael/demo`, `/about` and the default (`scripts/make-og.py`); `PAGE_UPDATED` bumped for the changed pages.
 
 ## Added

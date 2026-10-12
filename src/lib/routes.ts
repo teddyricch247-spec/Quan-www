@@ -7,12 +7,13 @@ export const ROUTES = {
   harness: '/harness',
   chat: '/chat',
   pricing: '/pricing',
-  examples: '/examples',
   about: '/about',
   contact: '/contact',
   legal: '/legal',
+  privacy: '/privacy',
+  security: '/security',
   blog: '/blog',
-  // Holding page for Quan Harness / Quan Chat while they are not public.
+  // Status page for Quan Harness / Quan Chat while they are not public.
   notAvailable: '/not-available',
 } as const;
 
@@ -28,7 +29,7 @@ export const demoFileUrl = (file: string): string => `${DEMO_FILES_DIR}/${file}`
 
 // Routes whose hero is the dark HeroCanvas section — the header starts
 // transparent over these and crosses to the glass pill on scroll. Every
-// other page (pricing, examples, about, contact, legal, blog, blog posts) has no
+// other page (pricing, about, contact, legal, blog, blog posts) has no
 // dark hero, so the header stays in the "scrolled" glass-pill state the whole time.
 export const HERO_ROUTES: ReadonlySet<string> = new Set([
   ROUTES.home,
@@ -46,16 +47,12 @@ export const EXTERNAL = {
   platformDocs: 'https://platform.quancis.space/docs',
   platformTerms: 'https://platform.quancis.space/terms-of-service',
   platformPrivacy: 'https://platform.quancis.space/privacy-policy',
-  // Quan Harness and Quan Chat are not open to the public yet, so every
-  // link that used to go to app.quancis.space goes to the holding page.
-  // To launch: restore these to the https://app.quancis.space/... URLs
-  // (app, /harness, /chat, /pricing, /terms-of-service, /privacy-policy).
-  app: '/not-available',
-  appHarness: '/not-available',
-  appChat: '/not-available',
-  appPricing: '/not-available',
-  appTerms: '/not-available',
-  appPrivacy: '/not-available',
+  // Quan Harness and Quan Chat are not open to the public yet, so there is
+  // deliberately NO app URL here and no button on the site that points at one.
+  // To launch: add `app`, `appHarness`, `appChat` and `appPricing` (and
+  // `appTerms` / `appPrivacy`) back as https://app.quancis.space/... URLs,
+  // then swap the NotOpenYet bands on /harness and /chat for real buttons
+  // (search the repo for <NotOpenYet).
 } as const;
 
 /** Hosts that belong to Quancis. Links to these are plain, same-owner

@@ -6,7 +6,7 @@ export const post: BlogPost = {
   title: 'From Best-of-N to Mind Evolution: How AI Systems Spend Extra Compute',
   seoTitle: 'Best-of-N, Fusion-of-N and Mind Evolution Explained',
   date: '2026-10-02',
-  updated: '2026-10-05',
+  updated: '2026-10-11',
   tag: 'Research',
   author: 'response-mosese',
   excerpt:
@@ -176,14 +176,14 @@ export const post: BlogPost = {
 
     h2('Where Kael fits'),
     p(
-      'Berkeley researchers gave this style of design a name in 2024: a [compound AI system](https://bair.berkeley.edu/blog/2024/02/18/compound-ai-systems/), meaning a system that tackles a task with several interacting components, including multiple model calls, retrievers and tools. Kael is one. Behind a single API call, several models work together: a draft is produced, checked against your request, and refined, and only the refined answer is returned. Depending on the request, that can be as few as one internal call or up to about twenty, retrieval included. The [Introducing Kael](/blog/introducing-kael) post covers the design, and the [Kael page](/kael#how-it-works) has the short version.'
+      'Berkeley researchers gave this style of design a name in 2024: a [compound AI system](https://bair.berkeley.edu/blog/2024/02/18/compound-ai-systems/), meaning a system that tackles a task with several interacting components, including multiple model calls, retrievers and tools. This research is part of the thinking behind Kael, which we describe in [The Thinking Behind Kael](/blog/the-thinking-behind-kael). We do not publish how Kael is built, so this post makes no claim about what happens inside any Kael request. What Kael is, and what it supports today, is on the [Kael page](/kael) and in [Introducing Kael](/blog/introducing-kael).'
     ),
     p(
-      'We want to be careful about what we are claiming. Kael is not a literal implementation of Best-of-N, Fusion-of-N or Mind Evolution, and the numbers in this post belong to the papers, not to us. We have not published benchmark numbers for Kael, and we are waiting on independent evaluation instead of grading ourselves. What the research gives us is a design principle: a draft-check-refine loop is only as good as its check, and a check is only as good as the signal behind it. It is also why we pay attention to where checking is concrete. Code, security reviews and math are what Kael is built for, and they are also the areas where a draft can be held up against something real.'
+      'We want to be careful about what we are claiming. Kael is not presented here as a literal implementation of Best-of-N, Fusion-of-N or Mind Evolution, and the numbers in this post belong to the papers, not to us. We have not published benchmark numbers for Kael, and we are waiting on independent evaluation instead of grading ourselves. What the research gives us is a design principle: a loop that improves its own answer is only as good as its check, and a check is only as good as the signal behind it. It is also why we pay attention to where checking is concrete. Code, security reviews and math are what Kael is built for, and they are also the areas where an answer can be held up against something real.'
     ),
     callout(
-      'If you want to see a draft-check-refine system behave',
-      'Kael is in beta and sign-up is open. It accepts the Chat Completions, Responses and Anthropic Messages formats, so pointing an existing SDK at it is a base-URL change. Two honest caveats first. Kael [thinks longer on purpose](/blog/why-kael-is-slower-on-purpose), so it will not be the fastest model you test, and it accepts sampling settings such as temperature but ignores them, so two runs can differ. You can start at the [Kael API console](https://platform.quancis.space) or browse the [examples page](/examples).'
+      'If you want to try Kael',
+      'Kael is in beta and sign-up is open. It accepts the Chat Completions, Responses and Anthropic Messages formats, so pointing an existing SDK at it is a base-URL change. Two honest caveats first. Kael [thinks longer on purpose](/blog/why-kael-is-slower-on-purpose), so it will not be the fastest model you test, and it accepts sampling settings such as temperature but ignores them, so two runs can differ. You can start at the [Kael API console](https://platform.quancis.space) or look at the [demos](/kael/demo).'
     ),
 
     h2('If you read only three of these'),

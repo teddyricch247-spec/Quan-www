@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { HeroCanvas } from './three/HeroCanvas';
+import { HeroBackdrop } from './three/HeroBackdrop';
 import { ACCENT_RGB, ACCENT_GLASS_CLASS, type AccentName } from '../lib/accents';
 
 export interface HeroCta {
@@ -37,7 +37,7 @@ const HeroLink: React.FC<{ cta: HeroCta; className: string }> = ({ cta, classNam
 /**
  * The dark hero shared by every www page that has one (home, /kael,
  * /harness, /chat). Per spec §1.1/§1.4: one dark base on every hero —
- * only the HeroCanvas accent tint and the copy change per product; grid,
+ * only the HeroBackdrop (HeroCanvas) accent tint and the copy change per product; grid,
  * wave, gradient, and pointer behavior stay identical.
  *
  * The copy plays one staggered rise on page load (.hero-rise in
@@ -55,11 +55,19 @@ export const Hero: React.FC<HeroProps> = ({
 }) => {
   return (
     <section
+      // Every height here is in svh (the viewport with the phone's address bar
+      // showing) and none in vh or dvh. On a phone, vh is the tall viewport
+      // (bar hidden) and dvh follows the bar as it slides away, so mixing
+      // them made the hero a different height before and after the browser
+      // settled. svh never moves. The plain-vh rule first is only for
+      // browsers too old to know svh.
       className={`relative flex items-start px-[clamp(20px,5vw,48px)] pt-[152px] overflow-hidden isolate bg-hero ${
-        compact ? 'min-h-[78svh] pb-[9vh]' : 'min-h-[100svh] pb-[14vh]'
+        compact
+          ? 'min-h-[78vh] pb-[9vh] supports-[height:1svh]:min-h-[78svh] supports-[height:1svh]:pb-[9svh]'
+          : 'min-h-[100vh] pb-[14vh] supports-[height:1svh]:min-h-[100svh] supports-[height:1svh]:pb-[14svh]'
       }`}
     >
-      <HeroCanvas accentColor={ACCENT_RGB[accent]} />
+      <HeroBackdrop accentColor={ACCENT_RGB[accent]} />
       <div
         className="absolute inset-0 -z-10 pointer-events-none"
         style={{
@@ -68,7 +76,7 @@ export const Hero: React.FC<HeroProps> = ({
         }}
       />
       <div
-        className="absolute left-0 right-0 bottom-0 -z-10 pointer-events-none h-[min(42vh,420px)]"
+        className="absolute left-0 right-0 bottom-0 -z-10 pointer-events-none h-[min(42svh,420px)]"
         style={{
           background:
             'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0) 46%, rgba(255,255,255,0.34) 70%, rgba(255,255,255,0.84) 88%, #ffffff 100%)',

@@ -51,11 +51,6 @@ export const Footer: React.FC = () => {
                 Pricing
               </Link>
             </li>
-            <li>
-              <Link href={ROUTES.examples} className="text-ink-2 hover:text-ink transition-colors cursor-pointer">
-                Examples
-              </Link>
-            </li>
           </ul>
         </div>
 
@@ -78,9 +73,14 @@ export const Footer: React.FC = () => {
               </Link>
             </li>
             <li>
-              <a href="/feed.xml" className="text-ink-2 hover:text-ink transition-colors cursor-pointer">
-                RSS feed
-              </a>
+              <Link href={ROUTES.security} className="text-ink-2 hover:text-ink transition-colors cursor-pointer">
+                Security
+              </Link>
+            </li>
+            <li>
+              <Link href={ROUTES.privacy} className="text-ink-2 hover:text-ink transition-colors cursor-pointer">
+                Privacy &amp; cookies
+              </Link>
             </li>
             <li>
               <Link href={ROUTES.legal} className="text-ink-2 hover:text-ink transition-colors cursor-pointer">
@@ -118,14 +118,9 @@ export const Footer: React.FC = () => {
               </a>
             </li>
             <li>
-              <a href={EXTERNAL.app} className="text-ink-2 hover:text-ink transition-colors cursor-pointer">
-                Harness &amp; Chat App
-              </a>
-            </li>
-            <li>
-              <a href={EXTERNAL.appPricing} className="text-ink-2 hover:text-ink transition-colors cursor-pointer">
-                App pricing
-              </a>
+              <Link href={ROUTES.notAvailable} className="text-ink-2 hover:text-ink transition-colors cursor-pointer">
+                Harness &amp; Chat status
+              </Link>
             </li>
           </ul>
         </div>
@@ -139,6 +134,9 @@ export const Footer: React.FC = () => {
           <a href={`mailto:${ORG.email.support}`} className="hover:text-ink transition-colors cursor-pointer">
             {ORG.email.support}
           </a>
+          <Link href={ROUTES.privacy} className="hover:text-ink transition-colors cursor-pointer">
+            Privacy
+          </Link>
           <Link href={ROUTES.legal} className="hover:text-ink transition-colors cursor-pointer">
             Legal
           </Link>

@@ -44,7 +44,6 @@ const INCLUDE = [
 const SELF_SERVE = [
   { label: 'Kael API documentation', href: EXTERNAL.platformDocs },
   { label: 'Kael API pricing', href: EXTERNAL.platformPricing },
-  { label: 'Quan Harness and Quan Chat pricing', href: EXTERNAL.appPricing },
   { label: 'Sign in or create an account', href: EXTERNAL.platform },
 ] as const;
 

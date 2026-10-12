@@ -3,6 +3,7 @@ import type { FigureId } from '../../../data/blog-types';
 import { FlowFigure } from '../FlowFigure';
 import { BarFigure } from '../BarFigure';
 import { RangeFigure } from '../RangeFigure';
+import { SPEED } from '../../../data/kael';
 import {
   ContextNarrows,
   DecodeLoop,
@@ -15,7 +16,6 @@ import {
   TokensPipeline,
 } from './theory';
 import {
-  KaelRequestPath,
   MindEvolutionIslands,
   PoolAndPicker,
   SqlInjectionFlow,
@@ -139,37 +139,13 @@ export const FIGURES: Record<FigureId, React.ReactElement> = {
     />
   ),
 
-  'kael-loop': (
-    <FlowFigure
-      label="Inside one Kael request: a draft is written, checked against the request, then refined, and only the refined answer is returned."
-      lanes={[
-        {
-          title: 'One request to Kael',
-          note: 'Request in, refined answer out.',
-          steps: [
-            { label: 'Draft', detail: 'A first answer, the way any single model would attempt it.' },
-            {
-              label: 'Check',
-              detail: 'The draft is reviewed against what you asked. For code: bugs and security issues.',
-            },
-            { label: 'Refine', detail: 'The system corrects what the check found.', highlight: true },
-          ],
-          loop: 'Easy requests can take as few as one internal call. Hard ones use up to about twenty, retrieval included.',
-        },
-      ]}
-    />
-  ),
-
   'speed-ranges': (
     <RangeFigure
-      label="Output speed in tokens per second: 220 to 340 with thinking on, 90 to 140 with thinking off."
+      label={`Output speed in tokens per second: ${SPEED.tpsLow} to ${SPEED.tpsHigh}, in every mode.`}
       unit="tokens/sec"
-      axisMax={400}
+      axisMax={SPEED.tpsAxisMax}
       ticks={[0, 100, 200, 300, 400]}
-      rows={[
-        { label: 'Thinking on, any level', low: 220, high: 340, highlight: true },
-        { label: 'Thinking off', low: 90, high: 140 },
-      ]}
+      rows={[{ label: 'Kael, any model, any level', low: SPEED.tpsLow, high: SPEED.tpsHigh, highlight: true }]}
     />
   ),
 
@@ -227,7 +203,6 @@ export const FIGURES: Record<FigureId, React.ReactElement> = {
   'mind-evolution-islands': <MindEvolutionIslands />,
   'swiss-cheese': <SwissCheese />,
   'sql-injection-flow': <SqlInjectionFlow />,
-  'kael-request-path': <KaelRequestPath />,
   'wait-at-the-front': <WaitAtTheFront />,
   'thinking-stack': <ThinkingStack />,
 };

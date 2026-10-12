@@ -12,6 +12,7 @@ export const post: BlogPost = {
   title: 'Scratch Paper, Second Drafts and Many Students: The Thinking Behind Kael',
   seoTitle: 'How LLMs Think: KV Cache, Scratch Paper and Best-of-N Explained',
   date: '2026-10-05',
+  updated: '2026-10-11',
   tag: 'Research',
   author: 'response-mosese',
   excerpt:
@@ -26,7 +27,6 @@ export const post: BlogPost = {
     'Best-of-N',
     'test-time compute',
     'Kael',
-    'composite intelligence system',
   ],
   ogImage: '/og/the-thinking-behind-kael.png',
   related: ['best-of-n-to-mind-evolution', 'why-kael-is-slower-on-purpose'],
@@ -143,7 +143,7 @@ export const post: BlogPost = {
       'The second is the word *different*. Ten copies of the same student, making the same mistakes for the same reasons, are not ten chances. They are one chance repeated. Variety in how attempts are produced is what turns a crowd into independent shots at the answer, so we treated that variety as something to protect. The islands in Mind Evolution exist for the same reason.'
     ),
     p(
-      'Then comes the step we care about most. We do not simply take the best attempt and stop. We take the best draft and hand it to the second student, who reasons from it to produce the final answer. Selecting decides where to start. Reasoning decides how good it ends up.'
+      'Then comes the idea we cared about most. Do not simply take the best attempt and stop: hand the best draft to the second student, who reasons from it to produce the final answer. Selecting decides where to start. Reasoning decides how good it ends up.'
     ),
     figure(
       'many-students',

@@ -433,6 +433,15 @@
   }
   .hero-rise { animation: heroRise 0.95s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
+  /* The hero's 3D canvas loads after the page is interactive (see
+     components/three/HeroBackdrop.tsx), so it fades in over the flat hero
+     background instead of popping in. */
+  @keyframes heroCanvasIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  .hero-canvas-in { animation: heroCanvasIn 0.9s ease both; }
+
   /* FAQ accordion (native <details>, see components/kael/Faq.tsx). */
   .faq-item > summary { list-style: none; }
   .faq-item > summary::-webkit-details-marker { display: none; }
@@ -446,6 +455,7 @@
   /* Decorative, always-running motion stops for anyone who asked for less. */
   @media (prefers-reduced-motion: reduce) {
     .hero-rise,
+    .hero-canvas-in,
     .faq-item[open] > .faq-body,
     .typed-cursor,
     .glow-box:focus-within::before {

@@ -22,14 +22,15 @@ export const PAGE_UPDATED: Record<string, string> = {
   '/': '2026-10-10',
   '/kael': '2026-10-10',
   '/kael/demo': '2026-10-10',
-  '/harness': '2026-10-10',
-  '/chat': '2026-10-10',
-  '/pricing': '2026-10-10',
-  '/examples': '2026-10-10',
+  '/harness': '2026-10-11',
+  '/chat': '2026-10-11',
+  '/pricing': '2026-10-11',
   '/about': '2026-10-10',
-  '/contact': '2026-10-10',
-  '/blog': '2026-10-05',
-  '/legal': '2026-10-02',
+  '/contact': '2026-10-11',
+  '/blog': '2026-10-11',
+  '/legal': '2026-10-11',
+  '/privacy': '2026-10-11',
+  '/security': '2026-10-11',
 };
 
 export function absoluteUrl(path: string): string {

@@ -5,7 +5,6 @@ import { Arrow, ArrowDefs, C, Scribble, Svg, T } from './svg';
  * Drawn figures for the four posts that were already on the blog:
  *   PoolAndPicker, MindEvolutionIslands   best-of-n-to-mind-evolution
  *   SwissCheese, SqlInjectionFlow         ai-generated-code-security-review
- *   KaelRequestPath                       introducing-kael
  *   WaitAtTheFront, ThinkingStack         why-kael-is-slower-on-purpose
  *
  * Like the ones in theory.tsx, these illustrate. They show no measured data.
@@ -308,68 +307,6 @@ export const SqlInjectionFlow: React.FC = () => {
 };
 
 /* ------------------------------------------------------------------ */
-/* Kael: how much work happens depends on the request                  */
-/* ------------------------------------------------------------------ */
-
-export const KaelRequestPath: React.FC = () => {
-  const p = 'kreq';
-  return (
-    <Svg
-      viewBox="0 0 400 290"
-      maxWidth={420}
-      label="The path of one request. The request passes a safety check. How many internal calls follow depends on the request: an easy one may use a single call, a hard one up to about twenty, retrieval included. The response passes a safety check too."
-    >
-      <ArrowDefs prefix={p} />
-
-      <rect x={130} y={6} width={140} height={28} rx={14} fill={C.surface} stroke={C.line} strokeWidth={1.5} />
-      <T x={200} y={24.5} size={12.5} weight={500} anchor="middle">
-        Your request
-      </T>
-      <Arrow prefix={p} d="M200 37 L200 50" />
-
-      <rect x={90} y={54} width={220} height={30} rx={9} fill={C.white} stroke={C.ink3} strokeWidth={1.5} />
-      <T x={200} y={73} size={12} anchor="middle">
-        Safety check on the request
-      </T>
-      <Arrow prefix={p} d="M200 87 L200 100" />
-
-      <rect x={28} y={104} width={344} height={102} rx={12} fill={C.surface} stroke={C.line} strokeWidth={1.5} />
-      <T x={200} y={122} size={11.5} weight={500} fill={C.ink2} anchor="middle">
-        How much work happens depends on the request
-      </T>
-
-      <T x={44} y={152} size={12} weight={500}>
-        Easy
-      </T>
-      <circle cx={100} cy={148.5} r={5} fill={C.ink2} />
-      <T x={116} y={152} size={11.5} fill={C.ink2}>
-        a single internal call
-      </T>
-
-      <T x={44} y={186} size={12} weight={500} fill={C.red}>
-        Hard
-      </T>
-      {Array.from({ length: 20 }).map((_, i) => (
-        <circle key={i} cx={100 + i * 10} cy={182.5} r={3.6} fill={C.red} opacity={0.9} />
-      ))}
-      <T x={304} y={186} size={11.5} fill={C.ink2}>
-        up to ~20
-      </T>
-
-      <Arrow prefix={p} d="M200 209 L200 222" />
-      <rect x={90} y={226} width={220} height={30} rx={9} fill={C.white} stroke={C.ink3} strokeWidth={1.5} />
-      <T x={200} y={245} size={12} anchor="middle">
-        Safety check on the response
-      </T>
-      <Arrow prefix={p} d="M200 259 L200 270" />
-      <T x={200} y={286} size={12.5} weight={600} anchor="middle" fill={C.red}>
-        One answer comes back
-      </T>
-    </Svg>
-  );
-};
-
-/* ------------------------------------------------------------------ */
 /* Speed: where the wait sits, and how fast the text then arrives      */
 /* ------------------------------------------------------------------ */
 
@@ -390,33 +327,34 @@ const Ticks: React.FC<{ x: number; y: number; n: number; step: number; color?: s
 export const WaitAtTheFront: React.FC = () => (
   <Svg
     viewBox="0 0 400 214"
-    label="Two timelines for an answer of the same length. With thinking on, there is a long wait before the first word, then the text arrives in quick, closely spaced bursts. With thinking off, the first word arrives sooner and the text arrives at a slower pace. The drawing is a schematic, not to scale."
+    label="Two timelines for an answer of the same length. An average AI model thinks for a short time, then writes. Kael thinks for about 2.2 times as long before the first word, then the text arrives at 270 to 340 tokens a second. The writing is drawn the same in both rows; only the thinking time is drawn to the 2.2 ratio. A schematic, not to scale."
   >
     <T x={28} y={18} size={13} weight={500}>
-      Thinking on
+      An average AI model
     </T>
     <T x={372} y={18} size={11} fill={C.ink3} anchor="end">
-      220 to 340 tokens a second once it starts
+      thinks, then writes
     </T>
-    <rect x={28} y={30} width={170} height={34} rx={8} fill={C.white} stroke={C.ink3} strokeWidth={1.5} strokeDasharray="4 3" />
-    <Scribble x={42} y={42} w={142} lines={2} gap={11} />
-    <Ticks x={204} y={30} n={24} step={5} />
-    <line x1={200} y1={26} x2={200} y2={70} stroke={C.red} strokeWidth={1.8} />
-    <T x={200} y={84} size={11} weight={500} fill={C.red} anchor="middle">
-      first word, after the thinking
+    <rect x={28} y={30} width={77} height={34} rx={8} fill={C.white} stroke={C.ink3} strokeWidth={1.5} strokeDasharray="4 3" />
+    <Scribble x={38} y={42} w={57} lines={2} gap={11} />
+    <Ticks x={111} y={30} n={24} step={5} color={C.ink2} />
+    <line x1={107} y1={26} x2={107} y2={70} stroke={C.ink2} strokeWidth={1.8} />
+    <T x={107} y={84} size={11} weight={500} fill={C.ink2} anchor="middle">
+      first word
     </T>
 
     <T x={28} y={118} size={13} weight={500}>
-      Thinking off
+      Kael
     </T>
     <T x={372} y={118} size={11} fill={C.ink3} anchor="end">
-      90 to 140 tokens a second
+      270 to 340 tokens a second once it starts
     </T>
-    <rect x={28} y={130} width={16} height={34} rx={5} fill={C.surface2} stroke={C.ink3} strokeWidth={1.5} />
-    <Ticks x={52} y={130} n={24} step={11.6} />
-    <line x1={46} y1={126} x2={46} y2={170} stroke={C.red} strokeWidth={1.8} />
-    <T x={46} y={184} size={11} weight={500} fill={C.red}>
-      first word, usually within 0.7 to 3 seconds
+    <rect x={28} y={130} width={170} height={34} rx={8} fill={C.white} stroke={C.red} strokeWidth={1.5} strokeDasharray="4 3" />
+    <Scribble x={42} y={142} w={142} lines={2} gap={11} />
+    <Ticks x={204} y={130} n={24} step={5} />
+    <line x1={200} y1={126} x2={200} y2={170} stroke={C.red} strokeWidth={1.8} />
+    <T x={200} y={184} size={11} weight={500} fill={C.red} anchor="middle">
+      first word, after about 2.2× the thinking
     </T>
 
     <T x={372} y={206} size={10.5} fill={C.ink3} anchor="end" italic>
@@ -429,8 +367,9 @@ export const WaitAtTheFront: React.FC = () => (
 /* Thinking levels as stacks of paper                                  */
 /* ------------------------------------------------------------------ */
 
+// Kael Beta's three levels. There is no "Off": every level thinks first, so even
+// Low carries a sheet of scratch paper. (Kael Pro Beta's z-low and z-high are in the text.)
 const LEVELS: { name: string; sub: string; sheets: number }[] = [
-  { name: 'Off', sub: 'answer only', sheets: 0 },
   { name: 'Low', sub: 'the default', sheets: 1 },
   { name: 'High', sub: 'more room', sheets: 3 },
   { name: 'Max', sub: 'the most room', sheets: 6 },
@@ -441,7 +380,7 @@ export const ThinkingStack: React.FC = () => {
   return (
     <Svg
       viewBox="0 0 400 214"
-      label="Four thinking levels drawn as stacks of paper. Off is an answer sheet alone. Low adds a sheet of scratch paper, High a few more, and Max the most. A schematic, not a measurement."
+      label="The three Kael Beta thinking levels drawn as stacks of paper. Every level thinks first. Low adds a sheet of scratch paper to the answer sheet, High a few more, and Max the most. A schematic, not a measurement."
     >
       <ArrowDefs prefix={p} />
       <Arrow prefix={p} d="M60 18 L340 18" width={1.4} />
@@ -453,7 +392,7 @@ export const ThinkingStack: React.FC = () => {
       </T>
 
       {LEVELS.map((lv, i) => {
-        const cx = 70 + i * 87;
+        const cx = 95 + i * 105;
         const x = cx - 28;
         const baseY = 110;
         return (

@@ -187,7 +187,7 @@ export const SPECS: Spec[] = [
     value: 'Chat Completions, Responses API, Anthropic Messages',
     note: 'Use the SDK you already have.',
   },
-  { id: 'weights', label: 'Weights', value: 'Closed', note: 'Available through the API and our apps.' },
+  { id: 'weights', label: 'Weights', value: 'Closed', note: 'Available through the API. Harness and Chat, once open, will use it too.' },
   {
     id: 'thinking',
     label: 'Thinking levels',
@@ -291,7 +291,7 @@ export const FAQ: FaqItem[] = [
   },
   {
     q: 'Can I download or self-host Kael?',
-    a: ['No. Kael is closed: the weights are not released. It is available through the API and our apps.'],
+    a: ['No. Kael is closed: the weights are not released. It is available through the API, and Quan Harness and Quan Chat will use it once they open.'],
   },
   {
     q: 'Is Kael good at creative writing?',

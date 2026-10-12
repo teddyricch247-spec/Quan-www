@@ -10,6 +10,8 @@ interface Product {
   scene: SceneName;
   name: string;
   category: string;
+  /** Shown as a small tag next to the name, e.g. while a product is not public. */
+  status?: string;
   headline: string;
   body: string;
   /** Short facts, drawn from each product's own page. */
@@ -44,6 +46,7 @@ const PRODUCTS: Product[] = [
     scene: 'harness',
     name: 'Quan Harness',
     category: 'The coding agent.',
+    status: 'Not open yet',
     headline: 'Hand It A Task. Get It Back Done.',
     body:
       'Point Harness at a codebase and it reads, plans, edits, and checks its own work before handing anything back. It runs in a real project environment, in whatever stack you already use.',
@@ -63,6 +66,7 @@ const PRODUCTS: Product[] = [
     scene: 'chat',
     name: 'Quan Chat',
     category: 'The assistant.',
+    status: 'Not open yet',
     headline: 'Just Ask. Get A Considered Answer.',
     body:
       'The same Kael as the API and Harness, in a conversation. Built for accuracy over speed, so it thinks before it answers.',
@@ -72,7 +76,7 @@ const PRODUCTS: Product[] = [
       'One subscription, unlimited conversations',
     ],
     href: ROUTES.chat,
-    cta: 'Try Quan Chat',
+    cta: 'Explore Quan Chat',
     stageLabel:
       'Animation: a question is typed into the Quan Chat composer, Kael thinks for a moment, then replies.',
   },
@@ -101,6 +105,11 @@ export const ProductShowcase: React.FC = () => {
               <span aria-hidden="true" className={`h-2.5 w-2.5 flex-none ${ACCENT_BG_CLASS[p.accent]}`} />
               <span className="text-[0.9375rem] font-medium text-ink">{p.name}</span>
               <span className="text-[0.9375rem] text-ink-3">{p.category}</span>
+              {p.status ? (
+                <span className="rounded-full border border-line px-2.5 py-0.5 text-xs font-medium text-ink-2">
+                  {p.status}
+                </span>
+              ) : null}
             </div>
 
             <h3
